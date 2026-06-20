@@ -12,7 +12,7 @@
 
   @if (prediction(); as existing) {
     <p class="existing-prediction">
-      Parashikimi yt: <strong>{{ existing.choice }}</strong>
+      ✓ Parashikimi yt: <strong>{{ existing.choice }}</strong>
       @if (existing.exactScore) {
         ({{ existing.exactScore.home }}-{{ existing.exactScore.away }})
       }
@@ -36,7 +36,10 @@
     </div>
 
     <label class="exact-score">
-      Rezultati i saktë <span class="bonus-tag">bonus +3</span>
+      <span class="exact-score-header">
+        Rezultati i saktë
+        <span class="bonus-tag">bonus +3</span>
+      </span>
       <div class="score-inputs">
         <input type="number" min="0" [value]="exactHome()" (input)="onExactHomeChange($event)" placeholder="0" />
         <span>-</span>

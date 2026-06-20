@@ -54,11 +54,28 @@ export class MatchCardComponent implements OnInit {
   onExactHomeChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.exactHome.set(value === '' ? null : Number(value));
+    this.autoSelectChoiceFromScore();
   }
 
   onExactAwayChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.exactAway.set(value === '' ? null : Number(value));
+    this.autoSelectChoiceFromScore();
+  }
+
+  /** Kur të dyja fushat e rezultatit të saktë janë plotësuara, zgjedh vetë 1/X/2 përkatësisht */
+  private autoSelectChoiceFromScore(): void {
+    const home = this.exactHome();
+    const away = this.exactAway();
+    if (home === null || away === null) return;
+
+    if (home > away) {
+      this.choice.set('1');
+    } else if (home < away) {
+      this.choice.set('2');
+    } else {
+      this.choice.set('X');
+    }
   }
 
   async submit(): Promise<void> {
