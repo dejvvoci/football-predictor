@@ -2,16 +2,20 @@
   padding: 24px 0;
 }
 
+.page h1 {
+  font-size: 26px;
+}
+
 .invite-info {
   font-size: 13px;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   margin-top: 4px;
 }
 
 .invite-info strong {
-  font-family: monospace;
+  font-family: var(--font-mono);
   letter-spacing: 1px;
-  color: #f5b942;
+  color: var(--color-accent-dark);
 }
 
 .leaderboard-list {
@@ -28,15 +32,16 @@
   grid-template-columns: 32px 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #2a2e36;
-  background: #16191f;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
 }
 
 .rank {
+  font-family: var(--font-display);
   font-weight: 700;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   text-align: center;
   font-size: 15px;
 }
@@ -47,8 +52,9 @@
 }
 
 .points {
+  font-family: var(--font-mono);
   font-size: 13px;
-  color: #6fcf97;
+  color: var(--color-pitch-dark);
   font-weight: 600;
 }
 
@@ -56,23 +62,24 @@
   display: block;
   margin-top: 20px;
   font-size: 13px;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   text-decoration: none;
 }
 
 .leave-btn {
   margin-top: 14px;
   padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 107, 107, 0.4);
-  background: transparent;
-  color: #ff6b6b;
+  border-radius: var(--radius-sm);
+  border: 1px solid #F0C6C1;
+  background: #FBE7E5;
+  color: var(--color-danger);
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .leave-btn:hover {
-  background: rgba(255, 107, 107, 0.1);
+  background: #F7D5D1;
 }
 
 .leave-btn:disabled {
@@ -81,6 +88,6 @@
 }
 
 .loading {
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   font-size: 14px;
 }

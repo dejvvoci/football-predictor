@@ -1,18 +1,24 @@
 .match-card {
-  border: 1px solid #2a2e36;
-  border-radius: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
   padding: 16px;
-  background: #16191f;
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 0 1px 2px rgba(22, 36, 28, 0.04);
 }
 
 header {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+.kickoff {
+  font-family: var(--font-mono);
 }
 
 .teams {
@@ -20,21 +26,24 @@ header {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 600;
 }
 
 .vs {
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 400;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
 }
 
 .existing-prediction {
   margin: 0;
   font-size: 13px;
-  color: #6fcf97;
+  color: var(--color-pitch);
   text-align: center;
+  font-weight: 500;
 }
 
 .choice-buttons {
@@ -49,22 +58,31 @@ header {
   align-items: center;
   gap: 4px;
   padding: 10px 4px;
-  border-radius: 8px;
-  border: 1px solid #2a2e36;
-  background: #1a1d24;
-  color: #f1f1f1;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-display);
   cursor: pointer;
 }
 
 .choice-buttons button .points {
   font-size: 11px;
-  color: #9aa0ab;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-ink-muted);
 }
 
 .choice-buttons button.selected {
-  border-color: #4f7cff;
-  background: rgba(79, 124, 255, 0.15);
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
+}
+
+.choice-buttons button.selected .points {
+  color: var(--color-pitch-dark);
 }
 
 .exact-score {
@@ -72,13 +90,19 @@ header {
   flex-direction: column;
   gap: 6px;
   font-size: 13px;
-  color: #c4c8d0;
+  color: var(--color-ink-muted);
+  font-weight: 500;
 }
 
 .bonus-tag {
-  font-size: 11px;
-  color: #f5b942;
+  display: inline-block;
   margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-accent-tint);
+  color: var(--color-accent-dark);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .score-inputs {
@@ -91,36 +115,48 @@ header {
   width: 56px;
   padding: 8px;
   text-align: center;
-  border-radius: 6px;
-  border: 1px solid #2a2e36;
-  background: #1a1d24;
-  color: #f1f1f1;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.score-inputs input:focus {
+  outline: none;
+  border-color: var(--color-pitch);
 }
 
 .submit-btn {
-  padding: 10px;
-  border-radius: 8px;
+  padding: 11px;
+  border-radius: var(--radius-sm);
   border: none;
-  background: #4f7cff;
+  background: var(--color-accent);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  font-size: 14px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: var(--color-accent-dark);
 }
 
 .submit-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .form-error {
   margin: 0;
   font-size: 13px;
-  color: #ff6b6b;
+  color: var(--color-danger);
 }
 
 .locked-note {
   margin: 0;
   font-size: 13px;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   text-align: center;
 }

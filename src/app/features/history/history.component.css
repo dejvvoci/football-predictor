@@ -2,6 +2,10 @@
   padding: 24px 0;
 }
 
+.page h1 {
+  font-size: 26px;
+}
+
 .history-list {
   display: flex;
   flex-direction: column;
@@ -11,7 +15,7 @@
 
 .empty,
 .loading {
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   font-size: 14px;
   margin-top: 16px;
 }

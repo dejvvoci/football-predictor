@@ -1,18 +1,23 @@
 .history-card {
-  border: 1px solid #2a2e36;
-  border-radius: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
   padding: 14px 16px;
-  background: #16191f;
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 1px 2px rgba(22, 36, 28, 0.04);
 }
 
 header {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
+}
+
+.date {
+  font-family: var(--font-mono);
 }
 
 .teams {
@@ -20,19 +25,23 @@ header {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 16px;
   font-weight: 600;
 }
 
 .vs {
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 400;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
 }
 
 .score {
+  font-family: var(--font-mono);
   font-size: 14px;
-  color: #4f7cff;
+  color: var(--color-pitch);
+  font-weight: 600;
 }
 
 .prediction-summary {
@@ -54,32 +63,33 @@ header {
 }
 
 .choice-tag {
-  background: rgba(79, 124, 255, 0.15);
-  color: #4f7cff;
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
 }
 
 .exact-tag {
-  background: rgba(245, 185, 66, 0.15);
-  color: #f5b942;
+  font-family: var(--font-mono);
+  background: var(--color-accent-tint);
+  color: var(--color-accent-dark);
 }
 
 .points-tag.scored {
-  background: rgba(111, 207, 151, 0.15);
-  color: #6fcf97;
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
 }
 
 .points-tag.missed {
-  background: rgba(255, 107, 107, 0.15);
-  color: #ff6b6b;
+  background: #FBE7E5;
+  color: var(--color-danger);
 }
 
 .pending-tag {
-  background: rgba(154, 160, 171, 0.15);
-  color: #9aa0ab;
+  background: #EEF1EA;
+  color: var(--color-ink-muted);
 }
 
 .loading {
   font-size: 13px;
-  color: #9aa0ab;
+  color: var(--color-ink-muted);
   margin: 0;
 }

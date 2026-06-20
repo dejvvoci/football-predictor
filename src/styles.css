@@ -1,12 +1,55 @@
+:root {
+  /* Sfond & sipërfaqe — "fushë futbolli në dritë dite", jo dark mode */
+  --color-bg: #F5F8F1;
+  --color-surface: #FFFFFF;
+  --color-line: #DEE6D6;
+
+  /* Jeshile bari — ngjyra kryesore (header, butona primarë) */
+  --color-pitch: #1C8A4B;
+  --color-pitch-dark: #146238;
+  --color-pitch-tint: #E5F3EA;
+
+  /* Portokalli "topi i ndeshjes" — aksent për veprime/bonus */
+  --color-accent: #FF6B35;
+  --color-accent-dark: #E5552A;
+  --color-accent-tint: #FFE8DC;
+
+  /* Tekst */
+  --color-ink: #16241C;
+  --color-ink-muted: #5C6B60;
+
+  /* Statuse */
+  --color-success: #1C8A4B;
+  --color-danger: #D6473B;
+  --color-warning: #E8A23C;
+
+  /* Tipografi */
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Forma */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #0f1115;
-  color: #f1f1f1;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin: 0 0 4px;
 }
 
 .container {

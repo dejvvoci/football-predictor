@@ -3,11 +3,19 @@
   margin: 48px auto 0;
 }
 
+.auth-page h1 {
+  font-size: 26px;
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
   margin-top: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 20px;
 }
 
 label {
@@ -15,31 +23,39 @@ label {
   flex-direction: column;
   gap: 6px;
   font-size: 14px;
-  color: #c4c8d0;
+  color: var(--color-ink-muted);
+  font-weight: 500;
 }
 
 input {
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #2a2e36;
-  background: #1a1d24;
-  color: #f1f1f1;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
   font-size: 14px;
+  font-family: var(--font-body);
 }
 
 input:focus {
-  outline: 2px solid #4f7cff;
-  border-color: transparent;
+  outline: none;
+  border-color: var(--color-pitch);
+  box-shadow: 0 0 0 3px var(--color-pitch-tint);
 }
 
 button {
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
   border: none;
-  background: #4f7cff;
+  background: var(--color-pitch);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover:not(:disabled) {
+  background: var(--color-pitch-dark);
 }
 
 button:disabled {
@@ -51,11 +67,26 @@ button:disabled {
 .form-error {
   margin: -6px 0 0;
   font-size: 13px;
-  color: #ff6b6b;
+  color: var(--color-danger);
 }
 
 .success-message {
   margin: -6px 0 0;
   font-size: 13px;
-  color: #6fcf97;
+  color: var(--color-success);
+}
+
+.switch-link,
+.back-link {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+}
+
+.switch-link a {
+  color: var(--color-pitch);
+  font-weight: 600;
+  text-decoration: none;
 }
