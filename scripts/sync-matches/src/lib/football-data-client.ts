@@ -23,10 +23,10 @@ function formatDate(date: Date): string {
  */
 export async function fetchUpcomingMatches(token: string): Promise<FootballDataMatch[]> {
   const today = new Date();
-  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const rangeEnd = new Date(today.getTime() + 48 * 60 * 60 * 1000); // +48h (jo +24h) — buferr shtesë kundër rasteve kufitare të datave
 
   const dateFrom = formatDate(today);
-  const dateTo = formatDate(tomorrow);
+  const dateTo = formatDate(rangeEnd);
 
   const url = `https://api.football-data.org/v4/matches?competitions=${FREE_COMPETITIONS.join(',')}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
   const res = await fetch(url, { headers: { 'X-Auth-Token': token } });
