@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GroupService } from '../../../core/services/group.service';
 
@@ -10,10 +10,11 @@ import { GroupService } from '../../../core/services/group.service';
   templateUrl: './join-group.component.html',
   styleUrl: './join-group.component.css'
 })
-export class JoinGroupComponent {
+export class JoinGroupComponent implements OnInit {
   private fb = inject(FormBuilder);
   private groupService = inject(GroupService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   form = this.fb.nonNullable.group({
     inviteCode: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
@@ -21,6 +22,13 @@ export class JoinGroupComponent {
 
   loading = signal(false);
   errorMessage = signal<string | null>(null);
+
+  ngOnInit(): void {
+    const codeFromLink = this.route.snapshot.queryParamMap.get('code');
+    if (codeFromLink) {
+      this.form.patchValue({ inviteCode: codeFromLink.toUpperCase() });
+    }
+  }
 
   async submit(): Promise<void> {
     if (this.form.invalid) {

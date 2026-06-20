@@ -46,6 +46,20 @@ export class GroupDetailComponent {
   );
 
   leaving = signal(false);
+  linkCopied = signal(false);
+
+  async copyInviteLink(inviteCode: string): Promise<void> {
+    const url = `${window.location.origin}/groups/join?code=${inviteCode}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
+    } catch {
+      // Fallback nëse Clipboard API s'lejohet (p.sh. shfletues i vjetër) — shfaq linkun direkt
+      alert(`Kopjo këtë link manualisht:\n${url}`);
+    }
+  }
 
   async leave(groupId: string): Promise<void> {
     const confirmed = confirm('Je i sigurt që do largohesh nga ky grup?');

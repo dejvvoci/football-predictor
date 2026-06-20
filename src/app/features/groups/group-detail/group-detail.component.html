@@ -1,9 +1,14 @@
 <section class="page">
   @if (group$ | async; as group) {
     <h1>{{ group.name }}</h1>
-    <p class="invite-info">
-      Kodi i ftesës: <strong>{{ group.inviteCode }}</strong> — ndaje me miqtë që të bashkohen
-    </p>
+    <div class="invite-row">
+      <p class="invite-info">
+        Kodi i ftesës: <strong>{{ group.inviteCode }}</strong>
+      </p>
+      <button type="button" class="copy-btn" (click)="copyInviteLink(group.inviteCode)">
+        {{ linkCopied() ? 'U kopjua ✓' : 'Kopjo linkun e ftesës' }}
+      </button>
+    </div>
 
     @if (leaderboard$ | async; as leaderboard) {
       <ol class="leaderboard-list">

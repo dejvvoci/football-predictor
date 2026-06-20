@@ -27,5 +27,5 @@
     </button>
   </form>
 
-  <p class="switch-link">S'ke llogari? <a routerLink="/register">Regjistrohu</a></p>
+  <p class="switch-link">S'ke llogari? <a routerLink="/register" [queryParams]="returnUrl ? { returnUrl } : {}">Regjistrohu</a></p>
 </section>

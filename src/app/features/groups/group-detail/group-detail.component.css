@@ -6,16 +6,41 @@
   font-size: 26px;
 }
 
+.invite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
 .invite-info {
   font-size: 13px;
   color: var(--color-ink-muted);
-  margin-top: 4px;
+  margin: 0;
 }
 
 .invite-info strong {
   font-family: var(--font-mono);
   letter-spacing: 1px;
   color: var(--color-accent-dark);
+}
+
+.copy-btn {
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-pitch);
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: var(--color-pitch);
+  color: #fff;
 }
 
 .leaderboard-list {
