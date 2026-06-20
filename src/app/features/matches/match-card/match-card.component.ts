@@ -1,6 +1,7 @@
 import { Component, DestroyRef, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
+import { Observable } from 'rxjs';
 import { Match } from '../../../core/models/match.model';
 import { PredictionChoice } from '../../../core/models/prediction.model';
 import { PredictionService } from '../../../core/services/prediction.service';
@@ -36,7 +37,7 @@ export class MatchCardComponent implements OnInit {
   locked = computed(() => this.match.status !== 'scheduled' || this.match.kickoff <= Date.now());
 
   ngOnInit(): void {
-    const prediction$ = this.groupId
+    const prediction$: Observable<PredictionLike | undefined> = this.groupId
       ? this.predictionService.getGroupPredictionForMatch(this.groupId, this.match.id)
       : this.predictionService.getPredictionForMatch(this.match.id);
 

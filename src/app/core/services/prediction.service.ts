@@ -4,6 +4,7 @@ import {
   doc,
   docData,
   setDoc,
+  updateDoc,
   collection,
   collectionData,
   query,
@@ -56,6 +57,19 @@ export class PredictionService {
     const predictionsRef = collection(this.firestore, 'predictions');
     const q = query(predictionsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     return collectionData(q, { idField: 'id' }) as Observable<Prediction[]>;
+  }
+
+  /** Parashikime globale të graduara që s'i janë shfaqur ende userit si njoftim */
+  getUnseenGradedPredictions(userId: string): Observable<Prediction[]> {
+    const predictionsRef = collection(this.firestore, 'predictions');
+    const q = query(predictionsRef, where('userId', '==', userId), where('seen', '==', false));
+    return collectionData(q, { idField: 'id' }) as Observable<Prediction[]>;
+  }
+
+  async markPredictionsSeen(predictionIds: string[]): Promise<void> {
+    await Promise.all(
+      predictionIds.map((id) => updateDoc(doc(this.firestore, 'predictions', id), { seen: true }))
+    );
   }
 
   /** Parashikim i veçantë brenda një grupi — pikët shkojnë vetëm te leaderboard i atij grupi */

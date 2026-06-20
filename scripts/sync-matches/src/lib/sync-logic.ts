@@ -108,7 +108,7 @@ async function gradeMatch(matchId: string): Promise<void> {
       match['result'] as MatchResult
     );
 
-    batch.update(doc.ref, { points });
+    batch.update(doc.ref, { points, seen: false });
     batch.update(db.collection('users').doc(prediction.userId), {
       totalPoints: FieldValue.increment(points)
     });

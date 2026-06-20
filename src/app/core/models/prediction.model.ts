@@ -12,5 +12,6 @@ export interface Prediction {
   choice: PredictionChoice;
   exactScore?: ExactScoreGuess;
   points?: number;       // plotësohet pasi mbaron ndeshja
+  seen?: boolean;        // false menjëherë pas gradimit; true pasi i shfaqet popup-i userit
   createdAt: number;
 }
