@@ -1,0 +1,18 @@
+.navbar {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #16191f;
+  border-bottom: 1px solid #2a2e36;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #9aa0ab;
+  font-size: 14px;
+}
+
+.navbar a.active {
+  color: #ffffff;
+  font-weight: 600;
+}
