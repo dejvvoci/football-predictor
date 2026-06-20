@@ -1,4 +1,17 @@
 <section class="page">
   <h1>Historiku im</h1>
-  <p>Lista e parashikimeve të bëra vjen në hapin "PredictionService".</p>
+
+  @if (predictions$ | async; as predictions) {
+    @if (predictions.length === 0) {
+      <p class="empty">S'ke dhënë ende asnjë parashikim.</p>
+    } @else {
+      <div class="history-list">
+        @for (prediction of predictions; track prediction.id) {
+          <app-history-item [prediction]="prediction" />
+        }
+      </div>
+    }
+  } @else {
+    <p class="loading">Duke ngarkuar historikun...</p>
+  }
 </section>

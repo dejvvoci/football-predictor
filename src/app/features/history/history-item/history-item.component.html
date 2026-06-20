@@ -1,0 +1,36 @@
+<article class="history-card">
+  @if (match(); as m) {
+    <header>
+      <span class="competition">{{ m.competition }}</span>
+      <span class="date">{{ m.kickoff | date: 'dd/MM/yyyy HH:mm' }}</span>
+    </header>
+
+    <div class="teams">
+      <span class="team">{{ m.homeTeam }}</span>
+      @if (m.result) {
+        <span class="score">{{ m.result.homeGoals }} - {{ m.result.awayGoals }}</span>
+      } @else {
+        <span class="vs">vs</span>
+      }
+      <span class="team">{{ m.awayTeam }}</span>
+    </div>
+  } @else {
+    <p class="loading">Duke ngarkuar ndeshjen...</p>
+  }
+
+  <div class="prediction-summary">
+    <span class="choice-tag">{{ prediction.choice }}</span>
+
+    @if (prediction.exactScore) {
+      <span class="exact-tag">{{ prediction.exactScore.home }}-{{ prediction.exactScore.away }}</span>
+    }
+
+    @if (prediction.points !== undefined) {
+      <span class="points-tag" [class.scored]="prediction.points > 0" [class.missed]="prediction.points === 0">
+        +{{ prediction.points }} pikë
+      </span>
+    } @else {
+      <span class="pending-tag">Në pritje</span>
+    }
+  </div>
+</article>
