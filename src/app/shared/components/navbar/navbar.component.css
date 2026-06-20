@@ -1,9 +1,16 @@
 .navbar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
   padding: 12px 16px;
   background: #16191f;
   border-bottom: 1px solid #2a2e36;
+}
+
+.links {
+  display: flex;
+  gap: 16px;
 }
 
 .navbar a {
@@ -14,5 +21,39 @@
 
 .navbar a.active {
   color: #ffffff;
+  font-weight: 600;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.username {
+  font-size: 13px;
+  color: #c4c8d0;
+}
+
+.account button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #2a2e36;
+  background: transparent;
+  color: #9aa0ab;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.account button:hover {
+  color: #fff;
+  border-color: #4f7cff;
+}
+
+.login-link {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #4f7cff;
+  color: #fff !important;
   font-weight: 600;
 }

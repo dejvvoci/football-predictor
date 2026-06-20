@@ -1,6 +1,17 @@
 <nav class="navbar">
-  <a routerLink="/matches" routerLinkActive="active">Ndeshjet</a>
-  <a routerLink="/history" routerLinkActive="active">Historiku</a>
-  <a routerLink="/leaderboard" routerLinkActive="active">Renditja</a>
-  <a routerLink="/groups" routerLinkActive="active">Grupet</a>
+  <div class="links">
+    <a routerLink="/matches" routerLinkActive="active">Ndeshjet</a>
+    <a routerLink="/history" routerLinkActive="active">Historiku</a>
+    <a routerLink="/leaderboard" routerLinkActive="active">Renditja</a>
+    <a routerLink="/groups" routerLinkActive="active">Grupet</a>
+  </div>
+
+  @if (user$ | async; as user) {
+    <div class="account">
+      <span class="username">{{ user.displayName || user.email }}</span>
+      <button (click)="logout()">Dil</button>
+    </div>
+  } @else {
+    <a routerLink="/login" class="login-link">Hyr</a>
+  }
 </nav>
