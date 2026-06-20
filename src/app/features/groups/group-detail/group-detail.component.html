@@ -10,41 +10,52 @@
       </button>
     </div>
 
-    <h2 class="section-title">Parashiko për këtë grup</h2>
-    <p class="section-hint">Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
-    @if (matches$ | async; as matches) {
-      @if (matches.length === 0) {
-        <p class="empty">S'ka ndeshje të regjistruara për sot.</p>
-      } @else {
-        <div class="matches-list">
-          @for (match of matches; track match.id) {
-            <app-match-card [match]="match" [groupId]="group.id" />
-          }
-        </div>
+    <div class="tabs">
+      <button type="button" class="tab" [class.active]="activeTab() === 'predict'" (click)="activeTab.set('predict')">
+        Parashiko
+      </button>
+      <button type="button" class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">
+        Renditja
+      </button>
+    </div>
+
+    @if (activeTab() === 'predict') {
+      <p class="section-hint">Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
+      @if (matches$ | async; as matches) {
+        @if (matches.length === 0) {
+          <p class="empty">S'ka ndeshje të regjistruara për sot.</p>
+        } @else {
+          <div class="matches-list">
+            @for (match of matches; track match.id) {
+              <app-match-card [match]="match" [groupId]="group.id" />
+            }
+          </div>
+        }
       }
     }
 
-    <h2 class="section-title">Renditja e grupit</h2>
-    @if (leaderboard$ | async; as leaderboard) {
-      <ol class="leaderboard-list">
-        @for (row of leaderboard; track row.uid; let i = $index) {
-          <li class="leaderboard-row">
-            <span class="rank">
-              @if (i === 0) {
-                🥇
-              } @else if (i === 1) {
-                🥈
-              } @else if (i === 2) {
-                🥉
-              } @else {
-                {{ i + 1 }}
-              }
-            </span>
-            <span class="name">{{ row.displayName }}</span>
-            <span class="points">{{ row.points }} pikë</span>
-          </li>
-        }
-      </ol>
+    @if (activeTab() === 'leaderboard') {
+      @if (leaderboard$ | async; as leaderboard) {
+        <ol class="leaderboard-list">
+          @for (row of leaderboard; track row.uid; let i = $index) {
+            <li class="leaderboard-row">
+              <span class="rank">
+                @if (i === 0) {
+                  🥇
+                } @else if (i === 1) {
+                  🥈
+                } @else if (i === 2) {
+                  🥉
+                } @else {
+                  {{ i + 1 }}
+                }
+              </span>
+              <span class="name">{{ row.displayName }}</span>
+              <span class="points">{{ row.points }} pikë</span>
+            </li>
+          }
+        </ol>
+      }
     }
 
     <a routerLink="/groups" class="back-link">← Të gjitha grupet</a>

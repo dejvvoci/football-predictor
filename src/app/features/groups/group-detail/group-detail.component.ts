@@ -51,6 +51,7 @@ export class GroupDetailComponent {
 
   leaving = signal(false);
   linkCopied = signal(false);
+  activeTab = signal<'predict' | 'leaderboard'>('predict');
 
   async copyInviteLink(inviteCode: string): Promise<void> {
     const url = `${window.location.origin}/groups/join?code=${inviteCode}`;
