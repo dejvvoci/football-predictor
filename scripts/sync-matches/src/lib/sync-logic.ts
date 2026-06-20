@@ -112,6 +112,25 @@ async function gradeMatch(matchId: string): Promise<void> {
     batch.update(db.collection('users').doc(prediction.userId), {
       totalPoints: FieldValue.increment(points)
     });
+
+    // Pikët shkojnë edhe te leaderboard-i i secilit grup ku ndodhet useri aktualisht
+    const userSnap = await db.collection('users').doc(prediction.userId).get();
+    const userData = userSnap.data();
+    const groupIds: string[] = userData?.['groupIds'] ?? [];
+
+    for (const groupId of groupIds) {
+      const scoreRef = db.collection('groupScores').doc(`${groupId}_${prediction.userId}`);
+      batch.set(
+        scoreRef,
+        {
+          groupId,
+          userId: prediction.userId,
+          displayName: userData?.['displayName'] ?? '',
+          points: FieldValue.increment(points)
+        },
+        { merge: true }
+      );
+    }
   }
 
   await batch.commit();

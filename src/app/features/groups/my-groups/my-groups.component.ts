@@ -1,13 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { of, switchMap } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
+import { GroupService } from '../../../core/services/group.service';
 
 @Component({
   selector: 'app-my-groups',
   standalone: true,
-  imports: [RouterLink],
+  imports: [AsyncPipe, RouterLink],
   templateUrl: './my-groups.component.html',
   styleUrl: './my-groups.component.css'
 })
 export class MyGroupsComponent {
-  // TODO: GroupService.getUserGroups(uid) — shfaq deri në 3 grupe + leaderboard-in privat të secilit
+  private authService = inject(AuthService);
+  private groupService = inject(GroupService);
+
+  groups$ = this.authService.user$.pipe(
+    switchMap((user) => (user ? this.groupService.getUserGroups(user.uid) : of([])))
+  );
 }

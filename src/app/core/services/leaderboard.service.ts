@@ -1,12 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, query, orderBy, limit } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, query, orderBy, limit, where } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { UserProfile } from '../models/user.model';
 import { GroupScore } from '../models/group.model';
 
-/**
- * Leaderboard-i i grupeve implementohet plotësisht në hapin "GroupService + grupet private".
- */
 @Injectable({ providedIn: 'root' })
 export class LeaderboardService {
   private firestore = inject(Firestore);
@@ -18,6 +15,8 @@ export class LeaderboardService {
   }
 
   getGroupLeaderboard(groupId: string): Observable<GroupScore[]> {
-    throw new Error('TODO: query mbi groupScores where groupId == ..., orderBy points desc');
+    const scoresRef = collection(this.firestore, 'groupScores');
+    const q = query(scoresRef, where('groupId', '==', groupId), orderBy('points', 'desc'));
+    return collectionData(q) as Observable<GroupScore[]>;
   }
 }

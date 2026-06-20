@@ -1,4 +1,23 @@
-<section class="page">
+<section class="auth-page">
   <h1>Bashkohu me kod</h1>
-  <p>Forma e anëtarësimit me invite code vjen në hapin "GroupService".</p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+    <label>
+      Kodi i ftesës
+      <input type="text" formControlName="inviteCode" placeholder="p.sh. X7K2QP" maxlength="6" style="text-transform: uppercase;" />
+    </label>
+    @if (form.controls.inviteCode.invalid && form.controls.inviteCode.touched) {
+      <p class="field-error">Kodi duhet të ketë saktësisht 6 karaktere.</p>
+    }
+
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Duke u bashkuar...' : 'Bashkohu' }}
+    </button>
+  </form>
+
+  <a routerLink="/groups" class="back-link">← Kthehu te grupet</a>
 </section>

@@ -1,6 +1,32 @@
 <section class="page">
   <h1>Grupet e mia</h1>
-  <p>Lista e deri 3 grupeve vjen në hapin "GroupService".</p>
-  <a routerLink="/groups/create">+ Krijo grup</a>
-  <a routerLink="/groups/join">Bashkohu me kod</a>
+
+  @if (groups$ | async; as groups) {
+    @if (groups.length === 0) {
+      <p class="empty">S'je ende në asnjë grup — krijo një ose bashkohu me kod ftese.</p>
+    } @else {
+      <div class="groups-list">
+        @for (group of groups; track group.id) {
+          <a class="group-card" [routerLink]="['/groups', group.id]">
+            <div class="group-name">{{ group.name }}</div>
+            <div class="group-meta">
+              <span>{{ group.memberIds.length }} anëtarë</span>
+              <span class="invite-code">Kodi: {{ group.inviteCode }}</span>
+            </div>
+          </a>
+        }
+      </div>
+    }
+
+    @if (groups.length < 3) {
+      <div class="actions">
+        <a routerLink="/groups/create" class="action-btn">+ Krijo grup</a>
+        <a routerLink="/groups/join" class="action-btn secondary">Bashkohu me kod</a>
+      </div>
+    } @else {
+      <p class="limit-note">Ke arritur limitin prej 3 grupesh.</p>
+    }
+  } @else {
+    <p class="loading">Duke ngarkuar grupet...</p>
+  }
 </section>
