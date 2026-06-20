@@ -1,0 +1,57 @@
+<article class="match-card">
+  <header>
+    <span class="competition">{{ match.competition }}</span>
+    <span class="kickoff">{{ match.kickoff | date: 'HH:mm' }}</span>
+  </header>
+
+  <div class="teams">
+    <span class="team">{{ match.homeTeam }}</span>
+    <span class="vs">vs</span>
+    <span class="team">{{ match.awayTeam }}</span>
+  </div>
+
+  @if (prediction(); as existing) {
+    <p class="existing-prediction">
+      Parashikimi yt: <strong>{{ existing.choice }}</strong>
+      @if (existing.exactScore) {
+        ({{ existing.exactScore.home }}-{{ existing.exactScore.away }})
+      }
+      @if (existing.points !== undefined) {
+        — {{ existing.points }} pikë
+      }
+    </p>
+  }
+
+  @if (!locked()) {
+    <div class="choice-buttons">
+      <button type="button" [class.selected]="choice() === '1'" (click)="selectChoice('1')">
+        1 ({{ match.homeTeam }})<span class="points">{{ pointsFor('1') }} pikë</span>
+      </button>
+      <button type="button" [class.selected]="choice() === 'X'" (click)="selectChoice('X')">
+        X (Barazim)<span class="points">{{ pointsFor('X') }} pikë</span>
+      </button>
+      <button type="button" [class.selected]="choice() === '2'" (click)="selectChoice('2')">
+        2 ({{ match.awayTeam }})<span class="points">{{ pointsFor('2') }} pikë</span>
+      </button>
+    </div>
+
+    <label class="exact-score">
+      Rezultati i saktë <span class="bonus-tag">bonus +3</span>
+      <div class="score-inputs">
+        <input type="number" min="0" [value]="exactHome()" (input)="onExactHomeChange($event)" placeholder="0" />
+        <span>-</span>
+        <input type="number" min="0" [value]="exactAway()" (input)="onExactAwayChange($event)" placeholder="0" />
+      </div>
+    </label>
+
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    <button type="button" class="submit-btn" [disabled]="!choice() || saving()" (click)="submit()">
+      {{ saving() ? 'Duke ruajtur...' : prediction() ? 'Përditëso parashikimin' : 'Dërgo parashikimin' }}
+    </button>
+  } @else {
+    <p class="locked-note">Ndeshja ka filluar ose ka mbaruar — parashikimi është mbyllur.</p>
+  }
+</article>

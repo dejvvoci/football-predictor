@@ -1,4 +1,17 @@
 <section class="page">
-  <h1>Ndeshjet e ditës</h1>
-  <p>Lista e ndeshjeve dhe forma e parashikimit vijnë në hapin "MatchService".</p>
+  <h1>Ndeshjet e sotme</h1>
+
+  @if (matches$ | async; as matches) {
+    @if (matches.length === 0) {
+      <p class="empty">S'ka ndeshje të regjistruara për sot.</p>
+    } @else {
+      <div class="matches-list">
+        @for (match of matches; track match.id) {
+          <app-match-card [match]="match" />
+        }
+      </div>
+    }
+  } @else {
+    <p class="loading">Duke ngarkuar ndeshjet...</p>
+  }
 </section>

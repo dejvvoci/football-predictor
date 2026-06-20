@@ -1,1 +1,17 @@
-.page { padding: 24px 0; }
+.page {
+  padding: 24px 0;
+}
+
+.matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.empty,
+.loading {
+  color: #9aa0ab;
+  font-size: 14px;
+  margin-top: 16px;
+}
