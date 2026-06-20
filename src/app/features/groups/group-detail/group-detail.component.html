@@ -20,7 +20,7 @@
     </div>
 
     @if (activeTab() === 'predict') {
-      <p class="section-hint">Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
+      <p class="section-hint">Ndeshjet brenda 24 orëve të ardhshme. Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
 
       @if (filteredMatches(); as matches) {
         @if (competitions().length > 1) {
@@ -47,7 +47,7 @@
         }
 
         @if (matches.length === 0) {
-          <p class="empty">S'ka ndeshje për këtë filtër.</p>
+          <p class="empty">S'ka ndeshje të regjistruara në 24 orët e ardhshme.</p>
         } @else {
           <div class="matches-list">
             @for (match of matches; track match.id) {

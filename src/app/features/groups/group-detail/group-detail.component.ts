@@ -32,7 +32,7 @@ export class GroupDetailComponent {
 
   group$ = this.groupId$.pipe(switchMap((id) => this.groupService.getGroup(id)));
 
-  private matches = toSignal(this.matchService.getTodayMatches(), { initialValue: null });
+  private matches = toSignal(this.matchService.getUpcomingMatches(), { initialValue: null });
   selectedCompetition = signal<string>('all');
 
   competitions = computed(() => {

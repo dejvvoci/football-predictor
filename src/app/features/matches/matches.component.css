@@ -6,6 +6,12 @@
   font-size: 26px;
 }
 
+.page-hint {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  margin: 4px 0 0;
+}
+
 .filter-row {
   display: flex;
   gap: 8px;

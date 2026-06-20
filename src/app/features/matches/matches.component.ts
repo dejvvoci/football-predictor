@@ -13,7 +13,7 @@ import { MatchCardComponent } from './match-card/match-card.component';
 export class MatchesComponent {
   private matchService = inject(MatchService);
 
-  private matches = toSignal(this.matchService.getTodayMatches(), { initialValue: null });
+  private matches = toSignal(this.matchService.getUpcomingMatches(), { initialValue: null });
 
   selectedCompetition = signal<string>('all');
 

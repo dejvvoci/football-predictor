@@ -7,18 +7,16 @@ import { Match } from '../models/match.model';
 export class MatchService {
   private firestore = inject(Firestore);
 
-  /** Ndeshjet e sotme (00:00–23:59, ora lokale), të renditura sipas orarit */
-  getTodayMatches(): Observable<Match[]> {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date();
-    end.setHours(23, 59, 59, 999);
+  /** Ndeshjet në 24 orët e ardhshme (që nga tani), të renditura sipas orarit */
+  getUpcomingMatches(): Observable<Match[]> {
+    const now = Date.now();
+    const windowEnd = now + 24 * 60 * 60 * 1000;
 
     const matchesRef = collection(this.firestore, 'matches');
     const q = query(
       matchesRef,
-      where('kickoff', '>=', start.getTime()),
-      where('kickoff', '<=', end.getTime()),
+      where('kickoff', '>=', now),
+      where('kickoff', '<=', windowEnd),
       orderBy('kickoff', 'asc')
     );
 

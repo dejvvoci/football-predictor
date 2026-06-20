@@ -1,5 +1,5 @@
 import { db, FieldValue } from './admin';
-import { fetchTodayMatches } from './football-data-client';
+import { fetchUpcomingMatches } from './football-data-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
 import { calculatePoints, MatchOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
@@ -31,11 +31,11 @@ export async function syncMatchesAndGrade(): Promise<void> {
   const footballDataToken = requireEnv('FOOTBALL_DATA_TOKEN');
   const oddsApiKey = requireEnv('ODDS_API_KEY');
 
-  const matches = await fetchTodayMatches(footballDataToken);
+  const matches = await fetchUpcomingMatches(footballDataToken);
   const oddsCache = new Map<string, Map<string, OddsEntry>>();
   const justFinished: string[] = [];
 
-  console.log(`Gjetën ${matches.length} ndeshje sot.`);
+  console.log(`Gjetën ${matches.length} ndeshje (sot + nesër).`);
 
   for (const m of matches) {
     const docId = String(m.id);

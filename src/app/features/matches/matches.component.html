@@ -1,5 +1,6 @@
 <section class="page">
-  <h1>Ndeshjet e sotme</h1>
+  <h1>Ndeshjet e ardhshme</h1>
+  <p class="page-hint">Ndeshjet që fillojnë brenda 24 orëve të ardhshme.</p>
 
   @if (filteredMatches(); as matches) {
     @if (competitions().length > 1) {
@@ -26,7 +27,7 @@
     }
 
     @if (matches.length === 0) {
-      <p class="empty">S'ka ndeshje për këtë filtër.</p>
+      <p class="empty">S'ka ndeshje të regjistruara në 24 orët e ardhshme.</p>
     } @else {
       <div class="matches-list">
         @for (match of matches; track match.id) {
