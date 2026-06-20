@@ -4,7 +4,7 @@
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
     <label>
       Emri i grupit
-      <input type="text" formControlName="name" placeholder="p.sh. Shokët e shkollës" />
+      <input type="text" formControlName="name" placeholder="Emri i grupit" />
     </label>
     @if (form.controls.name.invalid && form.controls.name.touched) {
       <p class="field-error">Emri duhet të ketë 2-40 karaktere.</p>
