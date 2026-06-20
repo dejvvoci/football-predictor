@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { GroupService } from '../../../core/services/group.service';
 import { LeaderboardService } from '../../../core/services/leaderboard.service';
@@ -30,7 +31,27 @@ export class GroupDetailComponent {
   private groupId$ = this.route.paramMap.pipe(map((params) => params.get('id') ?? ''));
 
   group$ = this.groupId$.pipe(switchMap((id) => this.groupService.getGroup(id)));
-  matches$ = this.matchService.getTodayMatches();
+
+  private matches = toSignal(this.matchService.getTodayMatches(), { initialValue: null });
+  selectedCompetition = signal<string>('all');
+
+  competitions = computed(() => {
+    const matches = this.matches();
+    if (!matches) return [];
+    return Array.from(new Set(matches.map((m) => m.competition))).sort();
+  });
+
+  filteredMatches = computed(() => {
+    const matches = this.matches();
+    if (!matches) return null;
+
+    const selected = this.selectedCompetition();
+    return selected === 'all' ? matches : matches.filter((m) => m.competition === selected);
+  });
+
+  selectCompetition(value: string): void {
+    this.selectedCompetition.set(value);
+  }
 
   private members$ = this.group$.pipe(
     switchMap((group) => (group ? this.groupService.getMembers(group.memberIds) : of([])))

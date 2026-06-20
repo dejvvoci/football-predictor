@@ -41,6 +41,37 @@
   margin: 14px 0 0;
 }
 
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.filter-chip {
+  flex: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filter-chip:hover {
+  border-color: var(--color-pitch);
+}
+
+.filter-chip.active {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch);
+  color: #fff;
+}
+
 .matches-list {
   display: flex;
   flex-direction: column;

@@ -21,9 +21,33 @@
 
     @if (activeTab() === 'predict') {
       <p class="section-hint">Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
-      @if (matches$ | async; as matches) {
+
+      @if (filteredMatches(); as matches) {
+        @if (competitions().length > 1) {
+          <div class="filter-row">
+            <button
+              type="button"
+              class="filter-chip"
+              [class.active]="selectedCompetition() === 'all'"
+              (click)="selectCompetition('all')"
+            >
+              Të gjitha
+            </button>
+            @for (comp of competitions(); track comp) {
+              <button
+                type="button"
+                class="filter-chip"
+                [class.active]="selectedCompetition() === comp"
+                (click)="selectCompetition(comp)"
+              >
+                {{ comp }}
+              </button>
+            }
+          </div>
+        }
+
         @if (matches.length === 0) {
-          <p class="empty">S'ka ndeshje të regjistruara për sot.</p>
+          <p class="empty">S'ka ndeshje për këtë filtër.</p>
         } @else {
           <div class="matches-list">
             @for (match of matches; track match.id) {
@@ -31,6 +55,8 @@
             }
           </div>
         }
+      } @else {
+        <p class="loading">Duke ngarkuar ndeshjet...</p>
       }
     }
 
