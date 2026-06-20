@@ -85,6 +85,133 @@
   margin-top: 12px;
 }
 
+.admin-section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-subtitle {
+  font-size: 14px;
+  margin: 18px 0 4px;
+}
+
+.admin-subtitle:first-child {
+  margin-top: 4px;
+}
+
+.rename-row {
+  display: flex;
+  gap: 8px;
+}
+
+.rename-row input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.rename-row input:focus {
+  outline: none;
+  border-color: var(--color-pitch);
+}
+
+.rename-row button {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-pitch);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rename-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.member-name {
+  font-size: 14px;
+}
+
+.owner-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-pitch-dark);
+  background: var(--color-pitch-tint);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.remove-btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid #F0C6C1;
+  background: #FBE7E5;
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background: #F7D5D1;
+}
+
+.remove-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.danger-title {
+  color: var(--color-danger);
+}
+
+.delete-group-btn {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-danger);
+  background: var(--color-danger);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.delete-group-btn:hover {
+  background: #B83A30;
+}
+
+.delete-group-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .invite-row {
   display: flex;
   align-items: center;

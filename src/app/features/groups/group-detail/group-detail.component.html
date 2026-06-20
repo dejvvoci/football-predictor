@@ -17,6 +17,11 @@
       <button type="button" class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">
         Renditja
       </button>
+      @if (group.ownerId === currentUserId()) {
+        <button type="button" class="tab" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
+          Admin
+        </button>
+      }
     </div>
 
     @if (activeTab() === 'predict') {
@@ -84,10 +89,53 @@
       }
     }
 
+    @if (activeTab() === 'admin' && group.ownerId === currentUserId()) {
+      <div class="admin-section">
+        <h3 class="admin-subtitle">Ndrysho emrin e grupit</h3>
+        <div class="rename-row">
+          <input type="text" [value]="newGroupName()" (input)="onNewNameChange($event)" [placeholder]="group.name" />
+          <button type="button" (click)="saveRename(group.id, group.name)" [disabled]="renaming() || !newGroupName().trim()">
+            {{ renaming() ? 'Duke ruajtur...' : 'Ruaj' }}
+          </button>
+        </div>
+        @if (renameError()) {
+          <p class="form-error">{{ renameError() }}</p>
+        }
+
+        <h3 class="admin-subtitle">Anëtarët</h3>
+        <div class="member-list">
+          @for (member of (members$ | async); track member.uid) {
+            <div class="member-row">
+              <span class="member-name">{{ member.displayName }}</span>
+              @if (member.uid === group.ownerId) {
+                <span class="owner-tag">Admin</span>
+              } @else {
+                <button
+                  type="button"
+                  class="remove-btn"
+                  [disabled]="removingMemberId() === member.uid"
+                  (click)="removeMember(group.id, member.uid, member.displayName)"
+                >
+                  {{ removingMemberId() === member.uid ? 'Duke hequr...' : 'Hiq' }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <h3 class="admin-subtitle danger-title">Zona e rrezikshme</h3>
+        <button type="button" class="delete-group-btn" [disabled]="deletingGroup()" (click)="deleteGroup(group.id)">
+          {{ deletingGroup() ? 'Duke fshirë...' : 'Fshi grupin përgjithmonë' }}
+        </button>
+      </div>
+    }
+
     <a routerLink="/groups" class="back-link">← Të gjitha grupet</a>
-    <button type="button" class="leave-btn" [disabled]="leaving()" (click)="leave(group.id)">
-      {{ leaving() ? 'Duke u larguar...' : 'Largohu nga grupi' }}
-    </button>
+    @if (group.ownerId !== currentUserId()) {
+      <button type="button" class="leave-btn" [disabled]="leaving()" (click)="leave(group.id)">
+        {{ leaving() ? 'Duke u larguar...' : 'Largohu nga grupi' }}
+      </button>
+    }
   } @else {
     <p class="loading">Duke ngarkuar grupin...</p>
   }

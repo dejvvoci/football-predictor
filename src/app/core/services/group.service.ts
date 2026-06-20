@@ -5,6 +5,9 @@ import {
   collectionData,
   doc,
   docData,
+  getDoc,
+  updateDoc,
+  deleteDoc,
   query,
   where,
   limit,
@@ -115,6 +118,51 @@ export class GroupService {
       tx.update(groupRef, { memberIds: arrayRemove(userId) });
       tx.update(userRef, { groupIds: arrayRemove(groupId) });
     });
+  }
+
+  /** Pronari heq një anëtar nga grupi (vetë profili i tij pastrohet më vonë, te syncMembership) */
+  async removeMember(groupId: string, memberUserId: string): Promise<void> {
+    const groupRef = doc(this.firestore, 'groups', groupId);
+    await updateDoc(groupRef, { memberIds: arrayRemove(memberUserId) });
+  }
+
+  /** Vetëm pronari mund ta thërrasë me sukses (e zbaton edhe firestore.rules) */
+  async renameGroup(groupId: string, newName: string): Promise<void> {
+    const groupRef = doc(this.firestore, 'groups', groupId);
+    await updateDoc(groupRef, { name: newName });
+  }
+
+  /** Fshin krejt grupin; vetëm pronari mund ta bëjë (e zbaton edhe firestore.rules) */
+  async deleteGroup(groupId: string): Promise<void> {
+    const userId = this.requireUserId();
+    await deleteDoc(doc(this.firestore, 'groups', groupId));
+    await updateDoc(doc(this.firestore, 'users', userId), { groupIds: arrayRemove(groupId) });
+  }
+
+  /**
+   * "Vetë-shërim": kontrollon nëse useri është ende vërtet anëtar i çdo grupi që ka te `groupIds`
+   * (grupi mund të jetë fshirë, ose mund të jetë hequr nga pronari) — heq referencat e vjetruara.
+   * Thirret çdo herë që hapet "Grupet e mia", që limiti i 3 grupeve të mos bllokohet kot.
+   */
+  async syncMembership(userId: string): Promise<void> {
+    const userSnap = await getDoc(doc(this.firestore, 'users', userId));
+    const groupIds: string[] = (userSnap.data()?.['groupIds'] as string[]) ?? [];
+    if (groupIds.length === 0) return;
+
+    const staleGroupIds: string[] = [];
+
+    for (const groupId of groupIds) {
+      const groupSnap = await getDoc(doc(this.firestore, 'groups', groupId));
+      const memberIds: string[] = groupSnap.exists() ? ((groupSnap.data()['memberIds'] as string[]) ?? []) : [];
+
+      if (!groupSnap.exists() || !memberIds.includes(userId)) {
+        staleGroupIds.push(groupId);
+      }
+    }
+
+    if (staleGroupIds.length > 0) {
+      await updateDoc(doc(this.firestore, 'users', userId), { groupIds: arrayRemove(...staleGroupIds) });
+    }
   }
 
   getUserGroups(userId: string): Observable<Group[]> {
