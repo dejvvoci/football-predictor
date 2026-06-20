@@ -10,6 +10,21 @@
       </button>
     </div>
 
+    <h2 class="section-title">Parashiko për këtë grup</h2>
+    <p class="section-hint">Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
+    @if (matches$ | async; as matches) {
+      @if (matches.length === 0) {
+        <p class="empty">S'ka ndeshje të regjistruara për sot.</p>
+      } @else {
+        <div class="matches-list">
+          @for (match of matches; track match.id) {
+            <app-match-card [match]="match" [groupId]="group.id" />
+          }
+        </div>
+      }
+    }
+
+    <h2 class="section-title">Renditja e grupit</h2>
     @if (leaderboard$ | async; as leaderboard) {
       <ol class="leaderboard-list">
         @for (row of leaderboard; track row.uid; let i = $index) {

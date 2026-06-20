@@ -4,6 +4,8 @@ import { AsyncPipe } from '@angular/common';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { GroupService } from '../../../core/services/group.service';
 import { LeaderboardService } from '../../../core/services/leaderboard.service';
+import { MatchService } from '../../../core/services/match.service';
+import { MatchCardComponent } from '../../matches/match-card/match-card.component';
 
 interface LeaderboardRow {
   uid: string;
@@ -14,7 +16,7 @@ interface LeaderboardRow {
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [AsyncPipe, RouterLink],
+  imports: [AsyncPipe, RouterLink, MatchCardComponent],
   templateUrl: './group-detail.component.html',
   styleUrl: './group-detail.component.css'
 })
@@ -23,10 +25,12 @@ export class GroupDetailComponent {
   private router = inject(Router);
   private groupService = inject(GroupService);
   private leaderboardService = inject(LeaderboardService);
+  private matchService = inject(MatchService);
 
   private groupId$ = this.route.paramMap.pipe(map((params) => params.get('id') ?? ''));
 
   group$ = this.groupId$.pipe(switchMap((id) => this.groupService.getGroup(id)));
+  matches$ = this.matchService.getTodayMatches();
 
   private members$ = this.group$.pipe(
     switchMap((group) => (group ? this.groupService.getMembers(group.memberIds) : of([])))

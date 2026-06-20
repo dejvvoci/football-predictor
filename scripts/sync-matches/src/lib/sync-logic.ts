@@ -89,11 +89,11 @@ async function gradeMatch(matchId: string): Promise<void> {
   const match = matchSnap.data();
   if (!match || !match['result']) return;
 
-  const predictionsSnap = await db.collection('predictions').where('matchId', '==', matchId).get();
-  if (predictionsSnap.empty) return;
-
   const batch = db.batch();
+  let gradedCount = 0;
 
+  // 1. Gradimi GLOBAL — predictions/{userId}_{matchId} → totalPoints i userit
+  const predictionsSnap = await db.collection('predictions').where('matchId', '==', matchId).get();
   for (const doc of predictionsSnap.docs) {
     const prediction = doc.data() as {
       userId: string;
@@ -112,27 +112,47 @@ async function gradeMatch(matchId: string): Promise<void> {
     batch.update(db.collection('users').doc(prediction.userId), {
       totalPoints: FieldValue.increment(points)
     });
-
-    // Pikët shkojnë edhe te leaderboard-i i secilit grup ku ndodhet useri aktualisht
-    const userSnap = await db.collection('users').doc(prediction.userId).get();
-    const userData = userSnap.data();
-    const groupIds: string[] = userData?.['groupIds'] ?? [];
-
-    for (const groupId of groupIds) {
-      const scoreRef = db.collection('groupScores').doc(`${groupId}_${prediction.userId}`);
-      batch.set(
-        scoreRef,
-        {
-          groupId,
-          userId: prediction.userId,
-          displayName: userData?.['displayName'] ?? '',
-          points: FieldValue.increment(points)
-        },
-        { merge: true }
-      );
-    }
+    gradedCount++;
   }
 
+  // 2. Gradimi PËR GRUP — groupPredictions/{groupId}_{userId}_{matchId} → groupScores (i pavarur nga gradimi global)
+  const groupPredictionsSnap = await db.collection('groupPredictions').where('matchId', '==', matchId).get();
+  for (const doc of groupPredictionsSnap.docs) {
+    const groupPrediction = doc.data() as {
+      groupId: string;
+      userId: string;
+      choice: PredictionChoice;
+      exactScore?: ExactScoreGuess;
+    };
+
+    const points = calculatePoints(
+      groupPrediction.choice,
+      groupPrediction.exactScore,
+      match['odds'] as MatchOdds,
+      match['result'] as MatchResult
+    );
+
+    batch.update(doc.ref, { points });
+
+    const userSnap = await db.collection('users').doc(groupPrediction.userId).get();
+    const scoreRef = db.collection('groupScores').doc(`${groupPrediction.groupId}_${groupPrediction.userId}`);
+    batch.set(
+      scoreRef,
+      {
+        groupId: groupPrediction.groupId,
+        userId: groupPrediction.userId,
+        displayName: userSnap.data()?.['displayName'] ?? '',
+        points: FieldValue.increment(points)
+      },
+      { merge: true }
+    );
+    gradedCount++;
+  }
+
+  if (gradedCount === 0) return;
+
   await batch.commit();
-  console.log(`  → ${predictionsSnap.size} parashikime u graduan.`);
+  console.log(
+    `  → ${predictionsSnap.size} parashikime globale + ${groupPredictionsSnap.size} parashikime grupesh u graduan.`
+  );
 }

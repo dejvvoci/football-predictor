@@ -13,6 +13,7 @@ import {
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 import { Prediction, PredictionChoice, ExactScoreGuess } from '../models/prediction.model';
+import { GroupPrediction } from '../models/group.model';
 
 @Injectable({ providedIn: 'root' })
 export class PredictionService {
@@ -55,5 +56,38 @@ export class PredictionService {
     const predictionsRef = collection(this.firestore, 'predictions');
     const q = query(predictionsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     return collectionData(q, { idField: 'id' }) as Observable<Prediction[]>;
+  }
+
+  /** Parashikim i veçantë brenda një grupi — pikët shkojnë vetëm te leaderboard i atij grupi */
+  async submitGroupPrediction(
+    groupId: string,
+    matchId: string,
+    choice: PredictionChoice,
+    exactScore?: ExactScoreGuess
+  ): Promise<void> {
+    const userId = this.auth.currentUser?.uid;
+    if (!userId) {
+      throw new Error('Duhet të jesh i loguar për të dhënë parashikim.');
+    }
+
+    const predictionId = `${groupId}_${userId}_${matchId}`;
+    const prediction: GroupPrediction = {
+      id: predictionId,
+      groupId,
+      userId,
+      matchId,
+      choice,
+      ...(exactScore ? { exactScore } : {}),
+      createdAt: Date.now()
+    };
+
+    await setDoc(doc(this.firestore, 'groupPredictions', predictionId), prediction);
+  }
+
+  getGroupPredictionForMatch(groupId: string, matchId: string): Observable<GroupPrediction | undefined> {
+    const userId = this.auth.currentUser?.uid;
+    const predictionId = `${groupId}_${userId}_${matchId}`;
+    const ref = doc(this.firestore, 'groupPredictions', predictionId);
+    return docData(ref, { idField: 'id' }) as Observable<GroupPrediction | undefined>;
   }
 }
