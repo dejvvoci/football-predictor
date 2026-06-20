@@ -1,0 +1,16 @@
+{
+  "name": "sync-matches-script",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "sync": "tsc && node dist/run.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  }
+}

@@ -1,0 +1,26 @@
+import { FREE_COMPETITIONS } from './competition-map';
+
+export interface FootballDataMatch {
+  id: number;
+  utcDate: string;
+  status: string; // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | POSTPONED | SUSPENDED | CANCELLED
+  competition: { code: string; name: string };
+  homeTeam: { name: string };
+  awayTeam: { name: string };
+  score: {
+    fullTime: { home: number | null; away: number | null };
+  };
+}
+
+/** Ndeshjet e sotme (UTC) për 12 kompeticionet e planit falas — 1 thirrje API */
+export async function fetchTodayMatches(token: string): Promise<FootballDataMatch[]> {
+  const url = `https://api.football-data.org/v4/matches?competitions=${FREE_COMPETITIONS.join(',')}`;
+  const res = await fetch(url, { headers: { 'X-Auth-Token': token } });
+
+  if (!res.ok) {
+    throw new Error(`football-data.org error: ${res.status} ${await res.text()}`);
+  }
+
+  const data = (await res.json()) as { matches: FootballDataMatch[] };
+  return data.matches;
+}
