@@ -7,10 +7,7 @@
   </div>
 
   @if (user$ | async; as user) {
-    <div class="account">
-      <a routerLink="/profile" class="username">{{ user.displayName || user.email }}</a>
-      <button (click)="logout()">Dil</button>
-    </div>
+    <a routerLink="/profile" routerLinkActive="active" class="username">{{ user.displayName || user.email }}</a>
   } @else {
     <a routerLink="/login" class="login-link">Hyr</a>
   }

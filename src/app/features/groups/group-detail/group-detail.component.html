@@ -17,6 +17,9 @@
       <button type="button" class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">
         Renditja
       </button>
+      <button type="button" class="tab" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
+        Historiku
+      </button>
       @if (group.ownerId === currentUserId()) {
         <button type="button" class="tab" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
           Admin
@@ -86,6 +89,22 @@
             </li>
           }
         </ol>
+      }
+    }
+
+    @if (activeTab() === 'history') {
+      @if (groupHistory$ | async; as history) {
+        @if (history.length === 0) {
+          <p class="empty">S'ke dhënë ende asnjë parashikim në këtë grup.</p>
+        } @else {
+          <div class="matches-list">
+            @for (prediction of history; track prediction.id) {
+              <app-history-item [prediction]="prediction" />
+            }
+          </div>
+        }
+      } @else {
+        <p class="loading">Duke ngarkuar historikun...</p>
       }
     }
 

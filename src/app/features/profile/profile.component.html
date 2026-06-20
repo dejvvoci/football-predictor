@@ -21,4 +21,8 @@
       {{ loading() ? 'Duke ruajtur...' : 'Ruaj ndryshimet' }}
     </button>
   </form>
+
+  <button type="button" class="logout-btn" [disabled]="loggingOut()" (click)="logout()">
+    {{ loggingOut() ? 'Duke dalë...' : 'Dil nga llogaria' }}
+  </button>
 </section>

@@ -7,7 +7,9 @@ import { AuthService } from '../../../core/services/auth.service';
 import { GroupService } from '../../../core/services/group.service';
 import { LeaderboardService } from '../../../core/services/leaderboard.service';
 import { MatchService } from '../../../core/services/match.service';
+import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCardComponent } from '../../matches/match-card/match-card.component';
+import { HistoryItemComponent } from '../../history/history-item/history-item.component';
 
 interface LeaderboardRow {
   uid: string;
@@ -18,7 +20,7 @@ interface LeaderboardRow {
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [AsyncPipe, RouterLink, MatchCardComponent],
+  imports: [AsyncPipe, RouterLink, MatchCardComponent, HistoryItemComponent],
   templateUrl: './group-detail.component.html',
   styleUrl: './group-detail.component.css'
 })
@@ -29,12 +31,19 @@ export class GroupDetailComponent {
   private groupService = inject(GroupService);
   private leaderboardService = inject(LeaderboardService);
   private matchService = inject(MatchService);
+  private predictionService = inject(PredictionService);
 
   private groupId$ = this.route.paramMap.pipe(map((params) => params.get('id') ?? ''));
 
   group$ = this.groupId$.pipe(switchMap((id) => this.groupService.getGroup(id)));
 
   currentUserId = toSignal(this.authService.user$.pipe(map((u) => u?.uid ?? null)), { initialValue: null });
+
+  groupHistory$ = combineLatest([this.groupId$, this.authService.user$]).pipe(
+    switchMap(([groupId, user]) =>
+      groupId && user ? this.predictionService.getUserGroupPredictions(groupId, user.uid) : of([])
+    )
+  );
 
   private matches = toSignal(this.matchService.getUpcomingMatches(), { initialValue: null });
   selectedCompetition = signal<string>('all');
@@ -76,7 +85,7 @@ export class GroupDetailComponent {
 
   leaving = signal(false);
   linkCopied = signal(false);
-  activeTab = signal<'predict' | 'leaderboard' | 'admin'>('predict');
+  activeTab = signal<'predict' | 'leaderboard' | 'history' | 'admin'>('predict');
 
   newGroupName = signal('');
   renaming = signal(false);

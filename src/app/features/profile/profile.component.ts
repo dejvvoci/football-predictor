@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -13,6 +14,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
   form = this.fb.nonNullable.group({
@@ -22,6 +24,7 @@ export class ProfileComponent implements OnInit {
   loading = signal(false);
   successMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
+  loggingOut = signal(false);
 
   ngOnInit(): void {
     this.authService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
@@ -48,6 +51,16 @@ export class ProfileComponent implements OnInit {
       this.errorMessage.set('Diçka shkoi keq. Provo përsëri.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async logout(): Promise<void> {
+    this.loggingOut.set(true);
+    try {
+      await this.authService.logout();
+      this.router.navigateByUrl('/login');
+    } finally {
+      this.loggingOut.set(false);
     }
   }
 }

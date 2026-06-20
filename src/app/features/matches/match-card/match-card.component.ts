@@ -61,6 +61,13 @@ export class MatchCardComponent implements OnInit {
     return Math.floor(odds);
   }
 
+  /** Kthen '1'/'X'/'2' në emrin real të skuadrës (ose "Barazim") — për mesazhin "Parashikimi yt: ..." */
+  choiceLabel(choice: PredictionChoice): string {
+    if (choice === '1') return this.match.homeTeam;
+    if (choice === '2') return this.match.awayTeam;
+    return 'Barazim';
+  }
+
   onExactHomeChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.exactHome.set(value === '' ? null : Number(value));

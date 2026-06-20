@@ -27,36 +27,21 @@
   border-bottom: 2px solid var(--color-accent);
 }
 
-.account {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .username {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.username:hover {
-  color: #fff;
-  text-decoration: underline;
-}
-
-.account button {
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
+  text-decoration: none;
+  font-weight: 600;
   font-size: 13px;
-  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.account button:hover {
-  background: rgba(255, 255, 255, 0.15);
+.username:hover,
+.username.active {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .login-link {

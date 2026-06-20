@@ -12,7 +12,7 @@
 
   @if (prediction(); as existing) {
     <p class="existing-prediction">
-      ✓ Parashikimi yt: <strong>{{ existing.choice }}</strong>
+      ✓ Parashikimi yt: <strong>{{ choiceLabel(existing.choice) }}</strong>
       @if (existing.exactScore) {
         ({{ existing.exactScore.home }}-{{ existing.exactScore.away }})
       }

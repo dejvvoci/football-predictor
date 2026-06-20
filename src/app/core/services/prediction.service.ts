@@ -104,4 +104,16 @@ export class PredictionService {
     const ref = doc(this.firestore, 'groupPredictions', predictionId);
     return docData(ref, { idField: 'id' }) as Observable<GroupPrediction | undefined>;
   }
+
+  /** Historiku i parashikimeve të userit brenda një grupi specifik, më të rejat së pari */
+  getUserGroupPredictions(groupId: string, userId: string): Observable<GroupPrediction[]> {
+    const ref = collection(this.firestore, 'groupPredictions');
+    const q = query(
+      ref,
+      where('groupId', '==', groupId),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<GroupPrediction[]>;
+  }
 }
