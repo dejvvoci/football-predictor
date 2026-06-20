@@ -11,6 +11,7 @@ import {
   getDocs,
   runTransaction,
   arrayUnion,
+  arrayRemove,
   documentId
 } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
@@ -100,6 +101,19 @@ export class GroupService {
       tx.update(userRef, { groupIds: arrayUnion(groupId) });
 
       return groupId;
+    });
+  }
+
+  /** Largim nga grupi — funksionon edhe nëse je pronari (grupi mbetet, thjesht pa atë anëtar) */
+  async leaveGroup(groupId: string): Promise<void> {
+    const userId = this.requireUserId();
+
+    await runTransaction(this.firestore, async (tx) => {
+      const userRef = doc(this.firestore, 'users', userId);
+      const groupRef = doc(this.firestore, 'groups', groupId);
+
+      tx.update(groupRef, { memberIds: arrayRemove(userId) });
+      tx.update(userRef, { groupIds: arrayRemove(groupId) });
     });
   }
 

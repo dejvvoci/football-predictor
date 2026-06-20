@@ -33,6 +33,12 @@
 .username {
   font-size: 13px;
   color: #c4c8d0;
+  text-decoration: none;
+}
+
+.username:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 .account button {

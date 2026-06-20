@@ -28,6 +28,9 @@
     }
 
     <a routerLink="/groups" class="back-link">← Të gjitha grupet</a>
+    <button type="button" class="leave-btn" [disabled]="leaving()" (click)="leave(group.id)">
+      {{ leaving() ? 'Duke u larguar...' : 'Largohu nga grupi' }}
+    </button>
   } @else {
     <p class="loading">Duke ngarkuar grupin...</p>
   }

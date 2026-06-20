@@ -43,4 +43,15 @@ export class AuthService {
   async logout(): Promise<void> {
     await signOut(this.auth);
   }
+
+  /** Përditëson emrin e shfaqur — edhe te Firebase Auth, edhe te dokumenti users/{uid} (që përdoret te leaderboard/grupe) */
+  async updateDisplayName(displayName: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) {
+      throw new Error('Duhet të jesh i loguar.');
+    }
+
+    await updateProfile(user, { displayName });
+    await setDoc(doc(this.firestore, 'users', user.uid), { displayName }, { merge: true });
+  }
 }

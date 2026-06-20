@@ -1,0 +1,24 @@
+<section class="auth-page">
+  <h1>Profili im</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+    <label>
+      Emri
+      <input type="text" formControlName="displayName" />
+    </label>
+    @if (form.controls.displayName.invalid && form.controls.displayName.touched) {
+      <p class="field-error">Emri duhet të ketë 2-40 karaktere.</p>
+    }
+
+    @if (successMessage()) {
+      <p class="success-message">{{ successMessage() }}</p>
+    }
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Duke ruajtur...' : 'Ruaj ndryshimet' }}
+    </button>
+  </form>
+</section>

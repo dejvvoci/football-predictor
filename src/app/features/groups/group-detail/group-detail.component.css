@@ -53,11 +53,31 @@
 }
 
 .back-link {
-  display: inline-block;
+  display: block;
   margin-top: 20px;
   font-size: 13px;
   color: #9aa0ab;
   text-decoration: none;
+}
+
+.leave-btn {
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  background: transparent;
+  color: #ff6b6b;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.leave-btn:hover {
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.leave-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .loading {

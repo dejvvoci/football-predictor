@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { GroupService } from '../../../core/services/group.service';
@@ -20,6 +20,7 @@ interface LeaderboardRow {
 })
 export class GroupDetailComponent {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private groupService = inject(GroupService);
   private leaderboardService = inject(LeaderboardService);
 
@@ -43,4 +44,21 @@ export class GroupDetailComponent {
         .sort((a, b) => b.points - a.points);
     })
   );
+
+  leaving = signal(false);
+
+  async leave(groupId: string): Promise<void> {
+    const confirmed = confirm('Je i sigurt që do largohesh nga ky grup?');
+    if (!confirmed) return;
+
+    this.leaving.set(true);
+    try {
+      await this.groupService.leaveGroup(groupId);
+      this.router.navigateByUrl('/groups');
+    } catch {
+      alert("S'u largua dot nga grupi. Provo përsëri.");
+    } finally {
+      this.leaving.set(false);
+    }
+  }
 }
