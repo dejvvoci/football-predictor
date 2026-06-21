@@ -4,9 +4,10 @@ export interface FootballDataMatch {
   id: number;
   utcDate: string;
   status: string; // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | POSTPONED | SUSPENDED | CANCELLED
+  venue?: string | null;
   competition: { code: string; name: string };
-  homeTeam: { name: string };
-  awayTeam: { name: string };
+  homeTeam: { name: string; crest?: string | null };
+  awayTeam: { name: string; crest?: string | null };
   score: {
     fullTime: { home: number | null; away: number | null };
   };

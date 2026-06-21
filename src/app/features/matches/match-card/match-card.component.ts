@@ -104,6 +104,13 @@ export class MatchCardComponent implements OnInit {
 
     const home = this.exactHome();
     const away = this.exactAway();
+
+    // Nëse është plotësuar vetëm njëra fushë e rezultatit, kërko plotësim të plotë (ose lëri të dyja bosh)
+    if ((home !== null) !== (away !== null)) {
+      alert('Vendos rezultatin e plotë (të dyja shifrat), ose lëri të dyja bosh.');
+      return;
+    }
+
     const exactScore = home !== null && away !== null && home >= 0 && away >= 0 ? { home, away } : undefined;
 
     this.saving.set(true);

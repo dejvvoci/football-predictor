@@ -16,6 +16,9 @@ export interface Match {
   competition: string;
   homeTeam: string;
   awayTeam: string;
+  homeCrest?: string;
+  awayCrest?: string;
+  venue?: string;
   kickoff: number; // timestamp (ms)
   status: MatchStatus;
   odds: MatchOdds;

@@ -1,14 +1,28 @@
 <article class="match-card">
   <header>
     <span class="competition">{{ match.competition }}</span>
-    <span class="kickoff">{{ match.kickoff | date: 'HH:mm' }}</span>
+    <span class="kickoff">{{ match.kickoff | date: 'dd/MM/yyyy HH:mm' }}</span>
   </header>
 
   <div class="teams">
-    <span class="team">{{ match.homeTeam }}</span>
+    <div class="team-block">
+      @if (match.homeCrest) {
+        <img class="crest" [src]="match.homeCrest" [alt]="match.homeTeam" />
+      }
+      <span class="team">{{ match.homeTeam }}</span>
+    </div>
     <span class="vs">vs</span>
-    <span class="team">{{ match.awayTeam }}</span>
+    <div class="team-block">
+      @if (match.awayCrest) {
+        <img class="crest" [src]="match.awayCrest" [alt]="match.awayTeam" />
+      }
+      <span class="team">{{ match.awayTeam }}</span>
+    </div>
   </div>
+
+  @if (match.venue) {
+    <p class="venue">📍 {{ match.venue }}</p>
+  }
 
   @if (prediction(); as existing) {
     <p class="existing-prediction">
