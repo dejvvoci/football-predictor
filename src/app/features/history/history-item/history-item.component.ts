@@ -33,4 +33,26 @@ export class HistoryItemComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((match) => this.match.set(match));
   }
+
+  /** Kthen '1'/'X'/'2' në emrin real të skuadrës (ose "Barazim") */
+  choiceLabel(choice: PredictionChoice, match: Match): string {
+    if (choice === '1') return match.homeTeam;
+    if (choice === '2') return match.awayTeam;
+    return 'Barazim';
+  }
+
+  isOutcomeCorrect(match: Match): boolean {
+    if (!match.result) return false;
+    const actual =
+      match.result.homeGoals > match.result.awayGoals ? '1' : match.result.homeGoals < match.result.awayGoals ? '2' : 'X';
+    return actual === this.prediction.choice;
+  }
+
+  isExactCorrect(match: Match): boolean {
+    if (!match.result || !this.prediction.exactScore) return false;
+    return (
+      this.prediction.exactScore.home === match.result.homeGoals &&
+      this.prediction.exactScore.away === match.result.awayGoals
+    );
+  }
 }

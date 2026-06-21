@@ -14,17 +14,41 @@
       }
       <span class="team">{{ m.awayTeam }}</span>
     </div>
+
+    <div class="comparison-box">
+      <div class="comparison-row">
+        <span class="comparison-label">Parashikimi</span>
+        <span class="comparison-score">
+          @if (prediction.exactScore) {
+            {{ prediction.exactScore.home }}–{{ prediction.exactScore.away }}
+          } @else {
+            {{ choiceLabel(prediction.choice, m) }}
+          }
+        </span>
+        @if (m.result) {
+          <span class="match-icon" [class.correct]="isOutcomeCorrect(m)" [class.wrong]="!isOutcomeCorrect(m)">
+            {{ isOutcomeCorrect(m) ? '✓' : '✗' }}
+          </span>
+        }
+      </div>
+
+      @if (m.result) {
+        <div class="comparison-row">
+          <span class="comparison-label">Rezultati</span>
+          <span class="comparison-score actual">{{ m.result.homeGoals }}–{{ m.result.awayGoals }}</span>
+          @if (prediction.exactScore) {
+            <span class="match-icon" [class.exact]="isExactCorrect(m)">
+              {{ isExactCorrect(m) ? '🎯' : '' }}
+            </span>
+          }
+        </div>
+      }
+    </div>
   } @else {
     <p class="loading">Duke ngarkuar ndeshjen...</p>
   }
 
   <div class="prediction-summary">
-    <span class="choice-tag">{{ prediction.choice }}</span>
-
-    @if (prediction.exactScore) {
-      <span class="exact-tag">{{ prediction.exactScore.home }}-{{ prediction.exactScore.away }}</span>
-    }
-
     @if (prediction.points !== undefined) {
       <span class="points-tag" [class.scored]="prediction.points > 0" [class.missed]="prediction.points === 0">
         +{{ prediction.points }} pikë

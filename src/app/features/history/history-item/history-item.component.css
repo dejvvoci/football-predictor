@@ -44,33 +44,73 @@ header {
   font-weight: 600;
 }
 
+.comparison-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.comparison-row {
+  display: grid;
+  grid-template-columns: 1fr auto 22px;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.comparison-row + .comparison-row {
+  border-top: 1px dashed var(--color-line);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.comparison-label {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+.comparison-score {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+  color: var(--color-ink);
+}
+
+.comparison-score.actual {
+  color: var(--color-pitch-dark);
+}
+
+.match-icon {
+  text-align: center;
+  font-size: 14px;
+}
+
+.match-icon.correct {
+  color: var(--color-pitch-dark);
+}
+
+.match-icon.wrong {
+  color: var(--color-danger);
+  opacity: 0.55;
+}
+
 .prediction-summary {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
-.choice-tag,
-.exact-tag,
 .points-tag,
 .pending-tag {
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-}
-
-.choice-tag {
-  background: var(--color-pitch-tint);
-  color: var(--color-pitch-dark);
-}
-
-.exact-tag {
-  font-family: var(--font-mono);
-  background: var(--color-accent-tint);
-  color: var(--color-accent-dark);
 }
 
 .points-tag.scored {
