@@ -28,6 +28,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'stats',
+    loadComponent: () =>
+      import('./features/stats/stats.component').then((m) => m.StatsComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'profile',
     loadComponent: () =>
       import('./features/profile/profile.component').then((m) => m.ProfileComponent),
@@ -37,6 +43,12 @@ export const routes: Routes = [
     path: 'leaderboard',
     loadComponent: () =>
       import('./features/leaderboard/leaderboard.component').then((m) => m.LeaderboardComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'statistics',
+    loadComponent: () =>
+      import('./features/statistics/statistics.component').then((m) => m.StatisticsComponent),
     canActivate: [authGuard]
   },
 
