@@ -1,0 +1,258 @@
+.page {
+  padding: 24px 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-header h1 {
+  font-size: 26px;
+}
+
+.create-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--color-pitch);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.challenges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.challenge-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.challenge-card.resolved {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.competition-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.status-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.status-tag.open     { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.status-tag.closed   { background: #EEF1EA; color: var(--color-ink-muted); }
+.status-tag.resolved { background: var(--color-accent-tint); color: var(--color-accent-dark); }
+
+.challenge-title {
+  font-size: 16px;
+  margin: 0;
+}
+
+.challenge-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+
+/* Parashikimi ekzistues */
+.my-prediction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(28, 138, 75, 0.08);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.pred-label { color: var(--color-ink-muted); }
+
+.pred-choice {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.result-correct {
+  font-weight: 700;
+  color: var(--color-pitch-dark);
+}
+
+.result-wrong {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.claim-btn {
+  margin-left: auto;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.claimed-tag {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-pitch-dark);
+  font-weight: 600;
+}
+
+.change-btn {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-ink-muted);
+}
+
+/* Zgjedhja */
+.pick-btn {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--color-pitch);
+  background: transparent;
+  color: var(--color-pitch-dark);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.select-panel, .resolve-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+}
+
+.resolve-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.option-btn.selected {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch);
+  color: #fff;
+}
+
+.select-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.submit-pick-btn, .resolve-confirm-btn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-pitch);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.resolve-confirm-btn {
+  background: var(--color-danger);
+}
+
+.submit-pick-btn:disabled,
+.resolve-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-ink-muted);
+}
+
+.locked-note {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  margin: 0;
+}
+
+.admin-resolve-btn {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: transparent;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.resolve-success {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-pitch-dark);
+  font-weight: 600;
+}
+
+.empty, .loading {
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  margin-top: 16px;
+}

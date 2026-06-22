@@ -6,6 +6,12 @@ export interface MatchOdds {
   away: number;
 }
 
+export interface OverUnderOdds {
+  over: number;
+  under: number;
+  line: number;
+}
+
 export interface MatchResult {
   homeGoals: number;
   awayGoals: number;
@@ -23,11 +29,7 @@ export function getOutcome(result: MatchResult): PredictionChoice {
   return 'X';
 }
 
-/**
- * Formula e pikëve (e njëjtë me atë të diskutuar):
- * - Qëllove 1/X/2 → floor(koeficenti i atij rezultati)
- * - Qëllove edhe rezultatin e saktë → +3 pikë bonus
- */
+/** Pikët e 1/X/2 + exact score bonus */
 export function calculatePoints(
   choice: PredictionChoice,
   exactScore: ExactScoreGuess | undefined,
@@ -47,4 +49,17 @@ export function calculatePoints(
   }
 
   return points;
+}
+
+/** Pikët e over/under — floor(odds) nëse e qëllove */
+export function calculateOverUnderPoints(
+  choice: 'over' | 'under',
+  ouOdds: OverUnderOdds,
+  result: MatchResult
+): number {
+  const totalGoals = result.homeGoals + result.awayGoals;
+  const isOver = totalGoals > ouOdds.line;
+  const isCorrect = (choice === 'over') === isOver;
+  if (!isCorrect) return 0;
+  return Math.floor(choice === 'over' ? ouOdds.over : ouOdds.under);
 }

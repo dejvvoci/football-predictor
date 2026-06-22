@@ -1,0 +1,64 @@
+.auth-page {
+  max-width: 420px;
+  margin: 48px auto 0;
+}
+
+.auth-page h1 { font-size: 24px; }
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+input {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-family: var(--font-body);
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-pitch);
+  box-shadow: 0 0 0 3px var(--color-pitch-tint);
+}
+
+button {
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-pitch);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.form-error { font-size: 13px; color: var(--color-danger); }
+
+.back-link {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+}

@@ -1,0 +1,40 @@
+<section class="auth-page">
+  <h1>New Challenge</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+    <label>
+      Title
+      <input type="text" formControlName="title" placeholder="e.g. Who wins Group A?" />
+    </label>
+
+    <label>
+      Competition
+      <input type="text" formControlName="competition" placeholder="e.g. FIFA World Cup" />
+    </label>
+
+    <label>
+      Options (comma separated)
+      <input type="text" formControlName="optionsRaw" placeholder="e.g. Brazil, France, Germany, Spain" />
+    </label>
+
+    <label>
+      Points reward
+      <input type="number" formControlName="pointsReward" min="1" />
+    </label>
+
+    <label>
+      Deadline (predictions close at)
+      <input type="datetime-local" formControlName="deadline" />
+    </label>
+
+    @if (error()) {
+      <p class="form-error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Creating...' : 'Create Challenge' }}
+    </button>
+  </form>
+
+  <a routerLink="/tournament" class="back-link">← Back to challenges</a>
+</section>

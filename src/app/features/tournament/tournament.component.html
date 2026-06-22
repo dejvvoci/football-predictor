@@ -1,0 +1,126 @@
+<section class="page">
+  <div class="page-header">
+    <h1>Fazë / Turne</h1>
+    @if (isAdmin$ | async) {
+      <a routerLink="/tournament/create" class="create-btn">+ Sfidë e re</a>
+    }
+  </div>
+
+  @if (rows$ | async; as rows) {
+    @if (rows.length === 0) {
+      <p class="empty">Ende s'ka sfida të hapura.</p>
+    } @else {
+      <div class="challenges-list">
+        @for (row of rows; track row.challenge.id) {
+          <article class="challenge-card" [class.resolved]="row.challenge.status === 'resolved'">
+
+            <div class="challenge-header">
+              <span class="competition-tag">{{ row.challenge.competition }}</span>
+              <span class="status-tag" [class]="row.challenge.status">{{ row.challenge.status }}</span>
+            </div>
+
+            <h2 class="challenge-title">{{ row.challenge.title }}</h2>
+
+            <div class="challenge-meta">
+              <span>🏅 {{ row.challenge.pointsReward }} pts</span>
+              <span>⏰ {{ row.challenge.deadline | date: 'dd/MM HH:mm' }}</span>
+            </div>
+
+            @if (row.prediction; as pred) {
+              <div class="my-prediction">
+                <span class="pred-label">Your pick:</span>
+                <span class="pred-choice">{{ pred.choice }}</span>
+
+                @if (row.challenge.status === 'resolved') {
+                  @if (pred.choice === row.challenge.result) {
+                    <span class="result-correct">✓ Correct!</span>
+                    @if (!pred.claimed) {
+                      <button type="button" class="claim-btn"
+                        [disabled]="claiming() === pred.id"
+                        (click)="claimPoints(pred)">
+                        {{ claiming() === pred.id ? 'Claiming...' : 'Claim +' + pred.tournamentPoints + ' pts' }}
+                      </button>
+                    } @else {
+                      <span class="claimed-tag">✓ Claimed</span>
+                    }
+                  } @else {
+                    <span class="result-wrong">✗ Wrong ({{ row.challenge.result }})</span>
+                  }
+                } @else {
+                  <button type="button" class="change-btn" (click)="startSelect(row.challenge.id)"
+                    [disabled]="isLocked(row.challenge)">
+                    Change
+                  </button>
+                }
+              </div>
+            } @else if (!isLocked(row.challenge)) {
+              @if (selecting() === row.challenge.id) {
+                <div class="select-panel">
+                  <div class="options-grid">
+                    @for (option of row.challenge.options; track option) {
+                      <button type="button" class="option-btn"
+                        [class.selected]="selectedChoice() === option"
+                        (click)="selectedChoice.set(option)">
+                        {{ option }}
+                      </button>
+                    }
+                  </div>
+                  <div class="select-actions">
+                    <button type="button" class="submit-pick-btn"
+                      [disabled]="!selectedChoice() || saving()"
+                      (click)="submitPrediction(row.challenge.id)">
+                      {{ saving() ? 'Saving...' : 'Confirm pick' }}
+                    </button>
+                    <button type="button" class="cancel-btn" (click)="selecting.set(null)">Cancel</button>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="pick-btn" (click)="startSelect(row.challenge.id)">
+                  Make your pick
+                </button>
+              }
+            } @else {
+              <p class="locked-note">Predictions closed</p>
+            }
+
+            @if ((isAdmin$ | async) && row.challenge.status !== 'resolved') {
+              @if (resolvingId() === row.challenge.id) {
+                <div class="resolve-panel">
+                  <p class="resolve-label">Select the correct answer:</p>
+                  <div class="options-grid">
+                    @for (option of row.challenge.options; track option) {
+                      <button type="button" class="option-btn"
+                        [class.selected]="resolveChoice() === option"
+                        (click)="resolveChoice.set(option)">
+                        {{ option }}
+                      </button>
+                    }
+                  </div>
+                  <div class="select-actions">
+                    <button type="button" class="resolve-confirm-btn"
+                      [disabled]="!resolveChoice() || saving()"
+                      (click)="confirmResolve(row.challenge.id)">
+                      {{ saving() ? 'Resolving...' : 'Resolve challenge' }}
+                    </button>
+                    <button type="button" class="cancel-btn" (click)="resolvingId.set(null)">Cancel</button>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="admin-resolve-btn" (click)="startResolve(row.challenge.id)">
+                  ⚙ Resolve
+                </button>
+              }
+            }
+
+            @if (resolveResult()?.challengeId === row.challenge.id) {
+              <p class="resolve-success">✓ Resolved! {{ resolveResult()!.winners }} winner(s) found.</p>
+            }
+
+          </article>
+        }
+      </div>
+    }
+  } @else {
+    <p class="loading">Loading challenges...</p>
+  }
+</section>

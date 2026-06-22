@@ -1,9 +1,15 @@
 export type MatchStatus = 'scheduled' | 'live' | 'finished';
 
 export interface MatchOdds {
-  home: number; // koeficenti për fitoren e skuadrës 1
-  draw: number; // koeficenti për barazim (X)
-  away: number; // koeficenti për fitoren e skuadrës 2
+  home: number;
+  draw: number;
+  away: number;
+}
+
+export interface OverUnderOdds {
+  over: number;
+  under: number;
+  line: number; // tipikisht 2.5
 }
 
 export interface MatchResult {
@@ -19,8 +25,9 @@ export interface Match {
   homeCrest?: string;
   awayCrest?: string;
   venue?: string;
-  kickoff: number; // timestamp (ms)
+  kickoff: number;
   status: MatchStatus;
   odds: MatchOdds;
+  ouOdds?: OverUnderOdds;
   result?: MatchResult;
 }

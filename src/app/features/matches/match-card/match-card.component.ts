@@ -31,8 +31,10 @@ export class MatchCardComponent implements OnInit {
   choice = signal<PredictionChoice | null>(null);
   exactHome = signal<number | null>(null);
   exactAway = signal<number | null>(null);
+  overUnder = signal<'over' | 'under' | null>(null);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
+  showIncompleteScoreWarning = signal(false);
 
   locked = computed(() => this.match.status !== 'scheduled' || this.match.kickoff <= Date.now());
 
@@ -47,6 +49,7 @@ export class MatchCardComponent implements OnInit {
         this.choice.set(existing.choice);
         this.exactHome.set(existing.exactScore?.home ?? null);
         this.exactAway.set(existing.exactScore?.away ?? null);
+        this.overUnder.set((existing as any).overUnder ?? null);
       }
     });
   }
@@ -95,6 +98,12 @@ export class MatchCardComponent implements OnInit {
     }
   }
 
+  ouPointsFor(choice: 'over' | 'under'): number {
+    if (!this.match.ouOdds) return 0;
+    const odds = choice === 'over' ? this.match.ouOdds.over : this.match.ouOdds.under;
+    return Math.floor(odds);
+  }
+
   async submit(): Promise<void> {
     const choice = this.choice();
     if (!choice) {
@@ -105,13 +114,13 @@ export class MatchCardComponent implements OnInit {
     const home = this.exactHome();
     const away = this.exactAway();
 
-    // Nëse është plotësuar vetëm njëra fushë e rezultatit, kërko plotësim të plotë (ose lëri të dyja bosh)
     if ((home !== null) !== (away !== null)) {
-      alert('Vendos rezultatin e plotë (të dyja shifrat), ose lëri të dyja bosh.');
+      this.showIncompleteScoreWarning.set(true);
       return;
     }
 
     const exactScore = home !== null && away !== null && home >= 0 && away >= 0 ? { home, away } : undefined;
+    const overUnder = this.overUnder() ?? undefined;
 
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -120,12 +129,16 @@ export class MatchCardComponent implements OnInit {
       if (this.groupId) {
         await this.predictionService.submitGroupPrediction(this.groupId, this.match.id, choice, exactScore);
       } else {
-        await this.predictionService.submitPrediction(this.match.id, choice, exactScore);
+        await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder);
       }
     } catch {
       this.errorMessage.set("S'u ruajt dot parashikimi. Provo përsëri.");
     } finally {
       this.saving.set(false);
     }
+  }
+
+  closeWarning(): void {
+    this.showIncompleteScoreWarning.set(false);
   }
 }

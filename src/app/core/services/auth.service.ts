@@ -33,7 +33,7 @@ export class AuthService {
       displayName,
       email,
       totalPoints: 0,
-      totalCorrect: 0,
+      tournamentPoints: 0,
       currentStreak: 0,
       bestStreak: 0,
       achievements: [],

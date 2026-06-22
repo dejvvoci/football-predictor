@@ -24,7 +24,8 @@ export class PredictionService {
   async submitPrediction(
     matchId: string,
     choice: PredictionChoice,
-    exactScore?: ExactScoreGuess
+    exactScore?: ExactScoreGuess,
+    overUnder?: 'over' | 'under'
   ): Promise<void> {
     const userId = this.auth.currentUser?.uid;
     if (!userId) {
@@ -38,6 +39,7 @@ export class PredictionService {
       matchId,
       choice,
       ...(exactScore ? { exactScore } : {}),
+      ...(overUnder ? { overUnder } : {}),
       createdAt: Date.now()
     };
 

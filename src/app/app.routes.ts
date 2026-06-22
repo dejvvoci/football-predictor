@@ -46,6 +46,18 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'tournament',
+    loadComponent: () =>
+      import('./features/tournament/tournament.component').then((m) => m.TournamentComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'tournament/create',
+    loadComponent: () =>
+      import('./features/tournament/create-challenge/create-challenge.component').then((m) => m.CreateChallengeComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'statistics',
     loadComponent: () =>
       import('./features/statistics/statistics.component').then((m) => m.StatisticsComponent),
