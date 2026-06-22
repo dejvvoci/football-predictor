@@ -30,4 +30,5 @@ export interface Match {
   odds: MatchOdds;
   ouOdds?: OverUnderOdds;
   result?: MatchResult;
+  halfTimeResult?: MatchResult;
 }

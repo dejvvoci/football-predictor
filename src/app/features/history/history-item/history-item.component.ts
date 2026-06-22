@@ -10,6 +10,8 @@ export interface PredictionLike {
   choice: PredictionChoice;
   exactScore?: ExactScoreGuess;
   points?: number;
+  htFt?: string;
+  htFtPoints?: number;
 }
 
 @Component({
@@ -46,6 +48,15 @@ export class HistoryItemComponent implements OnInit {
     const actual =
       match.result.homeGoals > match.result.awayGoals ? '1' : match.result.homeGoals < match.result.awayGoals ? '2' : 'X';
     return actual === this.prediction.choice;
+  }
+
+  isHtFtCorrect(match: Match): boolean {
+    if (!this.prediction.htFt || !match.result || !match.halfTimeResult) return false;
+    const htOutcome = match.halfTimeResult.homeGoals > match.halfTimeResult.awayGoals ? '1'
+      : match.halfTimeResult.homeGoals < match.halfTimeResult.awayGoals ? '2' : 'X';
+    const ftOutcome = match.result.homeGoals > match.result.awayGoals ? '1'
+      : match.result.homeGoals < match.result.awayGoals ? '2' : 'X';
+    return this.prediction.htFt === `${htOutcome}/${ftOutcome}`;
   }
 
   isExactCorrect(match: Match): boolean {

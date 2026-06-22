@@ -78,6 +78,28 @@
       </div>
     }
 
+    <div class="htft-section">
+      <div class="htft-header">
+        <span class="htft-label">Half Time / Full Time</span>
+        <span class="bonus-tag">bonus +{{ HT_FT_BONUS }} pts</span>
+      </div>
+      <div class="htft-grid">
+        @for (row of htFtCombinations; track row[0]) {
+          @for (combo of row; track combo) {
+            <button
+              type="button"
+              class="htft-btn"
+              [class.selected]="htFt() === combo"
+              (click)="htFt.set(htFt() === combo ? null : combo)"
+              [title]="htFtLabel(combo, match.homeTeam, match.awayTeam)"
+            >
+              {{ combo }}
+            </button>
+          }
+        }
+      </div>
+    </div>
+
     @if (errorMessage()) {
       <p class="form-error">{{ errorMessage() }}</p>
     }

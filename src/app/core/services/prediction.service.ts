@@ -25,7 +25,8 @@ export class PredictionService {
     matchId: string,
     choice: PredictionChoice,
     exactScore?: ExactScoreGuess,
-    overUnder?: 'over' | 'under'
+    overUnder?: 'over' | 'under',
+    htFt?: string
   ): Promise<void> {
     const userId = this.auth.currentUser?.uid;
     if (!userId) {
@@ -40,6 +41,7 @@ export class PredictionService {
       choice,
       ...(exactScore ? { exactScore } : {}),
       ...(overUnder ? { overUnder } : {}),
+      ...(htFt ? { htFt } : {}),
       createdAt: Date.now()
     };
 

@@ -251,6 +251,55 @@ header {
   cursor: pointer;
 }
 
+.htft-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.htft-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.htft-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.htft-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 240px;
+}
+
+.htft-btn {
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.htft-btn.selected {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
+}
+
 .submit-btn {
   padding: 11px;
   border-radius: var(--radius-sm);

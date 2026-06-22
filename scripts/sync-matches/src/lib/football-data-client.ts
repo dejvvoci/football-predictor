@@ -12,6 +12,7 @@ export interface FootballDataMatch {
   awayTeam: { name: string; crest?: string | null };
   score: {
     fullTime: { home: number | null; away: number | null };
+    halfTime: { home: number | null; away: number | null };
   };
 }
 

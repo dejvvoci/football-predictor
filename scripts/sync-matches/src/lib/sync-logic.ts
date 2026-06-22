@@ -2,7 +2,8 @@ import { db, FieldValue } from './admin';
 import { fetchUpcomingMatches } from './football-data-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
-import { calculatePoints, calculateOverUnderPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
+import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
+import { computeNewAchievements, UserProgress } from './achievements';
 
 type MatchStatus = 'scheduled' | 'live' | 'finished';
 
@@ -48,6 +49,11 @@ export async function syncMatchesAndGrade(): Promise<void> {
       ? { homeGoals: m.score.fullTime.home as number, awayGoals: m.score.fullTime.away as number }
       : undefined;
 
+    const hasHalfTime = m.score?.halfTime?.home !== null && m.score?.halfTime?.away !== null;
+    const halfTimeResult: MatchResult | undefined = hasHalfTime
+      ? { homeGoals: m.score.halfTime.home as number, awayGoals: m.score.halfTime.away as number }
+      : undefined;
+
     if (!existing.exists) {
       if (!oddsCache.has(m.competition.code)) {
         oddsCache.set(m.competition.code, await fetchOddsForCompetition(oddsApiKey, m.competition.code));
@@ -67,14 +73,19 @@ export async function syncMatchesAndGrade(): Promise<void> {
         status: newStatus,
         odds,
         ...(ouOdds ? { ouOdds } : {}),
-        ...(result ? { result } : {})
+        ...(result ? { result } : {}),
+        ...(halfTimeResult ? { halfTimeResult } : {})
       });
 
       console.log(`+ Ndeshje e re: ${m.homeTeam.name} vs ${m.awayTeam.name}`);
     } else {
       const prevStatus = existing.data()?.['status'] as MatchStatus | undefined;
 
-      await matchRef.set({ status: newStatus, ...(result ? { result } : {}) }, { merge: true });
+      await matchRef.set({
+        status: newStatus,
+        ...(result ? { result } : {}),
+        ...(halfTimeResult ? { halfTimeResult } : {})
+      }, { merge: true });
 
       if (prevStatus !== 'finished' && newStatus === 'finished') {
         justFinished.push(docId);
@@ -177,6 +188,7 @@ async function gradeMatch(matchId: string): Promise<void> {
       choice: PredictionChoice;
       exactScore?: ExactScoreGuess;
       overUnder?: 'over' | 'under';
+      htFt?: string;
     };
 
     const points = calculatePoints(
@@ -191,7 +203,12 @@ async function gradeMatch(matchId: string): Promise<void> {
       ? calculateOverUnderPoints(prediction.overUnder, ouOdds, match['result'] as MatchResult)
       : 0;
 
-    const totalMatchPoints = points + ouPoints;
+    const halfTimeResult = match['halfTimeResult'] as MatchResult | undefined;
+    const htFtPoints = (prediction.htFt && halfTimeResult)
+      ? calculateHtFtPoints(prediction.htFt, halfTimeResult, match['result'] as MatchResult)
+      : 0;
+
+    const totalMatchPoints = points + ouPoints + htFtPoints;
 
     const outcomeCorrect = points > 0;
     const exactScoreCorrect = !!(
@@ -203,6 +220,7 @@ async function gradeMatch(matchId: string): Promise<void> {
     batch.update(predDoc.ref, {
       points,
       ...(prediction.overUnder !== undefined ? { ouPoints } : {}),
+      ...(prediction.htFt !== undefined ? { htFtPoints } : {}),
       seen: false,
       competition,
       exactScoreCorrect

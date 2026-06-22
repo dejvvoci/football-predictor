@@ -63,3 +63,20 @@ export function calculateOverUnderPoints(
   if (!isCorrect) return 0;
   return Math.floor(choice === 'over' ? ouOdds.over : ouOdds.under);
 }
+
+export const HT_FT_BONUS = 5;
+
+/**
+ * HT/FT: parashikim i kombinuar (p.sh. "1/X" = fiton home në HT, barazim në FT)
+ * +5 pikë fikse nëse e qëllon kombinimin e saktë
+ */
+export function calculateHtFtPoints(
+  choice: string,   // e.g. "1/X"
+  halfTimeResult: MatchResult,
+  fullTimeResult: MatchResult
+): number {
+  const htOutcome = getOutcome(halfTimeResult);
+  const ftOutcome = getOutcome(fullTimeResult);
+  const actual = `${htOutcome}/${ftOutcome}`;
+  return choice === actual ? HT_FT_BONUS : 0;
+}

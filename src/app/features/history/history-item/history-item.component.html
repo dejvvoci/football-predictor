@@ -17,7 +17,7 @@
 
     <div class="comparison-box">
       <div class="comparison-row">
-        <span class="comparison-label">Parashikimi</span>
+        <span class="comparison-label">Parashikova</span>
         <span class="comparison-score">
           @if (prediction.exactScore) {
             {{ prediction.exactScore.home }}–{{ prediction.exactScore.away }}
@@ -43,8 +43,16 @@
           }
         </div>
       }
+      @if (m.result && prediction.htFt) {
+        <div class="comparison-row">
+          <span class="comparison-label">HT/FT</span>
+          <span class="comparison-score">{{ prediction.htFt }}</span>
+          <span class="match-icon" [class.correct]="isHtFtCorrect(m)" [class.wrong]="!isHtFtCorrect(m)">
+            {{ isHtFtCorrect(m) ? '✓' : '✗' }}
+          </span>
+        </div>
+      }
     </div>
-  } @else {
     <p class="loading">Duke ngarkuar ndeshjen...</p>
   }
 

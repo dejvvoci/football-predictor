@@ -32,6 +32,7 @@ export class MatchCardComponent implements OnInit {
   exactHome = signal<number | null>(null);
   exactAway = signal<number | null>(null);
   overUnder = signal<'over' | 'under' | null>(null);
+  htFt = signal<string | null>(null);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
   showIncompleteScoreWarning = signal(false);
@@ -50,6 +51,7 @@ export class MatchCardComponent implements OnInit {
         this.exactHome.set(existing.exactScore?.home ?? null);
         this.exactAway.set(existing.exactScore?.away ?? null);
         this.overUnder.set((existing as any).overUnder ?? null);
+        this.htFt.set((existing as any).htFt ?? null);
       }
     });
   }
@@ -98,10 +100,24 @@ export class MatchCardComponent implements OnInit {
     }
   }
 
+  readonly HT_FT_BONUS = 5;
+
+  readonly htFtCombinations = [
+    ['1/1', '1/X', '1/2'],
+    ['X/1', 'X/X', 'X/2'],
+    ['2/1', '2/X', '2/2'],
+  ] as const;
+
   ouPointsFor(choice: 'over' | 'under'): number {
     if (!this.match.ouOdds) return 0;
     const odds = choice === 'over' ? this.match.ouOdds.over : this.match.ouOdds.under;
     return Math.floor(odds);
+  }
+
+  htFtLabel(combo: string, homeTeam: string, awayTeam: string): string {
+    const labels: Record<string, string> = { '1': homeTeam, 'X': 'X', '2': awayTeam };
+    const [ht, ft] = combo.split('/');
+    return `${labels[ht]} / ${labels[ft]}`;
   }
 
   async submit(): Promise<void> {
@@ -121,6 +137,7 @@ export class MatchCardComponent implements OnInit {
 
     const exactScore = home !== null && away !== null && home >= 0 && away >= 0 ? { home, away } : undefined;
     const overUnder = this.overUnder() ?? undefined;
+    const htFt = this.htFt() ?? undefined;
 
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -129,7 +146,7 @@ export class MatchCardComponent implements OnInit {
       if (this.groupId) {
         await this.predictionService.submitGroupPrediction(this.groupId, this.match.id, choice, exactScore);
       } else {
-        await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder);
+        await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder, htFt);
       }
     } catch {
       this.errorMessage.set("S'u ruajt dot parashikimi. Provo përsëri.");
