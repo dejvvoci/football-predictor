@@ -33,7 +33,6 @@
       }
     }
 
-    <!-- Admin: kontrollet e sezonit -->
     @if (isAdmin$ | async) {
       <div class="admin-box">
         <h3>⚙ Menaxhimi i sezonit</h3>
@@ -67,20 +66,18 @@
 
   @if (activeTab() === 'hof') {
     @if (seasons$ | async; as seasons) {
-      @if (seasons.filter(s => !s.isActive).length === 0) {
+      @if (pastSeasons(seasons).length === 0) {
         <p class="empty">Ende s'ka sezone të mbyllura.</p>
       } @else {
         <div class="season-selector">
-          @for (s of seasons; track s.id) {
-            @if (!s.isActive) {
-              <button
-                class="season-chip"
-                [class.active]="selectedSeasonId() === s.id || (!selectedSeasonId() && $first)"
-                (click)="selectedSeasonId.set(s.id)"
-              >
-                {{ s.name }}
-              </button>
-            }
+          @for (s of pastSeasons(seasons); track s.id) {
+            <button
+              class="season-chip"
+              [class.active]="isSelectedSeason(s.id, seasons)"
+              (click)="selectedSeasonId.set(s.id)"
+            >
+              {{ s.name }}
+            </button>
           }
         </div>
 
