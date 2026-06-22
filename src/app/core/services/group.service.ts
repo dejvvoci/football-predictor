@@ -22,7 +22,6 @@ import { Observable, of } from 'rxjs';
 import { Group } from '../models/group.model';
 import { UserProfile } from '../models/user.model';
 
-const MAX_GROUPS = 3;
 const INVITE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // pa O/0, I/1 — shmang ngatërrime vizuale
 
 function generateInviteCode(): string {
@@ -38,19 +37,12 @@ export class GroupService {
   private firestore = inject(Firestore);
   private auth = inject(Auth);
 
-  /** Krijon grup të ri; hedh error nëse useri ka arritur limitin prej 3 grupesh */
+  /** Krijon grup të ri */
   async createGroup(name: string): Promise<string> {
     const userId = this.requireUserId();
 
     return runTransaction(this.firestore, async (tx) => {
       const userRef = doc(this.firestore, 'users', userId);
-      const userSnap = await tx.get(userRef);
-      const groupIds: string[] = (userSnap.data()?.['groupIds'] as string[]) ?? [];
-
-      if (groupIds.length >= MAX_GROUPS) {
-        throw new Error(`Ke arritur limitin prej ${MAX_GROUPS} grupesh.`);
-      }
-
       const groupRef = doc(collection(this.firestore, 'groups'));
 
       tx.set(groupRef, {
@@ -67,7 +59,7 @@ export class GroupService {
     });
   }
 
-  /** Anëtarësim me kod ftese; hedh error nëse kodi është i pavlefshëm, je tashmë anëtar, ose ke arritur limitin */
+  /** Anëtarësim me kod ftese */
   async joinGroup(inviteCode: string): Promise<string> {
     const userId = this.requireUserId();
 
@@ -95,9 +87,6 @@ export class GroupService {
       const groupIds: string[] = (userSnap.data()?.['groupIds'] as string[]) ?? [];
       if (groupIds.includes(groupId)) {
         throw new Error('Je tashmë anëtar i këtij grupi.');
-      }
-      if (groupIds.length >= MAX_GROUPS) {
-        throw new Error(`Ke arritur limitin prej ${MAX_GROUPS} grupesh.`);
       }
 
       tx.update(groupRef, { memberIds: arrayUnion(userId) });
