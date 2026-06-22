@@ -3,7 +3,9 @@ import { FREE_COMPETITIONS } from './competition-map';
 export interface FootballDataMatch {
   id: number;
   utcDate: string;
-  status: string; // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | POSTPONED | SUSPENDED | CANCELLED
+  status: string;
+  stage: string;      // GROUP_STAGE | ROUND_OF_16 | QUARTER_FINALS | SEMI_FINALS | FINAL | etc.
+  group?: string;     // "Group A" | "Group B" | ... (vetëm për GROUP_STAGE)
   venue?: string | null;
   competition: { code: string; name: string };
   homeTeam: { name: string; crest?: string | null };

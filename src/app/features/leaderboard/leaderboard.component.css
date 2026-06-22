@@ -57,3 +57,133 @@
   font-size: 14px;
   margin-top: 16px;
 }
+
+/* Tabet */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+
+.tab.active {
+  color: var(--color-pitch-dark);
+  border-bottom-color: var(--color-pitch);
+}
+
+/* Hall of Fame */
+.season-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.season-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.season-chip.active {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch);
+  color: #fff;
+}
+
+.hof-row {
+  background: linear-gradient(90deg, var(--color-pitch-tint) 0%, var(--color-surface) 100%);
+}
+
+/* Admin box */
+.admin-box {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-line);
+  background: var(--color-bg);
+}
+
+.admin-box h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+  color: var(--color-ink-muted);
+}
+
+.season-row {
+  display: flex;
+  gap: 8px;
+}
+
+.season-row input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  font-size: 13px;
+  color: var(--color-ink);
+}
+
+.season-row button {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-pitch);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.season-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.season-end-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-tint);
+  font-size: 13px;
+}
+
+.end-btn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.end-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.season-msg {
+  font-size: 13px;
+  color: var(--color-pitch-dark);
+  font-weight: 600;
+  margin: 0 0 10px;
+}

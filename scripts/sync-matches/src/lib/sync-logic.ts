@@ -86,6 +86,78 @@ export async function syncMatchesAndGrade(): Promise<void> {
     console.log(`Gradim: ndeshja ${matchId} sapo mbaroi.`);
     await gradeMatch(matchId);
   }
+
+  // Krijo automatikisht sfida turneu bazuar mbi fazat e ndeshjeve
+  await autoCreateChallenges(matches);
+}
+
+const KNOCKOUT_STAGES: Record<string, string> = {
+  ROUND_OF_16:    'Round of 16',
+  QUARTER_FINALS: 'Quarter-finals',
+  SEMI_FINALS:    'Semi-finals',
+  FINAL:          'Final',
+};
+
+async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpcomingMatches>>): Promise<void> {
+  // ── 1. GROUP_STAGE: "Who tops Group X?" ──
+  const groupTeams = new Map<string, { teams: Set<string>; competition: string; latestKickoff: number }>();
+
+  for (const m of matches) {
+    if (m.stage !== 'GROUP_STAGE' || !m.group) continue;
+    if (!m.homeTeam.name || !m.awayTeam.name) continue;
+
+    const key = `auto_${m.competition.code}_${m.group.replace(/\s+/g, '_')}`;
+    const entry = groupTeams.get(key) ?? { teams: new Set<string>(), competition: m.competition.name, latestKickoff: 0 };
+    entry.teams.add(m.homeTeam.name);
+    entry.teams.add(m.awayTeam.name);
+    const kickoff = new Date(m.utcDate).getTime();
+    if (kickoff > entry.latestKickoff) entry.latestKickoff = kickoff;
+    groupTeams.set(key, entry);
+  }
+
+  for (const [key, { teams, competition, latestKickoff }] of groupTeams.entries()) {
+    const ref = db.collection('tournamentChallenges').doc(key);
+    const existing = await ref.get();
+    if (existing.exists) continue;
+
+    const groupLabel = key.split('_').slice(2).join(' ');
+    await ref.set({
+      title: `Who tops ${groupLabel}?`,
+      competition,
+      options: [...teams],
+      status: 'open',
+      pointsReward: 10,
+      deadline: latestKickoff,
+      createdBy: 'auto',
+      createdAt: Date.now()
+    });
+    console.log(`+ Sfidë automatike: Who tops ${groupLabel}?`);
+  }
+
+  // ── 2. KNOCKOUT: "Who advances: Team A vs Team B?" ──
+  for (const m of matches) {
+    if (!KNOCKOUT_STAGES[m.stage]) continue;
+    if (!m.homeTeam.name || !m.awayTeam.name) continue;
+
+    const key = `auto_${m.competition.code}_${m.stage}_${m.id}`;
+    const ref = db.collection('tournamentChallenges').doc(key);
+    const existing = await ref.get();
+    if (existing.exists) continue;
+
+    const stageLabel = KNOCKOUT_STAGES[m.stage];
+    const kickoff = new Date(m.utcDate).getTime();
+    await ref.set({
+      title: `${stageLabel}: ${m.homeTeam.name} vs ${m.awayTeam.name}`,
+      competition: m.competition.name,
+      options: [m.homeTeam.name, m.awayTeam.name],
+      status: 'open',
+      pointsReward: m.stage === 'FINAL' ? 25 : m.stage === 'SEMI_FINALS' ? 15 : 10,
+      deadline: kickoff - 30 * 60 * 1000, // 30 min para fillimit
+      createdBy: 'auto',
+      createdAt: Date.now()
+    });
+    console.log(`+ Sfidë automatike: ${stageLabel}: ${m.homeTeam.name} vs ${m.awayTeam.name}`);
+  }
 }
 
 async function gradeMatch(matchId: string): Promise<void> {

@@ -1,33 +1,107 @@
 <section class="page">
-  <h1>Renditja qendrore</h1>
+  <h1>Renditja</h1>
 
-  @if (user$ | async; as currentUser) {
-    @if (leaderboard$ | async; as leaderboard) {
-      @if (leaderboard.length === 0) {
-        <p class="empty">Ende s'ka të dhëna në renditje.</p>
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'current'" (click)="activeTab.set('current')">
+      Sezoni aktual
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'hof'" (click)="activeTab.set('hof')">
+      🏛 Hall of Fame
+    </button>
+  </div>
+
+  @if (activeTab() === 'current') {
+    @if (user$ | async; as currentUser) {
+      @if (leaderboard$ | async; as leaderboard) {
+        @if (leaderboard.length === 0) {
+          <p class="empty">Ende s'ka të dhëna në renditje.</p>
+        } @else {
+          <ol class="leaderboard-list">
+            @for (entry of leaderboard; track entry.uid; let i = $index) {
+              <li class="leaderboard-row" [class.is-me]="entry.uid === currentUser.uid">
+                <span class="rank">
+                  @if (i === 0) { 🥇 } @else if (i === 1) { 🥈 } @else if (i === 2) { 🥉 } @else { {{ i + 1 }} }
+                </span>
+                <span class="name">{{ entry.displayName }}</span>
+                <span class="points">{{ entry.totalPoints }} pikë</span>
+              </li>
+            }
+          </ol>
+        }
       } @else {
-        <ol class="leaderboard-list">
-          @for (entry of leaderboard; track entry.uid; let i = $index) {
-            <li class="leaderboard-row" [class.is-me]="entry.uid === currentUser.uid">
-              <span class="rank">
-                @if (i === 0) {
-                  🥇
-                } @else if (i === 1) {
-                  🥈
-                } @else if (i === 2) {
-                  🥉
-                } @else {
-                  {{ i + 1 }}
-                }
-              </span>
-              <span class="name">{{ entry.displayName }}</span>
-              <span class="points">{{ entry.totalPoints }} pikë</span>
-            </li>
-          }
-        </ol>
+        <p class="loading">Duke ngarkuar renditjen...</p>
       }
-    } @else {
-      <p class="loading">Duke ngarkuar renditjen...</p>
+    }
+
+    <!-- Admin: kontrollet e sezonit -->
+    @if (isAdmin$ | async) {
+      <div class="admin-box">
+        <h3>⚙ Menaxhimi i sezonit</h3>
+
+        @if (seasonMsg()) {
+          <p class="season-msg">{{ seasonMsg() }}</p>
+        }
+
+        <div class="season-row">
+          <input type="text" [value]="newSeasonName()" (input)="onNameInput($event)" placeholder="Emri i sezonit të ri" />
+          <button [disabled]="!newSeasonName().trim() || startingSeason()" (click)="startSeason()">
+            {{ startingSeason() ? 'Duke filluar...' : 'Fillo sezon' }}
+          </button>
+        </div>
+
+        @if (seasons$ | async; as seasons) {
+          @for (s of seasons; track s.id) {
+            @if (s.isActive) {
+              <div class="season-end-row">
+                <span>Aktiv: <strong>{{ s.name }}</strong></span>
+                <button class="end-btn" [disabled]="endingSeasonId() === s.id" (click)="endSeason(s)">
+                  {{ endingSeasonId() === s.id ? 'Duke mbyllur...' : 'Mbyll sezonin' }}
+                </button>
+              </div>
+            }
+          }
+        }
+      </div>
+    }
+  }
+
+  @if (activeTab() === 'hof') {
+    @if (seasons$ | async; as seasons) {
+      @if (seasons.filter(s => !s.isActive).length === 0) {
+        <p class="empty">Ende s'ka sezone të mbyllura.</p>
+      } @else {
+        <div class="season-selector">
+          @for (s of seasons; track s.id) {
+            @if (!s.isActive) {
+              <button
+                class="season-chip"
+                [class.active]="selectedSeasonId() === s.id || (!selectedSeasonId() && $first)"
+                (click)="selectedSeasonId.set(s.id)"
+              >
+                {{ s.name }}
+              </button>
+            }
+          }
+        </div>
+
+        @if (hallOfFame$ | async; as hof) {
+          @if (hof.length === 0) {
+            <p class="empty">S'ka të dhëna për këtë sezon.</p>
+          } @else {
+            <ol class="leaderboard-list">
+              @for (entry of hof; track entry.userId) {
+                <li class="leaderboard-row hof-row">
+                  <span class="rank">
+                    @if (entry.rank === 1) { 🥇 } @else if (entry.rank === 2) { 🥈 } @else if (entry.rank === 3) { 🥉 } @else { {{ entry.rank }} }
+                  </span>
+                  <span class="name">{{ entry.displayName }}</span>
+                  <span class="points">{{ entry.totalPoints }} pikë</span>
+                </li>
+              }
+            </ol>
+          }
+        }
+      }
     }
   }
 </section>
