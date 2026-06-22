@@ -1,0 +1,41 @@
+<div class="chat-wrap">
+  <div class="messages">
+    @if (comments$ | async; as comments) {
+      @if (comments.length === 0) {
+        <p class="empty-chat">Ende s'ka mesazhe. Fillo bisedën! 💬</p>
+      } @else {
+        @for (c of comments; track c.id) {
+          <div class="message" [class.mine]="c.userId === myUid">
+            <div class="bubble">
+              @if (c.userId !== myUid) {
+                <span class="sender">{{ c.displayName }}</span>
+              }
+              <p class="msg-text">{{ c.text }}</p>
+              <div class="msg-footer">
+                <span class="msg-time">{{ c.createdAt | date: 'HH:mm' }}</span>
+                @if (c.userId === myUid) {
+                  <button class="delete-msg" (click)="deleteComment(c.id)">✕</button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+        <div #messagesEnd></div>
+      }
+    }
+  </div>
+
+  <div class="input-row">
+    <textarea
+      class="chat-input"
+      rows="1"
+      placeholder="Shkruaj mesazh... (Enter për dërgim)"
+      [value]="text()"
+      (input)="onInput($event)"
+      (keydown)="onKeydown($event)"
+    ></textarea>
+    <button class="send-btn" [disabled]="!text().trim() || sending()" (click)="send()">
+      {{ sending() ? '...' : '➤' }}
+    </button>
+  </div>
+</div>
