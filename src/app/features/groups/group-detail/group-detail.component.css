@@ -8,13 +8,21 @@
 
 .tabs {
   display: flex;
-  gap: 4px;
+  gap: 0;
   margin-top: 18px;
   border-bottom: 1px solid var(--color-line);
+  overflow-x: auto;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge */
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;                  /* Chrome/Safari */
 }
 
 .tab {
-  padding: 10px 18px;
+  flex-shrink: 0;                 /* s'ngushtohen kurrë — scrollohen */
+  padding: 10px 16px;
   border: none;
   background: transparent;
   color: var(--color-ink-muted);
@@ -24,6 +32,7 @@
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  white-space: nowrap;
 }
 
 .tab:hover {

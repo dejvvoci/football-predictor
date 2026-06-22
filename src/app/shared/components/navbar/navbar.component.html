@@ -1,16 +1,65 @@
 <nav class="navbar">
-  <div class="links">
-    <a routerLink="/matches" routerLinkActive="active">Ndeshjet</a>
-    <a routerLink="/history" routerLinkActive="active">Historiku</a>
+  <!-- Desktop: linkët direkt -->
+  <div class="links desktop-links">
+    <a routerLink="/matches"    routerLinkActive="active">Ndeshjet</a>
+    <a routerLink="/history"    routerLinkActive="active">Historiku</a>
     <a routerLink="/statistics" routerLinkActive="active">Statistika</a>
-    <a routerLink="/leaderboard" routerLinkActive="active">Renditja</a>
+    <a routerLink="/leaderboard"routerLinkActive="active">Renditja</a>
     <a routerLink="/tournament" routerLinkActive="active">Turne</a>
-    <a routerLink="/groups" routerLinkActive="active">Grupet</a>
+    <a routerLink="/groups"     routerLinkActive="active">Grupet</a>
   </div>
 
-  @if (user$ | async; as user) {
-    <a routerLink="/profile" routerLinkActive="active" class="username">{{ user.displayName || user.email }}</a>
-  } @else {
-    <a routerLink="/login" class="login-link">Hyr</a>
-  }
+  <!-- Desktop: profili -->
+  <div class="desktop-profile">
+    @if (user$ | async; as user) {
+      <a routerLink="/profile" routerLinkActive="active" class="username">
+        {{ user.displayName || user.email }}
+      </a>
+    } @else {
+      <a routerLink="/login" class="login-link">Hyr</a>
+    }
+  </div>
+
+  <!-- Mobile: logo/emri i app + hamburger -->
+  <div class="mobile-bar">
+    <span class="app-name">⚽ Predictor</span>
+    <button class="hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()">
+      @if (menuOpen()) {
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <line x1="4" y1="4" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="18" y1="4" x2="4" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      } @else {
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <line x1="3" y1="6"  x2="19" y2="6"  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="3" y1="11" x2="19" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="3" y1="16" x2="19" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      }
+    </button>
+  </div>
 </nav>
+
+<!-- Mobile dropdown menu -->
+@if (menuOpen()) {
+  <div class="mobile-overlay" (click)="closeMenu()"></div>
+  <div class="mobile-menu">
+    @if (user$ | async; as user) {
+      <a routerLink="/profile" class="mobile-user" (click)="closeMenu()">
+        <span class="mobile-user-name">{{ user.displayName || user.email }}</span>
+        <span class="mobile-user-hint">Profili im</span>
+      </a>
+      <hr class="menu-divider" />
+    }
+    <a routerLink="/matches"     routerLinkActive="active" (click)="closeMenu()">⚽ Ndeshjet</a>
+    <a routerLink="/history"     routerLinkActive="active" (click)="closeMenu()">📋 Historiku</a>
+    <a routerLink="/statistics"  routerLinkActive="active" (click)="closeMenu()">📊 Statistika</a>
+    <a routerLink="/leaderboard" routerLinkActive="active" (click)="closeMenu()">🏆 Renditja</a>
+    <a routerLink="/tournament"  routerLinkActive="active" (click)="closeMenu()">🌍 Turne</a>
+    <a routerLink="/groups"      routerLinkActive="active" (click)="closeMenu()">👥 Grupet</a>
+    @if (!(user$ | async)) {
+      <hr class="menu-divider" />
+      <a routerLink="/login" (click)="closeMenu()">Hyr</a>
+    }
+  </div>
+}
