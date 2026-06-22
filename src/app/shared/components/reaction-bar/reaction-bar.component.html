@@ -1,0 +1,17 @@
+@if (summary$ | async; as summary) {
+  <div class="reaction-bar">
+    @for (r of summary; track r.emoji) {
+      <button
+        type="button"
+        class="reaction-btn"
+        [class.active]="r.myReaction"
+        (click)="toggle(r.emoji)"
+      >
+        {{ r.emoji }}
+        @if (r.count > 0) {
+          <span class="count">{{ r.count }}</span>
+        }
+      </button>
+    }
+  </div>
+}

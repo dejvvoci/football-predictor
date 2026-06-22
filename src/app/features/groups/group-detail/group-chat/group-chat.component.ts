@@ -1,7 +1,9 @@
-import { Component, ElementRef, Input, OnChanges, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { AsyncPipe, DatePipe } from '@angular/common';
+import { Observable } from 'rxjs';
 import { Auth } from '@angular/fire/auth';
 import { CommentService } from '../../../../core/services/comment.service';
+import { GroupComment } from '../../../../core/models/comment.model';
 
 @Component({
   selector: 'app-group-chat',
@@ -10,20 +12,20 @@ import { CommentService } from '../../../../core/services/comment.service';
   templateUrl: './group-chat.component.html',
   styleUrl: './group-chat.component.css'
 })
-export class GroupChatComponent implements OnChanges {
+export class GroupChatComponent implements OnInit {
   @Input({ required: true }) groupId!: string;
   @ViewChild('messagesEnd') messagesEnd?: ElementRef;
 
   private commentService = inject(CommentService);
   private auth = inject(Auth);
 
-  comments$ = this.commentService.getComments(this.groupId);
+  comments$!: Observable<GroupComment[]>;
   myUid = this.auth.currentUser?.uid ?? '';
 
   text = signal('');
   sending = signal(false);
 
-  ngOnChanges(): void {
+  ngOnInit(): void {
     this.comments$ = this.commentService.getComments(this.groupId);
   }
 

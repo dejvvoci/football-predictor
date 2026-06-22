@@ -10,6 +10,8 @@ import { MatchService } from '../../../core/services/match.service';
 import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCardComponent } from '../../matches/match-card/match-card.component';
 import { HistoryItemComponent } from '../../history/history-item/history-item.component';
+import { GroupChatComponent } from './group-chat/group-chat.component';
+import { GroupActivityComponent } from './group-activity/group-activity.component';
 
 interface LeaderboardRow {
   uid: string;
@@ -20,7 +22,7 @@ interface LeaderboardRow {
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [AsyncPipe, RouterLink, MatchCardComponent, HistoryItemComponent],
+  imports: [AsyncPipe, RouterLink, MatchCardComponent, HistoryItemComponent, GroupChatComponent, GroupActivityComponent],
   templateUrl: './group-detail.component.html',
   styleUrl: './group-detail.component.css'
 })
@@ -85,7 +87,7 @@ export class GroupDetailComponent {
 
   leaving = signal(false);
   linkCopied = signal(false);
-  activeTab = signal<'predict' | 'leaderboard' | 'history' | 'admin'>('predict');
+  activeTab = signal<'predict' | 'leaderboard' | 'history' | 'activity' | 'chat' | 'admin'>('predict');
 
   newGroupName = signal('');
   renaming = signal(false);

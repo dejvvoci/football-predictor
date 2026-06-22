@@ -1,0 +1,35 @@
+.reaction-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-bg);
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+
+.reaction-btn:hover {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+}
+
+.reaction-btn.active {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-ink);
+}

@@ -1,0 +1,44 @@
+@if (activity$ | async; as activities) {
+  @if (activities.length === 0) {
+    <p class="empty">Ende s'ka parashikime të graduara në këtë grup.</p>
+  } @else {
+    <div class="activity-list">
+      @for (item of activities; track item.match.id) {
+        <div class="match-block">
+          <div class="match-header">
+            <span class="match-teams">
+              @if (item.match.homeCrest) { <img class="mini-crest" [src]="item.match.homeCrest" /> }
+              {{ item.match.homeTeam }}
+              @if (item.match.result) {
+                <strong class="result-score">{{ item.match.result.homeGoals }}-{{ item.match.result.awayGoals }}</strong>
+              }
+              {{ item.match.awayTeam }}
+              @if (item.match.awayCrest) { <img class="mini-crest" [src]="item.match.awayCrest" /> }
+            </span>
+            <span class="match-date">{{ item.match.kickoff | date: 'dd/MM' }}</span>
+          </div>
+
+          <div class="predictions-list">
+            @for (pred of item.predictions; track pred.id) {
+              <div class="pred-row" [class.is-me]="pred.userId === myUid">
+                <div class="pred-info">
+                  <span class="pred-name">{{ pred.displayName }}</span>
+                  <span class="pred-choice" [class.correct]="isCorrect(pred)" [class.wrong]="pred.points === 0">
+                    {{ choiceLabel(pred.choice, item.match) }}
+                    @if (pred.exactScore) {
+                      ({{ pred.exactScore.home }}-{{ pred.exactScore.away }})
+                    }
+                  </span>
+                  <span class="pred-pts" [class.zero]="pred.points === 0">+{{ pred.points }} pts</span>
+                </div>
+                <app-reaction-bar [predictionId]="pred.id" [groupId]="groupId" />
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+} @else {
+  <p class="loading">Duke ngarkuar aktivitetin...</p>
+}

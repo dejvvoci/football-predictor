@@ -1,0 +1,128 @@
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.match-block {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.match-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-line);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.match-teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  flex-wrap: wrap;
+}
+
+.mini-crest {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.result-score {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-pitch-dark);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--color-pitch-tint);
+}
+
+.match-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  flex-shrink: 0;
+}
+
+.predictions-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pred-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.pred-row:last-child {
+  border-bottom: none;
+}
+
+.pred-row.is-me {
+  background: var(--color-pitch-tint);
+}
+
+.pred-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pred-name {
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 70px;
+}
+
+.pred-choice {
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+}
+
+.pred-choice.correct {
+  background: var(--color-pitch-tint);
+  border-color: var(--color-pitch);
+  color: var(--color-pitch-dark);
+}
+
+.pred-choice.wrong {
+  background: #FBE7E5;
+  border-color: #F0C6C1;
+  color: var(--color-danger);
+}
+
+.pred-pts {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-pitch-dark);
+  margin-left: auto;
+}
+
+.pred-pts.zero {
+  color: var(--color-danger);
+}
+
+.empty, .loading {
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  margin-top: 12px;
+}

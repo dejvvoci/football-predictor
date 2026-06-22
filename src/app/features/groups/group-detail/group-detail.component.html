@@ -17,8 +17,14 @@
       <button type="button" class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">
         Renditja
       </button>
+      <button type="button" class="tab" [class.active]="activeTab() === 'activity'" (click)="activeTab.set('activity')">
+        Aktiviteti
+      </button>
       <button type="button" class="tab" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
         Historiku
+      </button>
+      <button type="button" class="tab" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')">
+        Diskutim 💬
       </button>
       @if (group.ownerId === currentUserId()) {
         <button type="button" class="tab" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
@@ -28,7 +34,7 @@
     </div>
 
     @if (activeTab() === 'predict') {
-      <p class="section-hint">Ndeshjet e ardhshme. Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
+      <p class="section-hint">Ndeshjet brenda 24 orëve të ardhshme. Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
 
       @if (filteredMatches(); as matches) {
         @if (competitions().length > 1) {
@@ -92,6 +98,14 @@
       }
     }
 
+    @if (activeTab() === 'activity') {
+      <app-group-activity [groupId]="group.id" [memberIds]="group.memberIds" />
+    }
+
+    @if (activeTab() === 'chat') {
+      <app-group-chat [groupId]="group.id" />
+    }
+
     @if (activeTab() === 'history') {
       @if (groupHistory$ | async; as history) {
         @if (history.length === 0) {
@@ -142,6 +156,7 @@
           }
         </div>
 
+        <h3 class="admin-subtitle danger-title">Zona e rrezikshme</h3>
         <button type="button" class="delete-group-btn" [disabled]="deletingGroup()" (click)="deleteGroup(group.id)">
           {{ deletingGroup() ? 'Duke fshirë...' : 'Fshi grupin përgjithmonë' }}
         </button>
