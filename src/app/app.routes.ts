@@ -30,7 +30,7 @@ export const routes: Routes = [
   {
     path: 'stats',
     loadComponent: () =>
-      import('./features/stats/stats.component').then((m) => m.StatsComponent),
+      import('./features/statistics/statistics.component').then((m) => m.StatisticsComponent),
     canActivate: [authGuard]
   },
   {
