@@ -1,0 +1,70 @@
+<section class="page">
+  <h1>Statistikat e mia</h1>
+
+  @if (stats$ | async; as stats) {
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.totalPredictions }}</span>
+        <span class="stat-label">Parashikime totale</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.accuracy }}%</span>
+        <span class="stat-label">Saktësi 1/X/2</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.totalExact }}</span>
+        <span class="stat-label">Rezultate të sakta</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.totalPoints }}</span>
+        <span class="stat-label">Pikë totale</span>
+      </div>
+      <div class="stat-card highlight">
+        <span class="stat-value streak">🔥 {{ stats.currentStreak }}</span>
+        <span class="stat-label">Streak aktual</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.bestStreak }}</span>
+        <span class="stat-label">Streaku rekord</span>
+      </div>
+    </div>
+
+    @if (stats.byCompetition.length > 0) {
+      <h2 class="section-title">Sipas kompeticionit</h2>
+      <div class="competition-list">
+        @for (comp of stats.byCompetition; track comp.competition) {
+          <div class="competition-row">
+            <div class="comp-info">
+              <span class="comp-name">{{ comp.competition }}</span>
+              <span class="comp-detail">{{ comp.correct }}/{{ comp.total }} të sakta</span>
+            </div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar" [style.width.%]="comp.accuracy"></div>
+            </div>
+            <span class="comp-pct">{{ comp.accuracy }}%</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (profile$ | async; as profile) {
+      <h2 class="section-title">Arritjet</h2>
+      <div class="achievements-grid">
+        @for (ach of allAchievements; track ach.id) {
+          <div class="achievement-card" [class.earned]="isEarned(ach.id, profile.achievements ?? [])">
+            <span class="ach-icon">{{ ach.icon }}</span>
+            <span class="ach-title">{{ ach.title }}</span>
+            <span class="ach-desc">{{ ach.description }}</span>
+            @if (!isEarned(ach.id, profile.achievements ?? [])) {
+              <span class="ach-locked">🔒</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  } @else {
+    <p class="loading">Duke ngarkuar statistikat...</p>
+  }
+</section>

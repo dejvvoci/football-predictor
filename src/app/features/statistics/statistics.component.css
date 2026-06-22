@@ -1,0 +1,174 @@
+.page {
+  padding: 24px 0;
+}
+
+.page h1 {
+  font-size: 26px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.stat-card.highlight {
+  border-color: var(--color-accent);
+  background: var(--color-accent-tint);
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.stat-value.streak {
+  font-size: 19px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+
+.section-title {
+  font-size: 17px;
+  margin-top: 28px;
+  margin-bottom: 12px;
+}
+
+/* Kompeticionet */
+.competition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.competition-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 36px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+}
+
+.comp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.comp-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.comp-detail {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.comp-bar-wrap {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-line);
+  overflow: hidden;
+}
+
+.comp-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-pitch);
+  transition: width 0.6s ease;
+}
+
+.comp-pct {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-pitch-dark);
+  text-align: right;
+}
+
+/* Arritjet */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.achievement-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  text-align: center;
+  opacity: 0.4;
+  filter: grayscale(0.8);
+}
+
+.achievement-card.earned {
+  opacity: 1;
+  filter: none;
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+}
+
+.ach-icon {
+  font-size: 24px;
+}
+
+.ach-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ach-desc {
+  font-size: 10px;
+  color: var(--color-ink-muted);
+  line-height: 1.3;
+}
+
+.ach-locked {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 10px;
+}
+
+.loading {
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  margin-top: 16px;
+}
