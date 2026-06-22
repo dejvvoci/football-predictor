@@ -18,14 +18,10 @@
       </div>
     }
 
-    @if (groups.length < 3) {
-      <div class="actions">
-        <a routerLink="/groups/create" class="action-btn">+ Krijo grup</a>
-        <a routerLink="/groups/join" class="action-btn secondary">Bashkohu me kod</a>
-      </div>
-    } @else {
-      <p class="limit-note">Ke arritur limitin prej 3 grupesh.</p>
-    }
+    <div class="actions">
+      <a routerLink="/groups/create" class="action-btn">+ Krijo grup</a>
+      <a routerLink="/groups/join" class="action-btn secondary">Bashkohu me kod</a>
+    </div>
   } @else {
     <p class="loading">Duke ngarkuar grupet...</p>
   }
