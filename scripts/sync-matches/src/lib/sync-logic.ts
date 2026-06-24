@@ -463,20 +463,34 @@ async function setDailyChallenge(): Promise<void> {
     player = { ...fallback, id: `fallback_${today}`, thumbnail: null, source: 'fallback' };
   }
 
-  // If still no thumbnail, try Wikipedia
+  // If still no thumbnail, try Wikipedia using the known article title
   if (!player['thumbnail']) {
     try {
-      const wikiTitle = encodeURIComponent((player['name'] as string).replace(/ /g, '_'));
-      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${wikiTitle}&prop=pageimages&pithumbsize=400&format=json&origin=*`;
-      const wikiRes = await fetch(wikiUrl);
+      const wikiTitle = fallback.wikiTitle;
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle?? '')}&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json`;
+      console.log(`  🔍 Fetching Wikipedia: ${wikiUrl}`);
+      const wikiRes = await fetch(wikiUrl, {
+        headers: { 'User-Agent': 'FootballPredictor/1.0 (sync-script)' }
+      });
+      console.log(`  🌐 Wikipedia status: ${wikiRes.status}`);
       if (wikiRes.ok) {
-        const wikiData = await wikiRes.json() as { query?: { pages?: Record<string, { thumbnail?: { source: string } }> } };
+        const wikiData = await wikiRes.json() as { query?: { pages?: Record<string, unknown> } };
         const pages = wikiData.query?.pages ?? {};
-        const page = Object.values(pages)[0];
-        const img = page?.thumbnail?.source;
-        if (img) player['thumbnail'] = img;
+        const pageKeys = Object.keys(pages);
+        console.log(`  📄 Wikipedia pages: ${JSON.stringify(pageKeys)}`);
+        const page = pages[pageKeys[0]] as Record<string, unknown> | undefined;
+        console.log(`  📄 Wikipedia page data: ${JSON.stringify(page)}`);
+        const thumb = (page?.['thumbnail'] as { source?: string } | undefined)?.source;
+        if (thumb) {
+          player['thumbnail'] = thumb;
+          console.log(`  📸 Thumbnail: ${thumb.slice(0, 80)}`);
+        } else {
+          console.warn(`  ⚠️ No thumbnail in Wikipedia response for "${wikiTitle}"`);
+        }
       }
-    } catch { /* no thumbnail */ }
+    } catch (e) {
+      console.warn('  ❌ Wikipedia fetch failed:', e);
+    }
   }
 
   await docRef.set({ date: today, player, createdAt: Date.now() });
