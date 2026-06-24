@@ -66,7 +66,7 @@ export function calculateOverUnderPoints(
 
 export const HT_FT_BONUS = 5;
 export const RED_CARD_BONUS = 3;
-export const BTTS_BONUS = 2;
+export const BTTS_BONUS = 1;
 
 export function calculateHtFtPoints(
   choice: string,

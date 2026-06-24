@@ -64,14 +64,41 @@ header {
   text-align: center;
 }
 
-/* Existing prediction */
 .existing-prediction {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 13px;
   color: var(--color-pitch-dark);
   background: var(--color-pitch-tint);
   border-radius: var(--radius-sm);
-  padding: 8px 12px;
+  padding: 9px 12px;
+}
+
+.existing-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit-btn {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-pitch);
+  background: transparent;
+  color: var(--color-pitch-dark);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: var(--color-pitch);
+  color: #fff;
 }
 
 /* 1/X/2 main buttons */
@@ -282,6 +309,22 @@ header {
   color: var(--color-pitch-dark);
 }
 
+.yn-btn-single {
+  padding: 6px 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-bg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.yn-btn-single.selected {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
+}
+
 .yn-btns button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -354,6 +397,17 @@ header {
   font-size: 13px;
   color: var(--color-danger);
   text-align: center;
+}
+
+.success-msg {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-pitch-dark);
+  text-align: center;
+  background: var(--color-pitch-tint);
+  border-radius: var(--radius-sm);
+  padding: 8px;
 }
 
 .locked-note {

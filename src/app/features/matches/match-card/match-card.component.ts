@@ -40,8 +40,10 @@ export class MatchCardComponent implements OnInit {
   redCard = signal<boolean | null>(null);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
+  savedMessage = signal(false);
   showIncompleteScoreWarning = signal(false);
   showBonusPanel = signal(false);
+  editMode = signal(false);
 
   locked = computed(() => this.match.status !== 'scheduled' || this.match.kickoff <= Date.now());
 
@@ -101,6 +103,10 @@ export class MatchCardComponent implements OnInit {
     this.exactHome() !== null && this.exactAway() !== null && !!this.match.ouOdds
   );
 
+  bttsLockedByScore = computed(() =>
+    this.exactHome() !== null && this.exactAway() !== null
+  );
+
   private autoSelectChoiceFromScore(): void {
     const home = this.exactHome();
     const away = this.exactAway();
@@ -114,6 +120,9 @@ export class MatchCardComponent implements OnInit {
       const total = home + away;
       this.overUnder.set(total > this.match.ouOdds.line ? 'over' : 'under');
     }
+
+    // Auto-derive BTTS from exact score
+    this.btts.set(home > 0 && away > 0);
   }
 
   // HT/FT: only combos whose FT part matches the current choice are enabled
@@ -169,12 +178,19 @@ export class MatchCardComponent implements OnInit {
       } else {
         await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder, htFt, btts, redCard);
       }
+      this.editMode.set(false);
+      this.showBonusPanel.set(false);
     } catch {
       this.errorMessage.set("Couldn't save prediction. Please try again.");
     } finally {
       this.saving.set(false);
     }
   }
+
+  getHtFt(p: PredictionLike): string | undefined { return (p as any).htFt; }
+  getOverUnder(p: PredictionLike): 'over' | 'under' | undefined { return (p as any).overUnder; }
+  getBtts(p: PredictionLike): boolean | undefined { return (p as any).btts; }
+  getRedCard(p: PredictionLike): boolean | undefined { return (p as any).redCard; }
 
   closeWarning(): void {
     this.showIncompleteScoreWarning.set(false);

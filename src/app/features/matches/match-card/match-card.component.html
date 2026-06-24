@@ -22,16 +22,25 @@
 
   @if (prediction(); as existing) {
     <div class="existing-prediction">
-      ✓ Your prediction: <strong>{{ choiceLabel(existing.choice) }}</strong>
-      @if (existing.exactScore) {
-        · <strong>{{ existing.exactScore.home }}-{{ existing.exactScore.away }}</strong>
+      <div class="existing-info">
+        ✓ <strong>{{ choiceLabel(existing.choice) }}</strong>
+        @if (existing.exactScore) { · {{ existing.exactScore.home }}-{{ existing.exactScore.away }} }
+        @if (getHtFt(existing)) { · HT/FT {{ getHtFt(existing) }} }
+        @if (getOverUnder(existing)) { · {{ getOverUnder(existing) === 'over' ? 'Over' : 'Under' }} {{ match.ouOdds?.line }} }
+        @if (getBtts(existing) !== undefined) { · BTTS {{ getBtts(existing) ? 'Yes' : 'No' }} }
+        @if (getRedCard(existing)) { · 🟥 }
+      </div>
+      @if (!locked()) {
+        <button type="button" class="edit-btn" (click)="editMode.set(!editMode())">
+          {{ editMode() ? 'Cancel' : 'Edit' }}
+        </button>
       }
     </div>
   }
 
   @if (locked()) {
     <p class="locked-note">Predictions closed for this match.</p>
-  } @else {
+  } @else if (!prediction() || editMode()) {
 
     <!-- ── 1/X/2 main choice ── -->
     <div class="main-choice">
@@ -88,24 +97,33 @@
         <div class="bonus-row">
           <div class="bonus-meta">
             <span class="bonus-name">Red card?</span>
-            <span class="bonus-pts">+3 pts</span>
+            <span class="bonus-pts">+3 pts if correct</span>
           </div>
-          <div class="yn-btns">
-            <button type="button" [class.selected]="redCard() === true" (click)="redCard.set(redCard() === true ? null : true)">Yes</button>
-            <button type="button" [class.selected]="redCard() === false" (click)="redCard.set(redCard() === false ? null : false)">No</button>
-          </div>
+          <button type="button" class="yn-btn-single" [class.selected]="redCard() === true"
+            (click)="redCard.set(redCard() === true ? null : true)">
+            Yes
+          </button>
         </div>
 
         <!-- BTTS -->
         <div class="bonus-row">
           <div class="bonus-meta">
             <span class="bonus-name">Both teams to score?</span>
-            <span class="bonus-pts">+2 pts</span>
+            <span class="bonus-pts">+1 pt</span>
           </div>
           <div class="yn-btns">
-            <button type="button" [class.selected]="btts() === true" (click)="btts.set(btts() === true ? null : true)">Yes</button>
-            <button type="button" [class.selected]="btts() === false" (click)="btts.set(btts() === false ? null : false)">No</button>
+            <button type="button"
+              [class.selected]="btts() === true"
+              [disabled]="bttsLockedByScore()"
+              (click)="btts.set(btts() === true ? null : true)">Yes</button>
+            <button type="button"
+              [class.selected]="btts() === false"
+              [disabled]="bttsLockedByScore()"
+              (click)="btts.set(btts() === false ? null : false)">No</button>
           </div>
+          @if (bttsLockedByScore()) {
+            <span class="auto-note">Auto-set from score</span>
+          }
         </div>
 
         <!-- Over/Under -->
@@ -171,8 +189,18 @@
       <p class="error-msg">{{ errorMessage() }}</p>
     }
 
+    @if (savedMessage()) {
+      <p class="success-msg">✓ Prediction saved!</p>
+    }
+
     <button type="button" class="submit-btn" [disabled]="!choice() || saving()" (click)="submit()">
-      {{ saving() ? 'Saving...' : 'Submit prediction' }}
+      @if (saving()) {
+        <span>Saving...</span>
+      } @else if (prediction()) {
+        <span>Update prediction</span>
+      } @else {
+        <span>Submit prediction</span>
+      }
     </button>
   }
 
