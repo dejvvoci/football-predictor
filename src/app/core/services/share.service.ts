@@ -18,16 +18,19 @@ export interface SharePrediction {
 @Injectable({ providedIn: 'root' })
 export class ShareService {
 
-  downloadPredictionCard(match: Match, prediction: SharePrediction, displayName: string): void {
+  async downloadPredictionCard(match: Match, prediction: SharePrediction, displayName: string): Promise<void> {
     const W = 400, H = 580;
     const canvas = document.createElement('canvas');
-    canvas.width = W * 2;  // 2× for retina
+    canvas.width = W * 2;
     canvas.height = H * 2;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-
     const ctx = canvas.getContext('2d')!;
     ctx.scale(2, 2);
+
+    // Pre-load crests
+    const [homeCrest, awayCrest] = await Promise.all([
+      match.homeCrest ? this.loadImage(match.homeCrest) : Promise.resolve(null),
+      match.awayCrest ? this.loadImage(match.awayCrest) : Promise.resolve(null),
+    ]);
 
     // ── Background gradient ──
     const bg = ctx.createLinearGradient(0, 0, 0, H);
@@ -55,20 +58,22 @@ export class ShareService {
 
     // ── Teams ──
     const midY = 130;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.textAlign = 'center';
+    const crestSize = 56;
+    const homeX = W / 2 - 90;
+    const awayX = W / 2 + 90;
 
-    // Crests (circles as placeholders)
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.beginPath(); ctx.arc(W / 2 - 90, midY, 28, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(W / 2 + 90, midY, 28, 0, Math.PI * 2); ctx.fill();
+    // Home crest
+    this.drawCrest(ctx, homeCrest, match.homeTeam, homeX, midY, crestSize / 2);
 
+    // Away crest
+    this.drawCrest(ctx, awayCrest, match.awayTeam, awayX, midY, crestSize / 2);
+
+    // Team names
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 14px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(this.truncate(match.homeTeam, 14), W / 2 - 90, midY + 52);
-    ctx.fillText(this.truncate(match.awayTeam, 14), W / 2 + 90, midY + 52);
+    ctx.fillText(this.truncate(match.homeTeam, 14), homeX, midY + 40);
+    ctx.fillText(this.truncate(match.awayTeam, 14), awayX, midY + 40);
 
     // ── Result or vs ──
     if (match.result) {
@@ -90,12 +95,12 @@ export class ShareService {
     ctx.strokeStyle = 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(24, midY + 72);
-    ctx.lineTo(W - 24, midY + 72);
+    ctx.moveTo(24, midY + 62);
+    ctx.lineTo(W - 24, midY + 62);
     ctx.stroke();
 
     // ── My prediction section ──
-    let y = midY + 100;
+    let y = midY + 90;
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'left';
@@ -108,42 +113,37 @@ export class ShareService {
 
     ctx.fillStyle = isCorrect ? '#4ADE80' : (prediction.points === 0 ? '#F87171' : '#ffffff');
     ctx.font = 'bold 22px system-ui, sans-serif';
-    ctx.textAlign = 'left';
     ctx.fillText(choiceLabel + (isCorrect ? ' ✓' : prediction.points === 0 ? ' ✗' : ''), 24, y);
 
     if (prediction.exactScore) {
+      y += 24;
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
       ctx.font = '14px system-ui, sans-serif';
-      y += 24;
       ctx.fillText(`Score: ${prediction.exactScore.home}–${prediction.exactScore.away}`, 24, y);
     }
-
     if (prediction.htFt) {
+      y += 24;
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
       ctx.font = '14px system-ui, sans-serif';
-      y += 24;
       ctx.fillText(`HT/FT: ${prediction.htFt}`, 24, y);
     }
-
     if (prediction.overUnder !== undefined) {
+      y += 24;
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
       ctx.font = '14px system-ui, sans-serif';
-      y += 24;
       const line = match.ouOdds?.line ?? 2.5;
       ctx.fillText(`Goals: ${prediction.overUnder === 'over' ? 'Over' : 'Under'} ${line}`, 24, y);
     }
-
     if (prediction.btts !== undefined) {
+      y += 24;
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
       ctx.font = '14px system-ui, sans-serif';
-      y += 24;
       ctx.fillText(`BTTS: ${prediction.btts ? 'Yes' : 'No'}`, 24, y);
     }
-
     if (prediction.redCard !== undefined) {
+      y += 24;
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
       ctx.font = '14px system-ui, sans-serif';
-      y += 24;
       ctx.fillText(`Red card: ${prediction.redCard ? 'Yes' : 'No'}`, 24, y);
     }
 
@@ -151,7 +151,6 @@ export class ShareService {
     if (prediction.points !== undefined) {
       const totalPts = (prediction.points ?? 0) + (prediction.ouPoints ?? 0)
         + (prediction.htFtPoints ?? 0) + (prediction.bttsPoints ?? 0) + (prediction.redCardPoints ?? 0);
-
       y += 36;
       const ptsBg = ctx.createLinearGradient(0, y - 20, 0, y + 28);
       ptsBg.addColorStop(0, 'rgba(74,222,128,0.25)');
@@ -159,7 +158,6 @@ export class ShareService {
       ctx.fillStyle = ptsBg;
       ctx.roundRect(16, y - 22, W - 32, 48, 10);
       ctx.fill();
-
       ctx.fillStyle = '#4ADE80';
       ctx.font = 'bold 28px system-ui, sans-serif';
       ctx.textAlign = 'center';
@@ -177,6 +175,55 @@ export class ShareService {
     link.download = `prediction-${match.homeTeam.replace(/\s+/g, '-')}-vs-${match.awayTeam.replace(/\s+/g, '-')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+  }
+
+  private async loadImage(src: string): Promise<HTMLImageElement | null> {
+    try {
+      const res = await fetch(src);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      return new Promise<HTMLImageElement | null>((resolve) => {
+        const img = new Image();
+        img.onload  = () => { URL.revokeObjectURL(objectUrl); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(null); };
+        img.src = objectUrl;
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /** Draws crest image or falls back to a circle with 3-letter team abbreviation */
+  private drawCrest(
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement | null,
+    teamName: string,
+    cx: number,
+    cy: number,
+    radius: number
+  ): void {
+    if (img) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, cx - radius, cy - radius, radius * 2, radius * 2);
+      ctx.restore();
+    } else {
+      // Fallback: circle + 3-letter abbreviation
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.round(radius * 0.7)}px system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(teamName.slice(0, 3).toUpperCase(), cx, cy);
+      ctx.textBaseline = 'alphabetic';
+    }
   }
 
   private truncate(text: string, max: number): string {

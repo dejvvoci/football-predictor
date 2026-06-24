@@ -83,7 +83,7 @@ export class HistoryItemComponent implements OnInit {
       + (this.prediction.redCardPoints ?? 0);
   }
 
-  share(): void {
+  async share(): Promise<void> {
     const m = this.match();
     if (!m) return;
     this.authService.user$.pipe(take(1), map((u) => u?.displayName ?? u?.email ?? 'Player'))
