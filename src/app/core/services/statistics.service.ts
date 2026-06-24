@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, doc, docData, query, where } from '@angular/fire/firestore';
-import { Observable, combineLatest, map, of, switchMap } from 'rxjs';
+import {
+  Firestore, collection, collectionData, doc, docData,
+  query, where, orderBy, getDocs
+} from '@angular/fire/firestore';
+import { Observable, combineLatest, map, of } from 'rxjs';
 import { Prediction } from '../models/prediction.model';
 import { UserProfile } from '../models/user.model';
 
@@ -21,6 +24,13 @@ export interface UserStatistics {
   bestStreak: number;
   totalPoints: number;
   byCompetition: CompetitionStat[];
+  expertCompetition: CompetitionStat | null; // best accuracy (min 3 predictions)
+}
+
+export interface WeeklyFormPoint {
+  weekLabel: string;
+  points: number;
+  weekStart: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +40,11 @@ export class StatisticsService {
   getProfile(userId: string): Observable<UserProfile | undefined> {
     const ref = doc(this.firestore, 'users', userId);
     return docData(ref, { idField: 'uid' }) as Observable<UserProfile | undefined>;
+  }
+
+  getAllUsers(): Observable<UserProfile[]> {
+    const ref = collection(this.firestore, 'users');
+    return collectionData(ref, { idField: 'uid' }) as Observable<UserProfile[]>;
   }
 
   getUserStatistics(userId: string): Observable<UserStatistics> {
@@ -62,6 +77,10 @@ export class StatisticsService {
           }))
           .sort((a, b) => b.total - a.total);
 
+        const expertCompetition = byCompetition
+          .filter((c) => c.total >= 3)
+          .sort((a, b) => b.accuracy - a.accuracy)[0] ?? null;
+
         return {
           totalPredictions: total,
           correctOutcomes: correct,
@@ -71,8 +90,50 @@ export class StatisticsService {
           currentStreak: profile?.currentStreak ?? 0,
           bestStreak: profile?.bestStreak ?? 0,
           totalPoints: profile?.totalPoints ?? 0,
-          byCompetition
+          byCompetition,
+          expertCompetition
         };
+      })
+    );
+  }
+
+  /** Last 8 weeks of points for the form chart */
+  getWeeklyForm(userId: string): Observable<WeeklyFormPoint[]> {
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const eightWeeksAgo = Date.now() - 8 * WEEK_MS;
+
+    const predictionsRef = collection(this.firestore, 'predictions');
+    const q = query(
+      predictionsRef,
+      where('userId', '==', userId),
+      where('points', '>=', 0),
+      where('createdAt', '>=', eightWeeksAgo),
+      orderBy('createdAt', 'asc')
+    );
+
+    return (collectionData(q, { idField: 'id' }) as Observable<Prediction[]>).pipe(
+      map((predictions) => {
+        // Build 8 weekly buckets (Mon–Sun)
+        const now = new Date();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // current Monday
+        monday.setHours(0, 0, 0, 0);
+
+        const weeks: WeeklyFormPoint[] = [];
+        for (let i = 7; i >= 0; i--) {
+          const weekStart = new Date(monday.getTime() - i * WEEK_MS);
+          const weekEnd = new Date(weekStart.getTime() + WEEK_MS);
+          const label = weekStart.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          const weekPts = predictions
+            .filter((p) => p.createdAt >= weekStart.getTime() && p.createdAt < weekEnd.getTime())
+            .reduce((sum, p) => {
+              const total = (p.points ?? 0) + (p.ouPoints ?? 0) + (p.htFtPoints ?? 0)
+                + (p.bttsPoints ?? 0) + (p.redCardPoints ?? 0);
+              return sum + total;
+            }, 0);
+          weeks.push({ weekLabel: label, points: weekPts, weekStart: weekStart.getTime() });
+        }
+        return weeks;
       })
     );
   }

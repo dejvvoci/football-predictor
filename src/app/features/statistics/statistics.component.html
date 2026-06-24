@@ -1,55 +1,180 @@
 <section class="page">
-  <h1>Statistikat e mia</h1>
+  <h1>My Statistics</h1>
 
-  @if (stats$ | async; as stats) {
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'overview'" (click)="activeTab.set('overview')">Overview</button>
+    <button class="tab" [class.active]="activeTab() === 'form'" (click)="activeTab.set('form')">Form</button>
+    <button class="tab" [class.active]="activeTab() === 'h2h'" (click)="activeTab.set('h2h')">Head-to-Head</button>
+    <button class="tab" [class.active]="activeTab() === 'achievements'" (click)="activeTab.set('achievements')">Achievements</button>
+  </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.totalPredictions }}</span>
-        <span class="stat-label">Parashikime totale</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.accuracy }}%</span>
-        <span class="stat-label">Saktësi 1/X/2</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.totalExact }}</span>
-        <span class="stat-label">Rezultate të sakta</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.totalPoints }}</span>
-        <span class="stat-label">Pikë totale</span>
-      </div>
-      <div class="stat-card highlight">
-        <span class="stat-value streak">🔥 {{ stats.currentStreak }}</span>
-        <span class="stat-label">Streak aktual</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.bestStreak }}</span>
-        <span class="stat-label">Streaku rekord</span>
-      </div>
-    </div>
+  <!-- ── OVERVIEW ── -->
+  @if (activeTab() === 'overview') {
+    @if (stats$ | async; as stats) {
 
-    @if (stats.byCompetition.length > 0) {
-      <h2 class="section-title">Sipas kompeticionit</h2>
-      <div class="competition-list">
-        @for (comp of stats.byCompetition; track comp.competition) {
-          <div class="competition-row">
-            <div class="comp-info">
-              <span class="comp-name">{{ comp.competition }}</span>
-              <span class="comp-detail">{{ comp.correct }}/{{ comp.total }} të sakta</span>
+      @if (stats.expertCompetition) {
+        <div class="expert-banner">
+          <span class="expert-icon">🏅</span>
+          <div class="expert-text">
+            <span class="expert-title">Expert in {{ stats.expertCompetition.competition }}</span>
+            <span class="expert-sub">{{ stats.expertCompetition.accuracy }}% accuracy across {{ stats.expertCompetition.total }} predictions</span>
+          </div>
+        </div>
+      }
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value">{{ stats.totalPredictions }}</span>
+          <span class="stat-label">Total predictions</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ stats.accuracy }}%</span>
+          <span class="stat-label">1/X/2 accuracy</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ stats.totalExact }}</span>
+          <span class="stat-label">Exact scores</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ stats.totalPoints }}</span>
+          <span class="stat-label">Total points</span>
+        </div>
+        <div class="stat-card highlight">
+          <span class="stat-value">🔥 {{ stats.currentStreak }}</span>
+          <span class="stat-label">Current streak</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ stats.bestStreak }}</span>
+          <span class="stat-label">Best streak</span>
+        </div>
+      </div>
+
+      @if (stats.byCompetition.length > 0) {
+        <h2 class="section-title">By competition</h2>
+        <div class="competition-list">
+          @for (comp of stats.byCompetition; track comp.competition) {
+            <div class="competition-row" [class.expert]="stats.expertCompetition?.competition === comp.competition">
+              <div class="comp-info">
+                <span class="comp-name">{{ comp.competition }}</span>
+                <span class="comp-detail">{{ comp.correct }}/{{ comp.total }} correct</span>
+              </div>
+              <div class="comp-bar-wrap">
+                <div class="comp-bar" [style.width.%]="comp.accuracy"></div>
+              </div>
+              <span class="comp-pct">{{ comp.accuracy }}%</span>
             </div>
-            <div class="comp-bar-wrap">
-              <div class="comp-bar" [style.width.%]="comp.accuracy"></div>
-            </div>
-            <span class="comp-pct">{{ comp.accuracy }}%</span>
+          }
+        </div>
+      }
+
+    } @else {
+      <p class="loading">Loading statistics...</p>
+    }
+  }
+
+  <!-- ── FORM ── -->
+  @if (activeTab() === 'form') {
+    <h2 class="section-title">Weekly form — last 8 weeks</h2>
+    @if (weeklyForm$ | async; as weeks) {
+      @if (weeks.every(w => w.points === 0)) {
+        <p class="empty">No graded predictions yet to show form.</p>
+      } @else {
+        <div class="chart-wrap">
+          <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="form-chart">
+            @for (w of weeks; track w.weekStart; let i = $index) {
+              @let maxPts = weeks.reduce((m, x) => x.points > m ? x.points : m, 1) {
+                <rect
+                  [attr.x]="barX(i, weeks.length)"
+                  [attr.y]="barY(w.points, maxPts)"
+                  [attr.width]="barWidth(weeks.length)"
+                  [attr.height]="barHeight(w.points, maxPts)"
+                  [attr.class]="w.points > 0 ? 'bar active' : 'bar empty'"
+                  rx="3"
+                />
+                @if (w.points > 0) {
+                  <text
+                    [attr.x]="barX(i, weeks.length) + barWidth(weeks.length) / 2"
+                    [attr.y]="barY(w.points, maxPts) - 3"
+                    class="bar-label"
+                    text-anchor="middle"
+                  >{{ w.points }}</text>
+                }
+                <text
+                  [attr.x]="barX(i, weeks.length) + barWidth(weeks.length) / 2"
+                  [attr.y]="chartHeight - 5"
+                  class="week-label"
+                  text-anchor="middle"
+                >{{ w.weekLabel }}</text>
+              }
+            }
+          </svg>
+        </div>
+        <p class="form-note">Each bar shows total points earned that week (all prediction types combined).</p>
+      }
+    } @else {
+      <p class="loading">Loading form...</p>
+    }
+  }
+
+  <!-- ── HEAD-TO-HEAD ── -->
+  @if (activeTab() === 'h2h') {
+    <div class="h2h-search">
+      <input
+        type="text"
+        placeholder="Search a player by name..."
+        [value]="searchQuery()"
+        (input)="onSearch($event)"
+      />
+      @if (filteredUsers$ | async; as users) {
+        @if (users.length > 0) {
+          <div class="user-suggestions">
+            @for (u of users; track u.uid) {
+              <button type="button" class="suggestion-btn" (click)="selectUser(u.uid)">
+                {{ u.displayName }}
+              </button>
+            }
           </div>
         }
-      </div>
-    }
+      }
+    </div>
 
+    @if (h2hStats$ | async; as h2h) {
+      @if (compareProfile$ | async; as them) {
+        <div class="h2h-card">
+          <div class="h2h-header">
+            <span class="h2h-name me">You</span>
+            <span class="h2h-vs">vs</span>
+            <span class="h2h-name them">{{ them?.displayName }}</span>
+          </div>
+
+          @for (row of [
+            { label: 'Total points', mine: h2h.mine.totalPoints, theirs: h2h.theirs.totalPoints, unit: 'pts' },
+            { label: '1/X/2 accuracy', mine: h2h.mine.accuracy, theirs: h2h.theirs.accuracy, unit: '%' },
+            { label: 'Exact scores', mine: h2h.mine.totalExact, theirs: h2h.theirs.totalExact, unit: '' },
+            { label: 'Current streak', mine: h2h.mine.currentStreak, theirs: h2h.theirs.currentStreak, unit: '' },
+            { label: 'Best streak', mine: h2h.mine.bestStreak, theirs: h2h.theirs.bestStreak, unit: '' },
+            { label: 'Predictions made', mine: h2h.mine.totalPredictions, theirs: h2h.theirs.totalPredictions, unit: '' }
+          ]; track row.label) {
+            <div class="h2h-row">
+              <span class="h2h-val" [class.leading]="row.mine > row.theirs">
+                {{ row.mine }}{{ row.unit }}
+              </span>
+              <span class="h2h-label">{{ row.label }}</span>
+              <span class="h2h-val" [class.leading]="row.theirs > row.mine">
+                {{ row.theirs }}{{ row.unit }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    } @else if (!selectedUserId()) {
+      <p class="empty">Search for a player above to compare stats.</p>
+    }
+  }
+
+  <!-- ── ACHIEVEMENTS ── -->
+  @if (activeTab() === 'achievements') {
     @if (profile$ | async; as profile) {
-      <h2 class="section-title">Arritjet</h2>
       <div class="achievements-grid">
         @for (ach of allAchievements; track ach.id) {
           <div class="achievement-card" [class.earned]="isEarned(ach.id, profile.achievements ?? [])">
@@ -63,8 +188,6 @@
         }
       </div>
     }
-
-  } @else {
-    <p class="loading">Duke ngarkuar statistikat...</p>
   }
+
 </section>
