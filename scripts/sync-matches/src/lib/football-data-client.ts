@@ -21,7 +21,24 @@ function formatDate(date: Date): string {
 }
 
 /**
- * Ndeshjet "sot + nesër" (UTC) për 12 kompeticionet e planit falas — 1 thirrje API.
+ * Merr statusin e kartës së kuqe për një ndeshje specifike.
+ * Kërkon 1 thirrje shtesë API per ndeshje të graduara — brenda limitit 10 req/min.
+ * Kthen true/false/null (null = data nuk ishte e disponueshme).
+ */
+export async function fetchMatchRedCardStatus(matchId: number, token: string): Promise<boolean | null> {
+  try {
+    const res = await fetch(`https://api.football-data.org/v4/matches/${matchId}`, {
+      headers: { 'X-Auth-Token': token }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const bookings: Array<{ card: string }> = data.bookings ?? [];
+    return bookings.some((b) => b.card === 'RED' || b.card === 'YELLOW_RED');
+  } catch {
+    return null;
+  }
+}
+/*
  * E marrim me 1 ditë paraprirje (jo vetëm "sot", default i football-data.org), që ndeshjet
  * afër mesnatës të zbulohen me orë paraprijëse, jo vetëm minuta para fillimit.
  */

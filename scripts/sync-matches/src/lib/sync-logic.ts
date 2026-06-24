@@ -1,8 +1,8 @@
 import { db, FieldValue } from './admin';
-import { fetchUpcomingMatches } from './football-data-client';
+import { fetchUpcomingMatches, fetchMatchRedCardStatus } from './football-data-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
-import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
+import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, calculateBttsPoints, calculateRedCardPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
 import { computeNewAchievements, UserProgress } from './achievement';
 
 type MatchStatus = 'scheduled' | 'live' | 'finished';
@@ -94,12 +94,83 @@ export async function syncMatchesAndGrade(): Promise<void> {
   }
 
   for (const matchId of justFinished) {
-    console.log(`Gradim: ndeshja ${matchId} sapo mbaroi.`);
-    await gradeMatch(matchId);
+    console.log(`Grading match ${matchId}...`);
+    await gradeMatch(matchId, footballDataToken);
   }
 
-  // Krijo automatikisht sfida turneu bazuar mbi fazat e ndeshjeve
+  // Check perfect day bonus for each unique UTC date that had matches finish
+  if (justFinished.length > 0) {
+    const finishedDates = new Set<string>();
+    for (const matchId of justFinished) {
+      const snap = await db.collection('matches').doc(matchId).get();
+      const kickoff = snap.data()?.['kickoff'] as number | undefined;
+      if (kickoff) {
+        const dateStr = new Date(kickoff).toISOString().slice(0, 10); // YYYY-MM-DD
+        finishedDates.add(dateStr);
+      }
+    }
+    for (const dateStr of finishedDates) {
+      await checkPerfectDayBonus(dateStr);
+    }
+  }
+
   await autoCreateChallenges(matches);
+}
+
+const PERFECT_DAY_BONUS = 10;
+
+async function checkPerfectDayBonus(dateStr: string): Promise<void> {
+  const dayStart = new Date(dateStr + 'T00:00:00Z').getTime();
+  const dayEnd   = dayStart + 24 * 60 * 60 * 1000;
+
+  // Get all matches for this UTC day
+  const matchesSnap = await db.collection('matches')
+    .where('kickoff', '>=', dayStart)
+    .where('kickoff', '<', dayEnd)
+    .get();
+
+  if (matchesSnap.empty) return;
+
+  // Only proceed if ALL matches for the day are finished
+  const allFinished = matchesSnap.docs.every((d) => d.data()['status'] === 'finished');
+  if (!allFinished) return;
+
+  const allMatchIds = matchesSnap.docs.map((d) => d.id);
+
+  // Collect per-user prediction results for this day
+  const userResults = new Map<string, { correct: number; total: number }>();
+
+  for (const matchId of allMatchIds) {
+    const predsSnap = await db.collection('predictions')
+      .where('matchId', '==', matchId)
+      .where('points', '>=', 0)
+      .get();
+
+    for (const predDoc of predsSnap.docs) {
+      const pred = predDoc.data();
+      const userId = pred['userId'] as string;
+      const pts    = (pred['points'] as number) ?? 0;
+      const entry  = userResults.get(userId) ?? { correct: 0, total: 0 };
+      entry.total++;
+      if (pts > 0) entry.correct++;
+      userResults.set(userId, entry);
+    }
+  }
+
+  // Award bonus to users who predicted ALL matches of the day correctly
+  for (const [userId, { correct, total }] of userResults.entries()) {
+    if (total !== allMatchIds.length || correct !== allMatchIds.length) continue;
+
+    const bonusRef = db.collection('perfectDayBonuses').doc(`${userId}_${dateStr}`);
+    const existing = await bonusRef.get();
+    if (existing.exists) continue; // already awarded
+
+    await bonusRef.set({ userId, date: dateStr, points: PERFECT_DAY_BONUS, awardedAt: Date.now() });
+    await db.collection('users').doc(userId).update({
+      totalPoints: FieldValue.increment(PERFECT_DAY_BONUS)
+    });
+    console.log(`⭐ Perfect day bonus +${PERFECT_DAY_BONUS} pts → ${userId} (${dateStr})`);
+  }
 }
 
 const KNOCKOUT_STAGES: Record<string, string> = {
@@ -171,10 +242,19 @@ async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpco
   }
 }
 
-async function gradeMatch(matchId: string): Promise<void> {
+async function gradeMatch(matchId: string, footballDataToken?: string): Promise<void> {
   const matchSnap = await db.collection('matches').doc(matchId).get();
   const match = matchSnap.data();
   if (!match || !match['result']) return;
+
+  // Fetch red card status from football-data.org match detail (1 extra API call)
+  let hasRedCard: boolean | null = null;
+  if (footballDataToken) {
+    hasRedCard = await fetchMatchRedCardStatus(parseInt(matchId), footballDataToken);
+    if (hasRedCard !== null) {
+      await db.collection('matches').doc(matchId).update({ hasRedCard });
+    }
+  }
 
   const batch = db.batch();
   let gradedCount = 0;
@@ -189,6 +269,8 @@ async function gradeMatch(matchId: string): Promise<void> {
       exactScore?: ExactScoreGuess;
       overUnder?: 'over' | 'under';
       htFt?: string;
+      btts?: boolean;
+      redCard?: boolean;
     };
 
     const points = calculatePoints(
@@ -208,7 +290,15 @@ async function gradeMatch(matchId: string): Promise<void> {
       ? calculateHtFtPoints(prediction.htFt, halfTimeResult, match['result'] as MatchResult)
       : 0;
 
-    const totalMatchPoints = points + ouPoints + htFtPoints;
+    const bttsPoints = prediction.btts !== undefined
+      ? calculateBttsPoints(prediction.btts, match['result'] as MatchResult)
+      : 0;
+
+    const redCardPoints = (prediction.redCard !== undefined && hasRedCard !== null)
+      ? calculateRedCardPoints(prediction.redCard, hasRedCard)
+      : 0;
+
+    const totalMatchPoints = points + ouPoints + htFtPoints + bttsPoints + redCardPoints;
 
     const outcomeCorrect = points > 0;
     const exactScoreCorrect = !!(
@@ -221,6 +311,8 @@ async function gradeMatch(matchId: string): Promise<void> {
       points,
       ...(prediction.overUnder !== undefined ? { ouPoints } : {}),
       ...(prediction.htFt !== undefined ? { htFtPoints } : {}),
+      ...(prediction.btts !== undefined ? { bttsPoints } : {}),
+      ...(prediction.redCard !== undefined && hasRedCard !== null ? { redCardPoints } : {}),
       seen: false,
       competition,
       exactScoreCorrect

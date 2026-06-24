@@ -65,13 +65,11 @@ export function calculateOverUnderPoints(
 }
 
 export const HT_FT_BONUS = 5;
+export const RED_CARD_BONUS = 3;
+export const BTTS_BONUS = 2;
 
-/**
- * HT/FT: parashikim i kombinuar (p.sh. "1/X" = fiton home në HT, barazim në FT)
- * +5 pikë fikse nëse e qëllon kombinimin e saktë
- */
 export function calculateHtFtPoints(
-  choice: string,   // e.g. "1/X"
+  choice: string,
   halfTimeResult: MatchResult,
   fullTimeResult: MatchResult
 ): number {
@@ -79,4 +77,15 @@ export function calculateHtFtPoints(
   const ftOutcome = getOutcome(fullTimeResult);
   const actual = `${htOutcome}/${ftOutcome}`;
   return choice === actual ? HT_FT_BONUS : 0;
+}
+
+/** BTTS: both teams to score. +2 pts if correct. */
+export function calculateBttsPoints(choice: boolean, result: MatchResult): number {
+  const actual = result.homeGoals > 0 && result.awayGoals > 0;
+  return choice === actual ? BTTS_BONUS : 0;
+}
+
+/** Red card. +3 pts if correct. */
+export function calculateRedCardPoints(choice: boolean, hasRedCard: boolean): number {
+  return choice === hasRedCard ? RED_CARD_BONUS : 0;
 }

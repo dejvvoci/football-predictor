@@ -6,16 +6,12 @@
 
   <div class="teams">
     <div class="team-block">
-      @if (match.homeCrest) {
-        <img class="crest" [src]="match.homeCrest" [alt]="match.homeTeam" />
-      }
+      @if (match.homeCrest) { <img class="crest" [src]="match.homeCrest" [alt]="match.homeTeam" /> }
       <span class="team">{{ match.homeTeam }}</span>
     </div>
     <span class="vs">vs</span>
     <div class="team-block">
-      @if (match.awayCrest) {
-        <img class="crest" [src]="match.awayCrest" [alt]="match.awayTeam" />
-      }
+      @if (match.awayCrest) { <img class="crest" [src]="match.awayCrest" [alt]="match.awayTeam" /> }
       <span class="team">{{ match.awayTeam }}</span>
     </div>
   </div>
@@ -25,97 +21,141 @@
   }
 
   @if (prediction(); as existing) {
-    <p class="existing-prediction">
-      ✓ Parashikimi yt: <strong>{{ choiceLabel(existing.choice) }}</strong>
+    <div class="existing-prediction">
+      ✓ Your prediction: <strong>{{ choiceLabel(existing.choice) }}</strong>
       @if (existing.exactScore) {
-        ({{ existing.exactScore.home }}-{{ existing.exactScore.away }})
+        · <strong>{{ existing.exactScore.home }}-{{ existing.exactScore.away }}</strong>
       }
-      @if (existing.points !== undefined) {
-        — {{ existing.points }} pikë
-      }
-    </p>
+    </div>
   }
 
-  @if (!locked()) {
-    <div class="choice-buttons">
-      <button type="button" [class.selected]="choice() === '1'" (click)="selectChoice('1')">
-        1 ({{ match.homeTeam }})<span class="points">{{ pointsFor('1') }} pikë</span>
-      </button>
-      <button type="button" [class.selected]="choice() === 'X'" (click)="selectChoice('X')">
-        X (Barazim)<span class="points">{{ pointsFor('X') }} pikë</span>
-      </button>
-      <button type="button" [class.selected]="choice() === '2'" (click)="selectChoice('2')">
-        2 ({{ match.awayTeam }})<span class="points">{{ pointsFor('2') }} pikë</span>
-      </button>
+  @if (locked()) {
+    <p class="locked-note">Predictions closed for this match.</p>
+  } @else {
+
+    <!-- ── 1/X/2 main choice ── -->
+    <div class="main-choice">
+      @for (c of (['1','X','2'] as const); track c) {
+        <button type="button" class="choice-btn" [class.selected]="choice() === c" (click)="selectChoice(c)">
+          <span class="choice-label">{{ c === '1' ? match.homeTeam : c === '2' ? match.awayTeam : 'Draw' }}</span>
+          <span class="choice-odds">{{ pointsFor(c) }} pts</span>
+        </button>
+      }
     </div>
 
-    <label class="exact-score">
-      <span class="exact-score-header">
-        Rezultati i saktë
-        <span class="bonus-tag">bonus +3</span>
-      </span>
-      <div class="score-inputs">
-        <input type="number" min="0" [value]="exactHome()" (input)="onExactHomeChange($event)" placeholder="0" />
-        <span>-</span>
-        <input type="number" min="0" [value]="exactAway()" (input)="onExactAwayChange($event)" placeholder="0" />
-      </div>
-    </label>
+    <!-- ── Bonus predictions panel ── -->
+    @if (choice()) {
+      <div class="bonus-panel">
+        <div class="bonus-panel-title">More predictions <span class="optional-tag">optional</span></div>
 
-    @if (match.ouOdds) {
-      <div class="ou-section">
-        <span class="ou-label">Total golash</span>
-        <div class="ou-buttons">
-          <button type="button" class="ou-btn" [class.selected]="overUnder() === 'over'" (click)="overUnder.set('over')">
-            Over {{ match.ouOdds.line }}<span class="ou-pts">{{ ouPointsFor('over') }} pts</span>
-          </button>
-          <button type="button" class="ou-btn" [class.selected]="overUnder() === 'under'" (click)="overUnder.set('under')">
-            Under {{ match.ouOdds.line }}<span class="ou-pts">{{ ouPointsFor('under') }} pts</span>
-          </button>
-          @if (overUnder()) {
-            <button type="button" class="ou-clear" (click)="overUnder.set(null)">✕</button>
-          }
+        <!-- Exact score -->
+        <div class="bonus-row">
+          <div class="bonus-meta">
+            <span class="bonus-name">Exact score</span>
+            <span class="bonus-pts">+5 pts</span>
+          </div>
+          <div class="exact-inputs">
+            <input type="number" min="0" max="20" placeholder="–"
+              [value]="exactHome() ?? ''"
+              (input)="onExactHomeChange($event)" />
+            <span class="exact-dash">–</span>
+            <input type="number" min="0" max="20" placeholder="–"
+              [value]="exactAway() ?? ''"
+              (input)="onExactAwayChange($event)" />
+          </div>
         </div>
+
+        <!-- First goalscorer (coming soon) -->
+        <div class="bonus-row disabled">
+          <div class="bonus-meta">
+            <span class="bonus-name">First goalscorer</span>
+            <span class="bonus-pts">+4 pts</span>
+          </div>
+          <span class="coming-soon-tag">Coming soon</span>
+        </div>
+
+        <!-- Red card -->
+        <div class="bonus-row">
+          <div class="bonus-meta">
+            <span class="bonus-name">Red card?</span>
+            <span class="bonus-pts">+3 pts</span>
+          </div>
+          <div class="yn-btns">
+            <button type="button" [class.selected]="redCard() === true" (click)="redCard.set(redCard() === true ? null : true)">Yes</button>
+            <button type="button" [class.selected]="redCard() === false" (click)="redCard.set(redCard() === false ? null : false)">No</button>
+          </div>
+        </div>
+
+        <!-- BTTS -->
+        <div class="bonus-row">
+          <div class="bonus-meta">
+            <span class="bonus-name">Both teams to score?</span>
+            <span class="bonus-pts">+2 pts</span>
+          </div>
+          <div class="yn-btns">
+            <button type="button" [class.selected]="btts() === true" (click)="btts.set(btts() === true ? null : true)">Yes</button>
+            <button type="button" [class.selected]="btts() === false" (click)="btts.set(btts() === false ? null : false)">No</button>
+          </div>
+        </div>
+
+        <!-- Over/Under -->
+        @if (match.ouOdds) {
+          <div class="bonus-row">
+            <div class="bonus-meta">
+              <span class="bonus-name">Total goals</span>
+              <span class="bonus-pts">variable pts</span>
+            </div>
+            <div class="yn-btns">
+              <button type="button" [class.selected]="overUnder() === 'over'"
+                (click)="overUnder.set(overUnder() === 'over' ? null : 'over')">
+                Over {{ match.ouOdds.line }} <span class="ou-sub">{{ ouPointsFor('over') }} pts</span>
+              </button>
+              <button type="button" [class.selected]="overUnder() === 'under'"
+                (click)="overUnder.set(overUnder() === 'under' ? null : 'under')">
+                Under {{ match.ouOdds.line }} <span class="ou-sub">{{ ouPointsFor('under') }} pts</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- HT/FT -->
+        <div class="bonus-row htft-row">
+          <div class="bonus-meta">
+            <span class="bonus-name">Half time / Full time</span>
+            <span class="bonus-pts">+5 pts</span>
+          </div>
+          <div class="htft-grid">
+            @for (row of htFtCombinations; track row[0]) {
+              @for (combo of row; track combo) {
+                <button
+                  type="button"
+                  class="htft-btn"
+                  [class.selected]="htFt() === combo"
+                  [disabled]="!isHtFtEnabled(combo)"
+                  (click)="toggleHtFt(combo)"
+                >{{ combo }}</button>
+              }
+            }
+          </div>
+        </div>
+
       </div>
     }
 
-    <div class="htft-section">
-      <div class="htft-header">
-        <span class="htft-label">Half Time / Full Time</span>
-        <span class="bonus-tag">bonus +{{ HT_FT_BONUS }} pts</span>
-      </div>
-      <div class="htft-grid">
-        @for (row of htFtCombinations; track row[0]) {
-          @for (combo of row; track combo) {
-            <button
-              type="button"
-              class="htft-btn"
-              [class.selected]="htFt() === combo"
-              (click)="htFt.set(htFt() === combo ? null : combo)"
-              [title]="htFtLabel(combo, match.homeTeam, match.awayTeam)"
-            >
-              {{ combo }}
-            </button>
-          }
-        }
-      </div>
-    </div>
-
     @if (errorMessage()) {
-      <p class="form-error">{{ errorMessage() }}</p>
+      <p class="error-msg">{{ errorMessage() }}</p>
     }
 
     <button type="button" class="submit-btn" [disabled]="!choice() || saving()" (click)="submit()">
-      {{ saving() ? 'Duke ruajtur...' : prediction() ? 'Përditëso parashikimin' : 'Dërgo parashikimin' }}
+      {{ saving() ? 'Saving...' : 'Submit prediction' }}
     </button>
-  } @else {
-    <p class="locked-note">Ndeshja ka filluar ose ka mbaruar — parashikimi është mbyllur.</p>
   }
 
   @if (showIncompleteScoreWarning()) {
     <div class="overlay" (click)="closeWarning()">
       <div class="warning-modal" (click)="$event.stopPropagation()">
-        <p>⚠️ Vendos rezultatin e plotë (të dyja shifrat), ose lëri të dyja bosh.</p>
-        <button type="button" (click)="closeWarning()">Kuptova</button>
+        <p>⚠️ Enter both score fields or leave them both empty.</p>
+        <button type="button" (click)="closeWarning()">Got it</button>
       </div>
     </div>
   }

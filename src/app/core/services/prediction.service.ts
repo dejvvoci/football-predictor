@@ -26,12 +26,12 @@ export class PredictionService {
     choice: PredictionChoice,
     exactScore?: ExactScoreGuess,
     overUnder?: 'over' | 'under',
-    htFt?: string
+    htFt?: string,
+    btts?: boolean,
+    redCard?: boolean
   ): Promise<void> {
     const userId = this.auth.currentUser?.uid;
-    if (!userId) {
-      throw new Error('Duhet të jesh i loguar për të dhënë parashikim.');
-    }
+    if (!userId) throw new Error('Must be logged in to submit a prediction.');
 
     const predictionId = `${userId}_${matchId}`;
     const prediction: Prediction = {
@@ -42,6 +42,8 @@ export class PredictionService {
       ...(exactScore ? { exactScore } : {}),
       ...(overUnder ? { overUnder } : {}),
       ...(htFt ? { htFt } : {}),
+      ...(btts !== undefined ? { btts } : {}),
+      ...(redCard !== undefined ? { redCard } : {}),
       createdAt: Date.now()
     };
 

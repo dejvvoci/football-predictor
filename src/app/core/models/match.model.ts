@@ -31,4 +31,5 @@ export interface Match {
   ouOdds?: OverUnderOdds;
   result?: MatchResult;
   halfTimeResult?: MatchResult;
+  hasRedCard?: boolean;        // set by sync script from match detail API call
 }

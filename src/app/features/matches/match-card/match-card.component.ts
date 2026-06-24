@@ -9,6 +9,10 @@ import { PredictionService } from '../../../core/services/prediction.service';
 interface PredictionLike {
   choice: PredictionChoice;
   exactScore?: { home: number; away: number };
+  overUnder?: 'over' | 'under';
+  htFt?: string;
+  btts?: boolean;
+  redCard?: boolean;
   points?: number;
 }
 
@@ -21,7 +25,6 @@ interface PredictionLike {
 })
 export class MatchCardComponent implements OnInit {
   @Input({ required: true }) match!: Match;
-  /** Kur jepet, parashikimi është i veçantë për këtë grup (pikët shkojnë vetëm te leaderboard i tij) */
   @Input() groupId?: string;
 
   private predictionService = inject(PredictionService);
@@ -33,9 +36,12 @@ export class MatchCardComponent implements OnInit {
   exactAway = signal<number | null>(null);
   overUnder = signal<'over' | 'under' | null>(null);
   htFt = signal<string | null>(null);
+  btts = signal<boolean | null>(null);
+  redCard = signal<boolean | null>(null);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
   showIncompleteScoreWarning = signal(false);
+  showBonusPanel = signal(false);
 
   locked = computed(() => this.match.status !== 'scheduled' || this.match.kickoff <= Date.now());
 
@@ -50,27 +56,34 @@ export class MatchCardComponent implements OnInit {
         this.choice.set(existing.choice);
         this.exactHome.set(existing.exactScore?.home ?? null);
         this.exactAway.set(existing.exactScore?.away ?? null);
-        this.overUnder.set((existing as any).overUnder ?? null);
-        this.htFt.set((existing as any).htFt ?? null);
+        this.overUnder.set(existing.overUnder ?? null);
+        this.htFt.set(existing.htFt ?? null);
+        this.btts.set(existing.btts ?? null);
+        this.redCard.set(existing.redCard ?? null);
+        this.showBonusPanel.set(true);
       }
     });
   }
 
-  selectChoice(choice: PredictionChoice): void {
-    this.choice.set(choice);
+  selectChoice(c: PredictionChoice): void {
+    this.choice.set(c);
+    this.showBonusPanel.set(true);
+    // Clear htFt if FT part doesn't match new choice
+    const current = this.htFt();
+    if (current && !current.endsWith('/' + c)) {
+      this.htFt.set(null);
+    }
   }
 
-  pointsFor(choice: PredictionChoice): number {
-    const odds =
-      choice === '1' ? this.match.odds.home : choice === 'X' ? this.match.odds.draw : this.match.odds.away;
+  pointsFor(c: PredictionChoice): number {
+    const odds = c === '1' ? this.match.odds.home : c === 'X' ? this.match.odds.draw : this.match.odds.away;
     return Math.floor(odds);
   }
 
-  /** Kthen '1'/'X'/'2' në emrin real të skuadrës (ose "Barazim") — për mesazhin "Parashikimi yt: ..." */
-  choiceLabel(choice: PredictionChoice): string {
-    if (choice === '1') return this.match.homeTeam;
-    if (choice === '2') return this.match.awayTeam;
-    return 'Barazim';
+  choiceLabel(c: PredictionChoice): string {
+    if (c === '1') return this.match.homeTeam;
+    if (c === '2') return this.match.awayTeam;
+    return 'Draw';
   }
 
   onExactHomeChange(event: Event): void {
@@ -85,22 +98,28 @@ export class MatchCardComponent implements OnInit {
     this.autoSelectChoiceFromScore();
   }
 
-  /** Kur të dyja fushat e rezultatit të saktë janë plotësuara, zgjedh vetë 1/X/2 përkatësisht */
   private autoSelectChoiceFromScore(): void {
     const home = this.exactHome();
     const away = this.exactAway();
     if (home === null || away === null) return;
-
-    if (home > away) {
-      this.choice.set('1');
-    } else if (home < away) {
-      this.choice.set('2');
-    } else {
-      this.choice.set('X');
-    }
+    const derived: PredictionChoice = home > away ? '1' : home < away ? '2' : 'X';
+    this.selectChoice(derived);
   }
 
-  readonly HT_FT_BONUS = 5;
+  // HT/FT: only combos whose FT part matches the current choice are enabled
+  isHtFtEnabled(combo: string): boolean {
+    const c = this.choice();
+    return !!c && combo.endsWith('/' + c);
+  }
+
+  toggleHtFt(combo: string): void {
+    this.htFt.set(this.htFt() === combo ? null : combo);
+  }
+
+  ouPointsFor(c: 'over' | 'under'): number {
+    if (!this.match.ouOdds) return 0;
+    return Math.floor(c === 'over' ? this.match.ouOdds.over : this.match.ouOdds.under);
+  }
 
   readonly htFtCombinations = [
     ['1/1', '1/X', '1/2'],
@@ -108,22 +127,10 @@ export class MatchCardComponent implements OnInit {
     ['2/1', '2/X', '2/2'],
   ] as const;
 
-  ouPointsFor(choice: 'over' | 'under'): number {
-    if (!this.match.ouOdds) return 0;
-    const odds = choice === 'over' ? this.match.ouOdds.over : this.match.ouOdds.under;
-    return Math.floor(odds);
-  }
-
-  htFtLabel(combo: string, homeTeam: string, awayTeam: string): string {
-    const labels: Record<string, string> = { '1': homeTeam, 'X': 'X', '2': awayTeam };
-    const [ht, ft] = combo.split('/');
-    return `${labels[ht]} / ${labels[ft]}`;
-  }
-
   async submit(): Promise<void> {
     const choice = this.choice();
     if (!choice) {
-      this.errorMessage.set('Zgjidh 1, X ose 2 para se të dërgosh.');
+      this.errorMessage.set('Select Home / Draw / Away first.');
       return;
     }
 
@@ -135,9 +142,11 @@ export class MatchCardComponent implements OnInit {
       return;
     }
 
-    const exactScore = home !== null && away !== null && home >= 0 && away >= 0 ? { home, away } : undefined;
+    const exactScore = home !== null && away !== null ? { home, away } : undefined;
     const overUnder = this.overUnder() ?? undefined;
     const htFt = this.htFt() ?? undefined;
+    const btts = this.btts() !== null ? this.btts()! : undefined;
+    const redCard = this.redCard() !== null ? this.redCard()! : undefined;
 
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -146,10 +155,10 @@ export class MatchCardComponent implements OnInit {
       if (this.groupId) {
         await this.predictionService.submitGroupPrediction(this.groupId, this.match.id, choice, exactScore);
       } else {
-        await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder, htFt);
+        await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder, htFt, btts, redCard);
       }
     } catch {
-      this.errorMessage.set("S'u ruajt dot parashikimi. Provo përsëri.");
+      this.errorMessage.set("Couldn't save prediction. Please try again.");
     } finally {
       this.saving.set(false);
     }
