@@ -25,21 +25,19 @@
 
           <!-- Photo area -->
           <div class="photo-area">
-            @if (photoRevealed() && ch.player.thumbnail) {
-              <img
-                class="player-photo"
-                [class.blurred]="photoBlurred()"
-                [src]="ch.player.thumbnail"
-                alt="Player" />
+            @if (gameState() !== 'playing') {
+              @if (resolvedThumbnail()) {
+                <img class="player-photo"
+                  [src]="resolvedThumbnail()!"
+                  [alt]="ch.player.name"
+                  (error)="resolvedThumbnail.set(null)" />
+              } @else {
+                <div class="silhouette no-photo">{{ ch.player.name.charAt(0) }}</div>
+              }
+            } @else if (wrongGuesses().length >= 5 && ch.player.thumbnail) {
+              <img class="player-photo blurred" [src]="ch.player.thumbnail" alt="Player" />
             } @else {
               <div class="silhouette">?</div>
-            }
-            @if (gameState() !== 'playing') {
-              <img
-                class="player-photo revealed"
-                [src]="ch.player.thumbnail ?? ''"
-                [alt]="ch.player.name"
-              />
             }
           </div>
 

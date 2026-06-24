@@ -458,9 +458,25 @@ async function setDailyChallenge(): Promise<void> {
     console.warn('TheSportsDB unavailable — using fallback player data.');
   }
 
-  // Fallback if API failed
+  // Fallback if API failed or thumbnail is empty
   if (!player) {
     player = { ...fallback, id: `fallback_${today}`, thumbnail: null, source: 'fallback' };
+  }
+
+  // If still no thumbnail, try Wikipedia
+  if (!player['thumbnail']) {
+    try {
+      const wikiTitle = encodeURIComponent((player['name'] as string).replace(/ /g, '_'));
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${wikiTitle}&prop=pageimages&pithumbsize=400&format=json&origin=*`;
+      const wikiRes = await fetch(wikiUrl);
+      if (wikiRes.ok) {
+        const wikiData = await wikiRes.json() as { query?: { pages?: Record<string, { thumbnail?: { source: string } }> } };
+        const pages = wikiData.query?.pages ?? {};
+        const page = Object.values(pages)[0];
+        const img = page?.thumbnail?.source;
+        if (img) player['thumbnail'] = img;
+      }
+    } catch { /* no thumbnail */ }
   }
 
   await docRef.set({ date: today, player, createdAt: Date.now() });

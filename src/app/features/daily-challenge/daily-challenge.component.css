@@ -38,6 +38,19 @@
   user-select: none;
 }
 
+.silhouette.no-photo {
+  font-size: 40px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  background: var(--color-pitch);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .player-photo {
   width: 100%;
   height: 100%;

@@ -22,6 +22,7 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
   leaderboard$ = this.service.getLeaderboard();
 
   challenge = signal<DailyChallenge | null | undefined>(undefined);
+  resolvedThumbnail = signal<string | null>(null);
   myResult$ = this.service.getMyResult();
 
   // Game state
@@ -43,14 +44,19 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
   photoBlurred = computed(() => this.wrongGuesses().length < 5);
 
   ngOnInit(): void {
-    this.sub = this.service.getTodaysChallenge().subscribe((ch) => {
+    this.sub = this.service.getTodaysChallenge().subscribe(async (ch) => {
       this.challenge.set(ch ?? null);
+      // If game was already finished before this page load, load thumbnail now
+      if (ch?.player && this.gameState() !== 'playing') {
+        await this.tryLoadThumbnail(ch.player);
+      }
     });
 
-    // Restore previous result if exists
-    this.service.getMyResult().subscribe((result) => {
+    this.service.getMyResult().subscribe(async (result) => {
       if (result) {
         this.gameState.set(result.solved ? 'won' : 'lost');
+        const player = this.challenge()?.player;
+        if (player) await this.tryLoadThumbnail(player);
       }
     });
   }
@@ -96,9 +102,11 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
     if (correct) {
       this.gameState.set('won');
       await this.service.submitResult(true, attempts, Math.floor((Date.now() - this.startTime) / 1000));
+      await this.tryLoadThumbnail(player);
     } else if (attempts >= MAX_ATTEMPTS) {
       this.gameState.set('lost');
       await this.service.submitResult(false, attempts, Math.floor((Date.now() - this.startTime) / 1000));
+      await this.tryLoadThumbnail(player);
     }
   }
 
@@ -124,6 +132,39 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
       birthYear: '🎂 Age'
     };
     return labels[CLUE_ORDER[index]] ?? '';
+  }
+
+  private async tryLoadThumbnail(player: DailyPlayer): Promise<void> {
+    if (player.thumbnail) {
+      this.resolvedThumbnail.set(player.thumbnail);
+      return;
+    }
+
+    // 1. Try TheSportsDB
+    try {
+      const url = `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(player.name)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json() as { players?: Record<string, string>[] };
+        const p = data.players?.[0];
+        const img = p?.['strThumb'] || p?.['strCutout'] || p?.['strRender'] || p?.['strFanart1'];
+        if (img) { this.resolvedThumbnail.set(img); return; }
+      }
+    } catch { /* try next */ }
+
+    // 2. Try Wikipedia
+    try {
+      const wikiTitle = encodeURIComponent(player.name.replace(/ /g, '_'));
+      const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${wikiTitle}&prop=pageimages&pithumbsize=400&format=json&origin=*`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json() as { query?: { pages?: Record<string, { thumbnail?: { source: string } }> } };
+        const pages = data.query?.pages ?? {};
+        const page = Object.values(pages)[0];
+        const img = page?.thumbnail?.source;
+        if (img) { this.resolvedThumbnail.set(img); return; }
+      }
+    } catch { /* no photo available */ }
   }
 
   attemptsArray = Array.from({ length: MAX_ATTEMPTS });
