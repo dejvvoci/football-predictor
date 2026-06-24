@@ -1,11 +1,10 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { of, switchMap, combineLatest, map } from 'rxjs';
+import { Observable, of, switchMap, combineLatest, map } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/services/auth.service';
-import { StatisticsService, UserStatistics } from '../../core/services/statistics.service';
+import { StatisticsService, WeeklyFormPoint } from '../../core/services/statistics.service';
 import { ALL_ACHIEVEMENTS } from '../../core/models/achievement.model';
-import { UserProfile } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-statistics',
@@ -28,7 +27,7 @@ export class StatisticsComponent {
     switchMap((uid) => uid ? this.statisticsService.getProfile(uid) : of(null))
   );
 
-  weeklyForm$ = this.myUid$.pipe(
+  weeklyForm$: Observable<WeeklyFormPoint[]> = this.myUid$.pipe(
     switchMap((uid) => uid ? this.statisticsService.getWeeklyForm(uid) : of([]))
   );
 
@@ -88,6 +87,14 @@ export class StatisticsComponent {
 
   isEarned(achievementId: string, earnedIds: string[]): boolean {
     return earnedIds.includes(achievementId);
+  }
+
+  allZero(weeks: { points: number }[]): boolean {
+    return weeks.every((w) => w.points === 0);
+  }
+
+  maxPoints(weeks: { points: number }[]): number {
+    return Math.max(1, ...weeks.map((w) => w.points));
   }
 
   // SVG chart helpers

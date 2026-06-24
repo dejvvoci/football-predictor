@@ -76,40 +76,38 @@
   @if (activeTab() === 'form') {
     <h2 class="section-title">Weekly form — last 8 weeks</h2>
     @if (weeklyForm$ | async; as weeks) {
-      @if (weeks.every(w => w.points === 0)) {
+      @if (allZero(weeks)) {
         <p class="empty">No graded predictions yet to show form.</p>
       } @else {
         <div class="chart-wrap">
           <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="form-chart">
             @for (w of weeks; track w.weekStart; let i = $index) {
-              @let maxPts = weeks.reduce((m, x) => x.points > m ? x.points : m, 1) {
-                <rect
-                  [attr.x]="barX(i, weeks.length)"
-                  [attr.y]="barY(w.points, maxPts)"
-                  [attr.width]="barWidth(weeks.length)"
-                  [attr.height]="barHeight(w.points, maxPts)"
-                  [attr.class]="w.points > 0 ? 'bar active' : 'bar empty'"
-                  rx="3"
-                />
-                @if (w.points > 0) {
-                  <text
-                    [attr.x]="barX(i, weeks.length) + barWidth(weeks.length) / 2"
-                    [attr.y]="barY(w.points, maxPts) - 3"
-                    class="bar-label"
-                    text-anchor="middle"
-                  >{{ w.points }}</text>
-                }
+              <rect
+                [attr.x]="barX(i, weeks.length)"
+                [attr.y]="barY(w.points, maxPoints(weeks))"
+                [attr.width]="barWidth(weeks.length)"
+                [attr.height]="barHeight(w.points, maxPoints(weeks))"
+                [class]="w.points > 0 ? 'bar active' : 'bar empty'"
+                rx="3"
+              />
+              @if (w.points > 0) {
                 <text
                   [attr.x]="barX(i, weeks.length) + barWidth(weeks.length) / 2"
-                  [attr.y]="chartHeight - 5"
-                  class="week-label"
+                  [attr.y]="barY(w.points, maxPoints(weeks)) - 3"
+                  class="bar-label"
                   text-anchor="middle"
-                >{{ w.weekLabel }}</text>
+                >{{ w.points }}</text>
               }
+              <text
+                [attr.x]="barX(i, weeks.length) + barWidth(weeks.length) / 2"
+                [attr.y]="chartHeight - 5"
+                class="week-label"
+                text-anchor="middle"
+              >{{ w.weekLabel }}</text>
             }
           </svg>
         </div>
-        <p class="form-note">Each bar shows total points earned that week (all prediction types combined).</p>
+        <p class="form-note">Each bar shows total points earned that week.</p>
       }
     } @else {
       <p class="loading">Loading form...</p>

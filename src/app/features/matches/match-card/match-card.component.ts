@@ -67,7 +67,6 @@ export class MatchCardComponent implements OnInit {
 
   selectChoice(c: PredictionChoice): void {
     this.choice.set(c);
-    this.showBonusPanel.set(true);
     // Clear htFt if FT part doesn't match new choice
     const current = this.htFt();
     if (current && !current.endsWith('/' + c)) {
@@ -98,12 +97,23 @@ export class MatchCardComponent implements OnInit {
     this.autoSelectChoiceFromScore();
   }
 
+  ouLockedByScore = computed(() =>
+    this.exactHome() !== null && this.exactAway() !== null && !!this.match.ouOdds
+  );
+
   private autoSelectChoiceFromScore(): void {
     const home = this.exactHome();
     const away = this.exactAway();
     if (home === null || away === null) return;
+
     const derived: PredictionChoice = home > away ? '1' : home < away ? '2' : 'X';
     this.selectChoice(derived);
+
+    // Auto-derive over/under from total goals vs the line
+    if (this.match.ouOdds) {
+      const total = home + away;
+      this.overUnder.set(total > this.match.ouOdds.line ? 'over' : 'under');
+    }
   }
 
   // HT/FT: only combos whose FT part matches the current choice are enabled
@@ -120,6 +130,8 @@ export class MatchCardComponent implements OnInit {
     if (!this.match.ouOdds) return 0;
     return Math.floor(c === 'over' ? this.match.ouOdds.over : this.match.ouOdds.under);
   }
+
+  readonly choices: PredictionChoice[] = ['1', 'X', '2'];
 
   readonly htFtCombinations = [
     ['1/1', '1/X', '1/2'],

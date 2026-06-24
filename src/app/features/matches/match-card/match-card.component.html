@@ -35,7 +35,7 @@
 
     <!-- ── 1/X/2 main choice ── -->
     <div class="main-choice">
-      @for (c of (['1','X','2'] as const); track c) {
+      @for (c of choices; track c) {
         <button type="button" class="choice-btn" [class.selected]="choice() === c" (click)="selectChoice(c)">
           <span class="choice-label">{{ c === '1' ? match.homeTeam : c === '2' ? match.awayTeam : 'Draw' }}</span>
           <span class="choice-odds">{{ pointsFor(c) }} pts</span>
@@ -43,8 +43,18 @@
       }
     </div>
 
-    <!-- ── Bonus predictions panel ── -->
+    <!-- ── More predictions toggle ── -->
     @if (choice()) {
+      <button type="button" class="more-toggle" (click)="showBonusPanel.set(!showBonusPanel())">
+        <span>More predictions</span>
+        <svg class="toggle-arrow" [class.open]="showBonusPanel()" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    }
+
+    <!-- ── Bonus predictions panel ── -->
+    @if (choice() && showBonusPanel()) {
       <div class="bonus-panel">
         <div class="bonus-panel-title">More predictions <span class="optional-tag">optional</span></div>
 
@@ -103,18 +113,33 @@
           <div class="bonus-row">
             <div class="bonus-meta">
               <span class="bonus-name">Total goals</span>
-              <span class="bonus-pts">variable pts</span>
+              <span class="bonus-pts">
+                @if (overUnder()) {
+                  +{{ ouPointsFor(overUnder()!) }} pts
+                } @else {
+                  pick to see pts
+                }
+              </span>
             </div>
             <div class="yn-btns">
-              <button type="button" [class.selected]="overUnder() === 'over'"
+              <button type="button"
+                [class.selected]="overUnder() === 'over'"
+                [disabled]="ouLockedByScore()"
                 (click)="overUnder.set(overUnder() === 'over' ? null : 'over')">
-                Over {{ match.ouOdds.line }} <span class="ou-sub">{{ ouPointsFor('over') }} pts</span>
+                Over {{ match.ouOdds.line }}
+                <span class="ou-sub">{{ ouPointsFor('over') }} pts</span>
               </button>
-              <button type="button" [class.selected]="overUnder() === 'under'"
+              <button type="button"
+                [class.selected]="overUnder() === 'under'"
+                [disabled]="ouLockedByScore()"
                 (click)="overUnder.set(overUnder() === 'under' ? null : 'under')">
-                Under {{ match.ouOdds.line }} <span class="ou-sub">{{ ouPointsFor('under') }} pts</span>
+                Under {{ match.ouOdds.line }}
+                <span class="ou-sub">{{ ouPointsFor('under') }} pts</span>
               </button>
             </div>
+            @if (ouLockedByScore()) {
+              <span class="auto-note">Auto-set from score</span>
+            }
           </div>
         }
 
