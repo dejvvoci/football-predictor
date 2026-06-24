@@ -36,12 +36,16 @@ export class StatisticsComponent {
   searchQuery = signal('');
   selectedUserId = signal<string | null>(null);
 
-  filteredUsers$ = combineLatest([this.allUsers$, this.myUid$]).pipe(
-    map(([users, myUid]) => {
-      const q = this.searchQuery().toLowerCase().trim();
-      if (!q) return [];
+  filteredUsers$ = combineLatest([
+    this.allUsers$,
+    this.myUid$,
+    toObservable(this.searchQuery)
+  ]).pipe(
+    map(([users, myUid, q]) => {
+      const query = q.toLowerCase().trim();
+      if (!query) return [];
       return users
-        .filter((u) => u.uid !== myUid && u.displayName?.toLowerCase().includes(q))
+        .filter((u) => u.uid !== myUid && u.displayName?.toLowerCase().includes(query))
         .slice(0, 6);
     })
   );
@@ -62,12 +66,12 @@ export class StatisticsComponent {
 
   h2hStats$ = combineLatest([
     toObservable(this.selectedUserId),
-    this.stats$
+    this.profile$
   ]).pipe(
-    switchMap(([uid, myStats]) => {
-      if (!uid || !myStats) return of(null);
-      return this.statisticsService.getUserStatistics(uid).pipe(
-        map((theirStats) => ({ mine: myStats, theirs: theirStats }))
+    switchMap(([uid, myProfile]) => {
+      if (!uid || !myProfile) return of(null);
+      return this.statisticsService.getProfile(uid).pipe(
+        map((theirProfile) => ({ mine: myProfile, theirs: theirProfile }))
       );
     })
   );

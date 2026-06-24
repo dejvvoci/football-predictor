@@ -146,12 +146,10 @@
           </div>
 
           @for (row of [
-            { label: 'Total points', mine: h2h.mine.totalPoints, theirs: h2h.theirs.totalPoints, unit: 'pts' },
-            { label: '1/X/2 accuracy', mine: h2h.mine.accuracy, theirs: h2h.theirs.accuracy, unit: '%' },
-            { label: 'Exact scores', mine: h2h.mine.totalExact, theirs: h2h.theirs.totalExact, unit: '' },
-            { label: 'Current streak', mine: h2h.mine.currentStreak, theirs: h2h.theirs.currentStreak, unit: '' },
-            { label: 'Best streak', mine: h2h.mine.bestStreak, theirs: h2h.theirs.bestStreak, unit: '' },
-            { label: 'Predictions made', mine: h2h.mine.totalPredictions, theirs: h2h.theirs.totalPredictions, unit: '' }
+            { label: 'Total points',    mine: h2h.mine.totalPoints ?? 0,    theirs: h2h.theirs?.totalPoints ?? 0,    unit: 'pts' },
+            { label: 'Current streak',  mine: h2h.mine.currentStreak ?? 0,  theirs: h2h.theirs?.currentStreak ?? 0,  unit: '' },
+            { label: 'Best streak',     mine: h2h.mine.bestStreak ?? 0,     theirs: h2h.theirs?.bestStreak ?? 0,     unit: '' },
+            { label: 'Achievements',    mine: (h2h.mine.achievements ?? []).length,  theirs: (h2h.theirs?.achievements ?? []).length, unit: '' }
           ]; track row.label) {
             <div class="h2h-row">
               <span class="h2h-val" [class.leading]="row.mine > row.theirs">
