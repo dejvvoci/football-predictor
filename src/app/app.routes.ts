@@ -46,6 +46,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'daily',
+    loadComponent: () =>
+      import('./features/daily-challenge/daily-challenge.component').then((m) => m.DailyChallengeComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'tournament',
     loadComponent: () =>
       import('./features/tournament/tournament.component').then((m) => m.TournamentComponent),

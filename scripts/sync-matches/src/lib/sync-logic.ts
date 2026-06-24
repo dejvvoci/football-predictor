@@ -4,6 +4,7 @@ import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
 import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, calculateBttsPoints, calculateRedCardPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
 import { computeNewAchievements, UserProgress } from './achievement';
+import { pickPlayerForDate, FAMOUS_PLAYERS } from './player-list';
 
 type MatchStatus = 'scheduled' | 'live' | 'finished';
 
@@ -115,6 +116,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
   }
 
   await autoCreateChallenges(matches);
+  await setDailyChallenge();
 }
 
 const PERFECT_DAY_BONUS = 10;
@@ -418,4 +420,49 @@ async function gradeMatch(matchId: string, footballDataToken?: string): Promise<
   console.log(
     `  → ${predictionsSnap.size} parashikime globale + ${groupPredictionsSnap.size} parashikime grupesh u graduan.`
   );
+}
+
+/** Sets the player of the day. Runs every sync cycle but only creates if not already set for today. */
+async function setDailyChallenge(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const docRef = db.collection('dailyChallenges').doc(today);
+  const existing = await docRef.get();
+  if (existing.exists) return;
+
+  const fallback = pickPlayerForDate(today);
+
+  // Try TheSportsDB first
+  let player: Record<string, unknown> | null = null;
+  try {
+    const url = `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(fallback.name)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json() as { players?: Record<string, string>[] };
+      const p = data.players?.[0];
+      if (p) {
+        const birthYear = p['dateBorn'] ? new Date(p['dateBorn']).getFullYear() : fallback.birthYear;
+        player = {
+          id: p['idPlayer'] ?? `api_${today}`,
+          name: p['strPlayer'] ?? fallback.name,
+          nationality: p['strNationality'] ?? fallback.nationality,
+          nationalityEmoji: fallback.nationalityEmoji,
+          position: p['strPosition'] ?? fallback.position,
+          club: p['strTeam'] ?? fallback.club,
+          birthYear,
+          thumbnail: p['strThumb'] ?? null,
+          source: 'api'
+        };
+      }
+    }
+  } catch {
+    console.warn('TheSportsDB unavailable — using fallback player data.');
+  }
+
+  // Fallback if API failed
+  if (!player) {
+    player = { ...fallback, id: `fallback_${today}`, thumbnail: null, source: 'fallback' };
+  }
+
+  await docRef.set({ date: today, player, createdAt: Date.now() });
+  console.log(`⭐ Daily challenge set: ${player['name']} (${player['source']})`);
 }
