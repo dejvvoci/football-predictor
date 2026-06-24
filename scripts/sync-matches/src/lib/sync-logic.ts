@@ -3,7 +3,7 @@ import { fetchUpcomingMatches } from './football-data-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
 import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
-import { computeNewAchievements, UserProgress } from './achievements';
+import { computeNewAchievements, UserProgress } from './achievement';
 
 type MatchStatus = 'scheduled' | 'live' | 'finished';
 
