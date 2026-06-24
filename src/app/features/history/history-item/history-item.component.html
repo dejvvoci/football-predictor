@@ -6,23 +6,28 @@
     </header>
 
     <div class="teams">
-      <span class="team">{{ m.homeTeam }}</span>
+      <div class="team-block">
+        @if (m.homeCrest) { <img class="mini-crest" [src]="m.homeCrest" /> }
+        <span class="team">{{ m.homeTeam }}</span>
+      </div>
       @if (m.result) {
-        <span class="score">{{ m.result.homeGoals }} - {{ m.result.awayGoals }}</span>
+        <span class="score">{{ m.result.homeGoals }} – {{ m.result.awayGoals }}</span>
       } @else {
         <span class="vs">vs</span>
       }
-      <span class="team">{{ m.awayTeam }}</span>
+      <div class="team-block">
+        @if (m.awayCrest) { <img class="mini-crest" [src]="m.awayCrest" /> }
+        <span class="team">{{ m.awayTeam }}</span>
+      </div>
     </div>
 
     <div class="comparison-box">
       <div class="comparison-row">
-        <span class="comparison-label">Parashikova</span>
+        <span class="comparison-label">Predicted</span>
         <span class="comparison-score">
+          {{ choiceLabel(prediction.choice, m) }}
           @if (prediction.exactScore) {
-            {{ prediction.exactScore.home }}–{{ prediction.exactScore.away }}
-          } @else {
-            {{ choiceLabel(prediction.choice, m) }}
+            ({{ prediction.exactScore.home }}–{{ prediction.exactScore.away }})
           }
         </span>
         @if (m.result) {
@@ -34,7 +39,7 @@
 
       @if (m.result) {
         <div class="comparison-row">
-          <span class="comparison-label">Rezultati</span>
+          <span class="comparison-label">Result</span>
           <span class="comparison-score actual">{{ m.result.homeGoals }}–{{ m.result.awayGoals }}</span>
           @if (prediction.exactScore) {
             <span class="match-icon" [class.exact]="isExactCorrect(m)">
@@ -43,6 +48,7 @@
           }
         </div>
       }
+
       @if (m.result && prediction.htFt) {
         <div class="comparison-row">
           <span class="comparison-label">HT/FT</span>
@@ -53,16 +59,22 @@
         </div>
       }
     </div>
-    <p class="loading">Duke ngarkuar ndeshjen...</p>
-  }
 
-  <div class="prediction-summary">
-    @if (prediction.points !== undefined) {
-      <span class="points-tag" [class.scored]="prediction.points > 0" [class.missed]="prediction.points === 0">
-        +{{ prediction.points }} pikë
-      </span>
-    } @else {
-      <span class="pending-tag">Në pritje</span>
-    }
-  </div>
+    <div class="prediction-summary">
+      @if (prediction.points !== undefined) {
+        <span class="points-tag" [class.scored]="totalPoints() > 0" [class.missed]="totalPoints() === 0">
+          +{{ totalPoints() }} pts
+        </span>
+        @if (m.result) {
+          <button type="button" class="share-btn" (click)="share()">
+            ↗ Share
+          </button>
+        }
+      } @else {
+        <span class="pending-tag">Pending</span>
+      }
+    </div>
+  } @else {
+    <p class="loading">Loading match...</p>
+  }
 </article>
