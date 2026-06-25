@@ -1,0 +1,35 @@
+<section class="page">
+  <div class="hub-header">
+    <h1>Daily Challenges</h1>
+    <span class="date-chip">{{ today | date: 'MMMM d, y' }}</span>
+  </div>
+  <p class="hub-sub">Four new challenges every day. How many can you solve?</p>
+
+  <div class="cards-grid">
+    @for (card of cards(); track card.type) {
+      <a class="challenge-card"
+        [routerLink]="card.route"
+        [class.solved]="card.solved"
+        [class.failed]="card.solved === false"
+        [class.unavailable]="!card.available">
+
+        <div class="card-icon">{{ card.icon }}</div>
+        <div class="card-body">
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+        </div>
+        <div class="card-status">
+          @if (!card.available) {
+            <span class="status-chip pending">Not ready</span>
+          } @else if (card.solved === true) {
+            <span class="status-chip won">✓ {{ card.attempts }} attempt{{ card.attempts === 1 ? '' : 's' }}</span>
+          } @else if (card.solved === false) {
+            <span class="status-chip lost">✗ Failed</span>
+          } @else {
+            <span class="status-chip available">Play →</span>
+          }
+        </div>
+      </a>
+    }
+  </div>
+</section>

@@ -1,0 +1,95 @@
+<section class="page">
+  <div class="page-header">
+    <a routerLink="/daily" class="back-link">← Daily</a>
+    <h1>💸 Transfer Quiz</h1>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'game'" (click)="activeTab.set('game')">Challenge</button>
+    <button class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">Leaderboard</button>
+  </div>
+
+  @if (activeTab() === 'game') {
+    @if (challenge() === undefined) {
+      <p class="loading">Loading...</p>
+    } @else if (challenge() === null) {
+      <div class="coming-soon">🔧 Today's transfer challenge is not ready yet.</div>
+    } @else {
+      @if (challenge(); as ch) {
+        <div class="transfer-card">
+          <p class="game-instruction">Which player made this transfer?</p>
+
+          <div class="transfer-info">
+            <div class="transfer-row main-row">
+              <span class="club from">{{ ch.data.from }}</span>
+              <span class="transfer-arrow">→</span>
+              <span class="club to">{{ ch.data.to }}</span>
+            </div>
+            <div class="transfer-row sub-row">
+              <span class="year">📅 {{ ch.data.year }}</span>
+              @if (showFee()) {
+                <span class="fee">💶 {{ formatFee(ch.data.fee) }}</span>
+              } @else {
+                <span class="fee-hidden">💶 Guess wrong to reveal fee</span>
+              }
+            </div>
+            @if (showExtra() && gameState() !== 'playing') {
+              <div class="transfer-row">
+                <span class="answer-reveal">👤 {{ ch.data.player }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (gameState() === 'won') {
+          <div class="result-banner won">🎉 Correct! You got it in {{ guesses().length }} attempt{{ guesses().length === 1 ? '' : 's' }}!</div>
+        } @else if (gameState() === 'lost') {
+          <div class="result-banner lost">😔 The answer was <strong>{{ ch.data.player }}</strong></div>
+        }
+
+        <div class="attempts-row">
+          @for (a of attemptsArray; track $index) {
+            <div class="dot" [class.wrong]="$index < wrongGuesses().length"
+              [class.correct]="gameState() === 'won' && $index === guesses().length - 1"></div>
+          }
+          <span class="attempts-label">{{ guesses().length }}/{{ attemptsArray.length }}</span>
+        </div>
+
+        @if (guesses().length > 0) {
+          <div class="guesses-list">
+            @for (g of guesses(); track g) {
+              <div class="guess-row" [class.wrong]="isWrongGuess(g)" [class.correct]="!isWrongGuess(g)">
+                <span>{{ isWrongGuess(g) ? '✗' : '✓' }}</span><span>{{ g }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (gameState() === 'playing') {
+          <div class="input-area">
+            <input type="text" placeholder="Player name..." [value]="inputValue()"
+              (input)="onInput($event)" (keydown)="onKeydown($event)" autocomplete="off" />
+            <button type="button" [disabled]="!inputValue().trim()" (click)="guess()">Guess</button>
+          </div>
+        }
+      }
+    }
+  }
+
+  @if (activeTab() === 'leaderboard') {
+    @if (leaderboard$ | async; as results) {
+      @if (results.length === 0) { <p class="empty">No solves yet today!</p> }
+      @else {
+        <ol class="leaderboard">
+          @for (r of results; track r.id; let i = $index) {
+            <li class="lb-row">
+              <span class="rank">@if (i===0){🥇}@else if(i===1){🥈}@else if(i===2){🥉}@else{{{i+1}}}</span>
+              <span class="name">{{ r.displayName }}</span>
+              <span class="meta">{{ r.attempts }} att. · {{ r.solvedInSeconds }}s</span>
+            </li>
+          }
+        </ol>
+      }
+    }
+  }
+</section>

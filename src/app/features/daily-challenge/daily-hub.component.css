@@ -1,0 +1,62 @@
+.page { padding: 24px 0; }
+
+.hub-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hub-header h1 { font-size: 26px; margin: 0; }
+.date-chip {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+}
+.hub-sub { font-size: 14px; color: var(--color-ink-muted); margin: 6px 0 20px; }
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 500px) { .cards-grid { grid-template-columns: 1fr; } }
+
+.challenge-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.challenge-card:hover:not(.unavailable) {
+  border-color: var(--color-pitch);
+  box-shadow: 0 4px 16px rgba(22,100,55,0.1);
+}
+.challenge-card.solved { border-color: var(--color-pitch); background: var(--color-pitch-tint); }
+.challenge-card.failed { border-color: var(--color-danger); background: #FBF0EF; }
+.challenge-card.unavailable { opacity: 0.5; pointer-events: none; }
+
+.card-icon { font-size: 28px; }
+.card-body h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+.card-body p  { margin: 0; font-size: 12px; color: var(--color-ink-muted); line-height: 1.4; }
+
+.card-status { margin-top: auto; }
+.status-chip {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.status-chip.pending   { background: var(--color-bg); color: var(--color-ink-muted); border: 1px solid var(--color-line); }
+.status-chip.available { background: var(--color-pitch); color: #fff; }
+.status-chip.won       { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.status-chip.lost      { background: #FBE7E5; color: var(--color-danger); }

@@ -1,0 +1,77 @@
+.page { padding: 24px 0; }
+.page-header { display: flex; align-items: center; gap: 14px; }
+.page-header h1 { font-size: 22px; margin: 0; }
+.back-link { font-size: 13px; color: var(--color-pitch-dark); text-decoration: none; }
+.tabs { display: flex; border-bottom: 1px solid var(--color-line); margin-top: 14px; }
+.tab { padding: 10px 16px; border: none; background: transparent; color: var(--color-ink-muted); font-family: var(--font-display); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.active { color: var(--color-pitch-dark); border-bottom-color: var(--color-pitch); }
+
+.game-layout { display: flex; gap: 16px; margin-top: 16px; align-items: flex-start; }
+@media (max-width: 480px) { .game-layout { flex-direction: column; } }
+
+.badge-area {
+  flex-shrink: 0;
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.badge-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  transition: filter 0.4s ease;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  border: 1px solid var(--color-line);
+}
+.badge-name { font-size: 13px; font-weight: 700; text-align: center; color: var(--color-pitch-dark); }
+
+.clues-panel { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.clue-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  opacity: 0.35;
+}
+.clue-row.visible { opacity: 1; }
+.clue-label { font-size: 12px; font-weight: 600; color: var(--color-ink-muted); }
+.clue-value { font-size: 13px; font-weight: 700; }
+.clue-hidden { font-size: 11px; color: var(--color-ink-muted); font-style: italic; }
+
+.result-banner { margin-top: 14px; padding: 12px 16px; border-radius: var(--radius-md); font-weight: 600; text-align: center; }
+.result-banner.won { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.result-banner.lost { background: #FBE7E5; color: var(--color-danger); }
+
+.attempts-row { display: flex; align-items: center; gap: 6px; margin-top: 12px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: var(--color-line); }
+.dot.wrong { background: var(--color-danger); }
+.dot.correct { background: var(--color-pitch); }
+.attempts-label { font-size: 12px; color: var(--color-ink-muted); margin-left: 4px; }
+
+.guesses-list { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.guess-row { display: flex; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; }
+.guess-row.correct { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.guess-row.wrong { background: #FBE7E5; color: var(--color-danger); }
+
+.input-area { display: flex; gap: 8px; margin-top: 14px; }
+.input-area input { flex: 1; padding: 11px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--color-line); background: var(--color-bg); color: var(--color-ink); font-size: 14px; }
+.input-area input:focus { outline: none; border-color: var(--color-pitch); }
+.input-area button { padding: 11px 20px; border-radius: var(--radius-sm); border: none; background: var(--color-pitch); color: #fff; font-weight: 700; cursor: pointer; }
+.input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.leaderboard { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-line); }
+.rank { font-size: 15px; min-width: 24px; }
+.name { flex: 1; font-size: 14px; font-weight: 600; }
+.badge-attempts, .badge-time { font-size: 12px; color: var(--color-ink-muted); }
+
+.coming-soon { text-align: center; padding: 40px; }
+.coming-soon-icon { font-size: 40px; }
+.loading, .empty { font-size: 14px; color: var(--color-ink-muted); margin-top: 16px; }

@@ -1,0 +1,59 @@
+.page { padding: 24px 0; }
+.page-header { display: flex; align-items: center; gap: 14px; }
+.page-header h1 { font-size: 22px; margin: 0; }
+.back-link { font-size: 13px; color: var(--color-pitch-dark); text-decoration: none; }
+.tabs { display: flex; border-bottom: 1px solid var(--color-line); margin-top: 14px; }
+.tab { padding: 10px 16px; border: none; background: transparent; color: var(--color-ink-muted); font-family: var(--font-display); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.active { color: var(--color-pitch-dark); border-bottom-color: var(--color-pitch); }
+
+.transfer-card { margin-top: 16px; padding: 20px 18px; border-radius: var(--radius-md); border: 1px solid var(--color-line); background: var(--color-surface); }
+.game-instruction { font-size: 14px; color: var(--color-ink-muted); margin: 0 0 16px; }
+
+.transfer-info { display: flex; flex-direction: column; gap: 10px; }
+.transfer-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.main-row { gap: 16px; }
+
+.club {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+}
+.club.from { background: var(--color-bg); border: 1.5px solid var(--color-line); }
+.club.to { background: var(--color-pitch-tint); border: 1.5px solid var(--color-pitch); color: var(--color-pitch-dark); }
+.transfer-arrow { font-size: 22px; color: var(--color-ink-muted); }
+
+.year, .fee { font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 999px; background: var(--color-bg); border: 1px solid var(--color-line); }
+.fee-hidden { font-size: 13px; color: var(--color-ink-muted); font-style: italic; }
+.answer-reveal { font-size: 16px; font-weight: 700; color: var(--color-pitch-dark); }
+
+.result-banner { margin-top: 14px; padding: 12px 16px; border-radius: var(--radius-md); font-weight: 600; text-align: center; }
+.result-banner.won { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.result-banner.lost { background: #FBE7E5; color: var(--color-danger); }
+
+.attempts-row { display: flex; align-items: center; gap: 6px; margin-top: 12px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: var(--color-line); }
+.dot.wrong { background: var(--color-danger); }
+.dot.correct { background: var(--color-pitch); }
+.attempts-label { font-size: 12px; color: var(--color-ink-muted); margin-left: 4px; }
+
+.guesses-list { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.guess-row { display: flex; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; }
+.guess-row.correct { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.guess-row.wrong { background: #FBE7E5; color: var(--color-danger); }
+
+.input-area { display: flex; gap: 8px; margin-top: 14px; }
+.input-area input { flex: 1; padding: 11px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--color-line); background: var(--color-bg); color: var(--color-ink); font-size: 14px; }
+.input-area input:focus { outline: none; border-color: var(--color-pitch); }
+.input-area button { padding: 11px 20px; border-radius: var(--radius-sm); border: none; background: var(--color-pitch); color: #fff; font-weight: 700; cursor: pointer; }
+.input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.leaderboard { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-line); }
+.rank { min-width: 24px; }
+.name { flex: 1; font-size: 14px; font-weight: 600; }
+.meta { font-size: 12px; color: var(--color-ink-muted); }
+
+.coming-soon { text-align: center; padding: 40px; color: var(--color-ink-muted); }
+.loading, .empty { font-size: 14px; color: var(--color-ink-muted); margin-top: 16px; }
