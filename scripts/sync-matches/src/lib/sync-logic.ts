@@ -120,6 +120,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
   if (footballDataToken) await setClubBadgeChallenge(footballDataToken);
   if (footballDataToken) await setFlashbackChallenge(footballDataToken);
   if (footballDataToken) await setTopScorerChallenge(footballDataToken);
+  if (footballDataToken) await syncTablePredictions(footballDataToken);
 }
 
 const PERFECT_DAY_BONUS = 10;
@@ -656,5 +657,114 @@ async function setTopScorerChallenge(token: string): Promise<void> {
     console.log(`⚽ Top scorer set: ${player['name']} (${comp} ${season}, ${top['goals']} goals)`);
   } catch (e) {
     console.warn('Top scorer challenge failed:', e);
+  }
+}
+
+// ── PREDICT THE TABLE ────────────────────────────────────────────────────────
+const TABLE_COMPETITIONS = ['PL', 'PD', 'BL1', 'SA', 'FL1'];
+const TABLE_COMP_NAMES: Record<string, string> = {
+  PL: 'Premier League', PD: 'La Liga', BL1: 'Bundesliga', SA: 'Serie A', FL1: 'Ligue 1'
+};
+
+export async function syncTablePredictions(token: string): Promise<void> {
+  const currentSeason = new Date().getMonth() >= 6
+    ? new Date().getFullYear()
+    : new Date().getFullYear() - 1;
+
+  for (const code of TABLE_COMPETITIONS) {
+    await new Promise(r => setTimeout(r, 6500)); // rate limit
+
+    const seasonDocRef = db.collection('tableSeasons').doc(`${code}_${currentSeason}`);
+    const seasonSnap = await seasonDocRef.get();
+
+    // ── 1. Init season if it doesn't exist yet ──────────────────────────────
+    if (!seasonSnap.exists) {
+      try {
+        const teamsRes = await fetch(
+          `https://api.football-data.org/v4/competitions/${code}/teams?season=${currentSeason}`,
+          { headers: { 'X-Auth-Token': token } }
+        );
+        if (!teamsRes.ok) continue;
+        const teamsData = await teamsRes.json() as { teams?: Record<string, unknown>[] };
+        const teams = (teamsData.teams ?? []).map((t) => ({
+          id: t['id'],
+          name: t['name'],
+          shortName: t['shortName'] ?? (t['name'] as string).split(' ')[0],
+          crest: t['crest']
+        }));
+        if (teams.length === 0) continue;
+
+        // Deadline: 1 week from now (admin can adjust)
+        const deadline = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        await seasonDocRef.set({
+          competition: TABLE_COMP_NAMES[code] ?? code,
+          code, season: currentSeason, teams,
+          deadline, currentStandings: [], active: true,
+          lastUpdated: Date.now()
+        });
+        console.log(`📊 Table season created: ${code} ${currentSeason} (${teams.length} teams)`);
+      } catch (e) {
+        console.warn(`Table init failed for ${code}:`, e);
+      }
+      continue;
+    }
+
+    // ── 2. Update standings ────────────────────────────────────────────────
+    try {
+      await new Promise(r => setTimeout(r, 6500));
+      const standRes = await fetch(
+        `https://api.football-data.org/v4/competitions/${code}/standings?season=${currentSeason}`,
+        { headers: { 'X-Auth-Token': token } }
+      );
+      if (!standRes.ok) continue;
+      const standData = await standRes.json() as { standings?: { type: string; table: Record<string, unknown>[] }[] };
+      const table = standData.standings?.find(s => s.type === 'TOTAL')?.table ?? [];
+      if (table.length === 0) continue;
+
+      const currentStandings = table.map((row) => {
+        const team = row['team'] as Record<string, string>;
+        return {
+          position: row['position'] as number,
+          teamId: team['id'],
+          teamName: team['name'],
+          teamShortName: team['shortName'] ?? (team['name'] as string).split(' ')[0],
+          points: row['points'] as number,
+          playedGames: row['playedGames'] as number,
+          won: row['won'] as number,
+          draw: row['draw'] as number,
+          lost: row['lost'] as number,
+          goalsFor: row['goalsFor'] as number,
+          goalsAgainst: row['goalsAgainst'] as number,
+        };
+      });
+
+      await seasonDocRef.update({ currentStandings, lastUpdated: Date.now() });
+
+      // ── 3. Compute scores for all predictions ────────────────────────────
+      const predsSnap = await db.collection('tablePredictions')
+        .where('code', '==', code)
+        .where('season', '==', currentSeason)
+        .get();
+
+      const scoreBatch = db.batch();
+      for (const predDoc of predsSnap.docs) {
+        const pred = predDoc.data();
+        const prediction = pred['prediction'] as string[];
+        let score = 0;
+        currentStandings.forEach((entry, actualIndex) => {
+          const predictedIndex = prediction.findIndex(
+            n => n.toLowerCase() === entry.teamShortName.toLowerCase()
+          );
+          if (predictedIndex >= 0) {
+            score += Math.max(0, 10 - Math.abs(predictedIndex - actualIndex));
+          }
+        });
+        scoreBatch.update(predDoc.ref, { score, computedAt: Date.now() });
+      }
+      if (!predsSnap.empty) await scoreBatch.commit();
+      console.log(`📊 Standings updated: ${code} ${currentSeason} (${predsSnap.size} predictions scored)`);
+    } catch (e) {
+      console.warn(`Standings update failed for ${code}:`, e);
+    }
   }
 }

@@ -1,13 +1,14 @@
 <nav class="navbar">
   <!-- Desktop: linkët direkt -->
   <div class="links desktop-links">
-    <a routerLink="/matches"     routerLinkActive="active">Matches</a>
-    <a routerLink="/daily"       routerLinkActive="active">Daily ⚽</a>
-    <a routerLink="/history"     routerLinkActive="active">History</a>
-    <a routerLink="/statistics"  routerLinkActive="active">Statistics</a>
-    <a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a>
-    <a routerLink="/tournament"  routerLinkActive="active">Tournament</a>
-    <a routerLink="/groups"      routerLinkActive="active">Groups</a>
+    <a routerLink="/matches"      routerLinkActive="active">Matches</a>
+    <a routerLink="/daily"        routerLinkActive="active">Daily ⚽</a>
+    <a routerLink="/predict-table" routerLinkActive="active">Table 🏆</a>
+    <a routerLink="/history"      routerLinkActive="active">History</a>
+    <a routerLink="/statistics"   routerLinkActive="active">Statistics</a>
+    <a routerLink="/leaderboard"  routerLinkActive="active">Leaderboard</a>
+    <a routerLink="/tournament"   routerLinkActive="active">Tournament</a>
+    <a routerLink="/groups"       routerLinkActive="active">Groups</a>
   </div>
 
   <!-- Desktop: profili -->
@@ -52,13 +53,14 @@
       </a>
       <hr class="menu-divider" />
     }
-    <a routerLink="/matches"     routerLinkActive="active" (click)="closeMenu()">⚽ Matches</a>
-    <a routerLink="/daily"       routerLinkActive="active" (click)="closeMenu()">🎯 Daily Challenge</a>
-    <a routerLink="/history"     routerLinkActive="active" (click)="closeMenu()">📋 History</a>
-    <a routerLink="/statistics"  routerLinkActive="active" (click)="closeMenu()">📊 Statistics</a>
-    <a routerLink="/leaderboard" routerLinkActive="active" (click)="closeMenu()">🏆 Leaderboard</a>
-    <a routerLink="/tournament"  routerLinkActive="active" (click)="closeMenu()">🌍 Tournament</a>
-    <a routerLink="/groups"      routerLinkActive="active" (click)="closeMenu()">👥 Groups</a>
+    <a routerLink="/matches"       routerLinkActive="active" (click)="closeMenu()">⚽ Matches</a>
+    <a routerLink="/daily"         routerLinkActive="active" (click)="closeMenu()">🎯 Daily Challenge</a>
+    <a routerLink="/predict-table" routerLinkActive="active" (click)="closeMenu()">🏆 Predict the Table</a>
+    <a routerLink="/history"       routerLinkActive="active" (click)="closeMenu()">📋 History</a>
+    <a routerLink="/statistics"    routerLinkActive="active" (click)="closeMenu()">📊 Statistics</a>
+    <a routerLink="/leaderboard"   routerLinkActive="active" (click)="closeMenu()">🏆 Leaderboard</a>
+    <a routerLink="/tournament"    routerLinkActive="active" (click)="closeMenu()">🌍 Tournament</a>
+    <a routerLink="/groups"        routerLinkActive="active" (click)="closeMenu()">👥 Groups</a>
     @if (!(user$ | async)) {
       <hr class="menu-divider" />
       <a routerLink="/login" (click)="closeMenu()">Hyr</a>

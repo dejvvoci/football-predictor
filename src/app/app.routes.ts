@@ -76,6 +76,18 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'predict-table',
+    loadComponent: () =>
+      import('./features/predict-table/predict-table-list.component').then(m => m.PredictTableListComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'predict-table/:code/:season',
+    loadComponent: () =>
+      import('./features/predict-table/predict-table-detail.component').then(m => m.PredictTableDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'tournament',
     loadComponent: () =>
       import('./features/tournament/tournament.component').then((m) => m.TournamentComponent),

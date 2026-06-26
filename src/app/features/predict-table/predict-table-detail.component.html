@@ -1,0 +1,152 @@
+<section class="page">
+  <div class="page-header">
+    <a routerLink="/predict-table" class="back-link">← Predict the Table</a>
+  </div>
+
+  @if (season() === undefined) {
+    <p class="loading">Loading...</p>
+  } @else if (season() === null) {
+    <p class="empty">Season not found.</p>
+  } @else {
+    @if (season(); as s) {
+      <div class="comp-header">
+        <span class="comp-flag">{{ flags[s.code] }}</span>
+        <div>
+          <h1>{{ s.competition }}</h1>
+          <span class="season-label">{{ s.season }}/{{ (s.season + 1).toString().slice(2) }} season</span>
+        </div>
+        @if (isOpen()) {
+          <span class="deadline-chip">Closes {{ s.deadline | date: 'dd MMM, HH:mm' }}</span>
+        } @else {
+          <span class="deadline-chip closed">Predictions closed</span>
+        }
+      </div>
+
+      <div class="tabs">
+        <button class="tab" [class.active]="activeTab() === 'predict'" (click)="activeTab.set('predict')">
+          My Prediction
+        </button>
+        @if (s.currentStandings.length > 0) {
+          <button class="tab" [class.active]="activeTab() === 'standings'" (click)="activeTab.set('standings')">
+            Live Standings
+          </button>
+        }
+        <button class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">
+          Leaderboard
+        </button>
+      </div>
+
+      <!-- ── PREDICT TAB ── -->
+      @if (activeTab() === 'predict') {
+        @if (isOpen()) {
+          <p class="drag-hint">
+            <strong>Drag</strong> to reorder · use <strong>↑ ↓</strong> on mobile
+          </p>
+          <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+            @for (team of orderedTeams(); track team.id; let i = $index) {
+              <div class="team-row" cdkDrag>
+                <div class="drag-handle" cdkDragHandle>⋮⋮</div>
+                <span class="position">{{ i + 1 }}</span>
+                <img class="crest" [src]="team.crest" [alt]="team.shortName" />
+                <span class="team-name">{{ team.name }}</span>
+                <div class="move-btns">
+                  <button type="button" (click)="moveUp(i)" [disabled]="i === 0">↑</button>
+                  <button type="button" (click)="moveDown(i)" [disabled]="i === orderedTeams().length - 1">↓</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="save-bar">
+            <button type="button" class="save-btn" [disabled]="saving()" (click)="save()">
+              @if (saving()) { Saving... } @else if (saved()) { ✓ Saved! } @else if (myPrediction()) { Update prediction } @else { Submit prediction }
+            </button>
+            @if (myPrediction()) {
+              <span class="saved-note">Last saved {{ myPrediction()!.createdAt | date: 'dd MMM, HH:mm' }}</span>
+            }
+          </div>
+
+        } @else {
+          <!-- Closed — show comparison if user has prediction -->
+          @if (myPrediction(); as pred) {
+            <div class="score-banner">
+              <span class="score-pts">{{ pred.score ?? '—' }}</span>
+              <span class="score-label">pts earned so far</span>
+              <span class="score-max">/ {{ s.teams.length * 10 }} max</span>
+            </div>
+
+            @if (s.currentStandings.length > 0) {
+              <div class="comparison-table">
+                <div class="comparison-header">
+                  <span>Pos</span><span>Team</span>
+                  <span class="col-pred">Your pick</span>
+                  <span class="col-pts">Pts</span>
+                </div>
+                @for (row of comparison(); track row.teamId) {
+                  <div class="comparison-row">
+                    <span class="actual-pos">{{ row.position }}</span>
+                    <div class="comp-team">
+                      <span class="comp-name">{{ row.teamShortName }}</span>
+                      <span class="comp-played">{{ row.playedGames }} played</span>
+                    </div>
+                    <span class="pred-pos" [class]="diffClass(row.diff)">
+                      {{ row.predictedPos }}
+                      <small>{{ diffLabel(row.diff) }}</small>
+                    </span>
+                    <span class="row-pts">{{ [10 - (row.predictedPos - row.position | abs), 0] | max }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty">Season has not started yet. Standings will appear after the first matchday.</p>
+            }
+          } @else {
+            <div class="no-prediction">
+              <p>⏱ Predictions for this season are now closed.</p>
+              <p class="sub">You didn't submit a prediction for this season.</p>
+            </div>
+          }
+        }
+      }
+
+      <!-- ── STANDINGS TAB ── -->
+      @if (activeTab() === 'standings' && s.currentStandings.length > 0) {
+        <div class="standings-table">
+          <div class="standings-header">
+            <span>#</span><span>Team</span><span>P</span><span>W</span><span>D</span><span>L</span><span>Pts</span>
+          </div>
+          @for (entry of s.currentStandings; track entry.teamId) {
+            <div class="standings-row">
+              <span>{{ entry.position }}</span>
+              <span class="st-team">{{ entry.teamShortName }}</span>
+              <span>{{ entry.playedGames }}</span>
+              <span>{{ entry.won }}</span>
+              <span>{{ entry.draw }}</span>
+              <span>{{ entry.lost }}</span>
+              <span class="st-pts">{{ entry.points }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── LEADERBOARD TAB ── -->
+      @if (activeTab() === 'leaderboard') {
+        @if (leaderboard$() | async; as entries) {
+          @if (entries.length === 0) {
+            <p class="empty">No predictions yet for this season.</p>
+          } @else {
+            <ol class="leaderboard">
+              @for (e of entries; track e.id; let i = $index) {
+                <li class="lb-row">
+                  <span class="rank">@if(i===0){🥇}@else if(i===1){🥈}@else if(i===2){🥉}@else{{{i+1}}}</span>
+                  <span class="lb-name">{{ e.displayName }}</span>
+                  <span class="lb-score">{{ e.score ?? '—' }} pts</span>
+                </li>
+              }
+            </ol>
+          }
+        }
+      }
+    }
+  }
+</section>

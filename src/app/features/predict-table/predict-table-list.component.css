@@ -1,0 +1,41 @@
+.page { padding: 24px 0; }
+.page h1 { font-size: 26px; }
+.subtitle { font-size: 14px; color: var(--color-ink-muted); margin: 6px 0 20px; }
+
+.empty-state { text-align: center; padding: 48px 20px; }
+.empty-icon { font-size: 40px; margin: 0; }
+.empty-title { font-size: 18px; font-weight: 700; margin: 8px 0 6px; }
+.empty-sub { font-size: 14px; color: var(--color-ink-muted); margin: 0; }
+
+.seasons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+
+.season-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.season-card:hover {
+  border-color: var(--color-pitch);
+  box-shadow: 0 4px 16px rgba(22,100,55,0.1);
+}
+
+.card-top { display: flex; align-items: center; gap: 12px; }
+.flag { font-size: 28px; }
+.card-info { display: flex; flex-direction: column; gap: 2px; }
+.card-info h3 { margin: 0; font-size: 16px; font-weight: 700; }
+.season-label { font-size: 12px; color: var(--color-ink-muted); font-family: var(--font-mono); }
+
+.card-bottom { display: flex; justify-content: space-between; align-items: center; }
+.teams-count { font-size: 12px; color: var(--color-ink-muted); }
+.status { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.status.open { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
+.status.closed { background: var(--color-bg); color: var(--color-ink-muted); border: 1px solid var(--color-line); }
+
+.loading { font-size: 14px; color: var(--color-ink-muted); }

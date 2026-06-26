@@ -1,0 +1,38 @@
+<section class="page">
+  <h1>🏆 Predict the Table</h1>
+  <p class="subtitle">Predict the final standings before the season kicks off. Score up to <strong>10 pts per team</strong> based on accuracy.</p>
+
+  @if (seasons$ | async; as seasons) {
+    @if (seasons.length === 0) {
+      <div class="empty-state">
+        <p class="empty-icon">📅</p>
+        <p class="empty-title">No active seasons</p>
+        <p class="empty-sub">Predict the Table opens before each season. Check back closer to the season start.</p>
+      </div>
+    } @else {
+      <div class="seasons-grid">
+        @for (s of seasons; track s.id) {
+          <a class="season-card" [routerLink]="['/predict-table', s.code, s.season]">
+            <div class="card-top">
+              <span class="flag">{{ flags[s.code] }}</span>
+              <div class="card-info">
+                <h3>{{ s.competition }}</h3>
+                <span class="season-label">{{ s.season }}/{{ (s.season + 1).toString().slice(2) }}</span>
+              </div>
+            </div>
+            <div class="card-bottom">
+              <span class="teams-count">{{ s.teams.length }} teams</span>
+              @if (isOpen(s.deadline)) {
+                <span class="status open">Open · closes {{ s.deadline | date: 'dd MMM' }}</span>
+              } @else {
+                <span class="status closed">Closed · in progress</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  } @else {
+    <p class="loading">Loading competitions...</p>
+  }
+</section>
