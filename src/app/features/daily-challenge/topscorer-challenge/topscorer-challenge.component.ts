@@ -2,24 +2,24 @@ import { Component, OnDestroy, OnInit, inject, signal, computed } from '@angular
 import { RouterLink } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { ChallengeService } from '../../../core/services/challenge.service';
-import { CareerPathData, DailyChallengeV2 } from '../../../core/models/challenge.model';
+import { TopScorerData, DailyChallengeV2 } from '../../../core/models/challenge.model';
 import { Subscription } from 'rxjs';
 
 const MAX_ATTEMPTS = 6;
 
 @Component({
-  selector: 'app-career-challenge',
+  selector: 'app-topscorer-challenge',
   standalone: true,
   imports: [RouterLink, AsyncPipe],
-  templateUrl: './career-challenge.component.html',
-  styleUrl: './career-challenge.component.css'
+  templateUrl: './topscorer-challenge.component.html',
+  styleUrl: './topscorer-challenge.component.css'
 })
-export class CareerChallengeComponent implements OnInit, OnDestroy {
+export class TopScorerChallengeComponent implements OnInit, OnDestroy {
   private service = inject(ChallengeService);
   private sub?: Subscription;
 
-  challenge = signal<DailyChallengeV2<CareerPathData> | null | undefined>(undefined);
-  leaderboard$ = this.service.getLeaderboard('career');
+  challenge = signal<DailyChallengeV2<TopScorerData> | null | undefined>(undefined);
+  leaderboard$ = this.service.getLeaderboard('topscorer');
   guesses = signal<string[]>([]);
   inputValue = signal('');
   gameState = signal<'playing' | 'won' | 'lost'>('playing');
@@ -32,19 +32,15 @@ export class CareerChallengeComponent implements OnInit, OnDestroy {
     return this.guesses().filter(g => !this.service.isCorrect(g, answer));
   });
 
-  // Clubs revealed progressively after each wrong guess
-  clubsRevealed = computed(() => {
-    const clubs = this.challenge()?.data.clubs ?? [];
-    const revealed = Math.min(this.wrongGuesses().length + 2, clubs.length);
-    if (this.gameState() !== 'playing') return clubs.length;
-    return revealed;
-  });
+  showNationality = computed(() => this.wrongGuesses().length >= 1 || this.gameState() !== 'playing');
+  showTeam        = computed(() => this.wrongGuesses().length >= 2 || this.gameState() !== 'playing');
+  showGoals       = computed(() => this.wrongGuesses().length >= 3 || this.gameState() !== 'playing');
 
   ngOnInit(): void {
-    this.sub = this.service.getChallenge<CareerPathData>('career').subscribe(ch => {
+    this.sub = this.service.getChallenge<TopScorerData>('topscorer').subscribe(ch => {
       this.challenge.set(ch ?? null);
     });
-    this.service.getMyResult('career').subscribe(r => {
+    this.service.getMyResult('topscorer').subscribe(r => {
       if (r) this.gameState.set(r.solved ? 'won' : 'lost');
     });
   }
@@ -63,14 +59,16 @@ export class CareerChallengeComponent implements OnInit, OnDestroy {
 
     if (this.service.isCorrect(input, answer)) {
       this.gameState.set('won');
-      await this.service.submitResult('career', true, newGuesses.length, Math.floor((Date.now() - this.startTime) / 1000));
+      await this.service.submitResult('topscorer', true, newGuesses.length, Math.floor((Date.now() - this.startTime) / 1000));
     } else if (newGuesses.length >= MAX_ATTEMPTS) {
       this.gameState.set('lost');
-      await this.service.submitResult('career', false, newGuesses.length, Math.floor((Date.now() - this.startTime) / 1000));
+      await this.service.submitResult('topscorer', false, newGuesses.length, Math.floor((Date.now() - this.startTime) / 1000));
     }
   }
 
   onKeydown(e: KeyboardEvent): void { if (e.key === 'Enter') this.guess(); }
   onInput(e: Event): void { this.inputValue.set((e.target as HTMLInputElement).value); }
-  isWrongGuess(g: string): boolean { return !this.service.isCorrect(g, this.challenge()?.data.playerName ?? ''); }
+  isWrongGuess(g: string): boolean {
+    return !this.service.isCorrect(g, this.challenge()?.data.playerName ?? '');
+  }
 }

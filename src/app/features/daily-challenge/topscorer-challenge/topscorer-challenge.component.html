@@ -1,7 +1,7 @@
 <section class="page">
   <div class="page-header">
     <a routerLink="/daily" class="back-link">← Daily</a>
-    <h1>🗺️ Career Path</h1>
+    <h1>🥇 Top Scorer</h1>
   </div>
 
   <div class="tabs">
@@ -13,41 +13,42 @@
     @if (challenge() === undefined) {
       <p class="loading">Loading...</p>
     } @else if (challenge() === null) {
-      <div class="coming-soon">🔧 Today's career challenge is not ready yet.</div>
+      <div class="coming-soon">🔧 Today's top scorer challenge is not ready yet.</div>
     } @else {
       @if (challenge(); as ch) {
-        <div class="game-card">
-          <p class="game-instruction">Which player followed this career path?</p>
-
-          <div class="career-path">
-            @for (club of ch.data.clubs; track club; let i = $index) {
-              <div class="career-step" [class.revealed]="i < clubsRevealed()">
-                @if (i < clubsRevealed()) {
-                  <span class="club-name">{{ club }}</span>
-                } @else {
-                  <span class="club-hidden">?</span>
-                }
-                @if (i < ch.data.clubs.length - 1) {
-                  <span class="arrow">→</span>
-                }
-              </div>
-            }
+        <div class="question-card">
+          <p class="question-label">Who was the top scorer of...</p>
+          <div class="competition-display">
+            <span class="comp-name">{{ ch.data.competition }}</span>
+            <span class="comp-season">{{ ch.data.season }}/{{ (ch.data.season + 1).toString().slice(2) }}</span>
           </div>
 
-          @if (gameState() !== 'playing') {
-            <div class="nationality-reveal">🌍 {{ ch.data.nationality }}</div>
-          }
+          <div class="hints">
+            @if (showNationality() && ch.data.nationality) {
+              <span class="hint">🌍 {{ ch.data.nationality }}</span>
+            }
+            @if (showTeam()) {
+              <span class="hint">🏟 {{ ch.data.team }}</span>
+            }
+            @if (showGoals()) {
+              <span class="hint">⚽ {{ ch.data.goals }} goals</span>
+            }
+            @if (gameState() !== 'playing') {
+              <span class="hint answer">👤 {{ ch.data.playerName }}</span>
+            }
+          </div>
         </div>
 
         @if (gameState() === 'won') {
           <div class="result-banner won">🎉 Correct! You got it in {{ guesses().length }} attempt{{ guesses().length === 1 ? '' : 's' }}!</div>
         } @else if (gameState() === 'lost') {
-          <div class="result-banner lost">😔 The answer was <strong>{{ ch.data.playerName }}</strong></div>
+          <div class="result-banner lost">😔 The answer was <strong>{{ ch.data.playerName }}</strong> ({{ ch.data.goals }} goals)</div>
         }
 
         <div class="attempts-row">
           @for (a of attemptsArray; track $index) {
-            <div class="dot" [class.wrong]="$index < wrongGuesses().length"
+            <div class="dot"
+              [class.wrong]="$index < wrongGuesses().length"
               [class.correct]="gameState() === 'won' && $index === guesses().length - 1"></div>
           }
           <span class="attempts-label">{{ guesses().length }}/{{ attemptsArray.length }}</span>
@@ -65,11 +66,13 @@
 
         @if (gameState() === 'playing') {
           <div class="input-area">
-            <input type="text" placeholder="Player name..." [value]="inputValue()"
-              (input)="onInput($event)" (keydown)="onKeydown($event)" autocomplete="off" />
+            <input type="text" placeholder="Player name..."
+              [value]="inputValue()"
+              (input)="onInput($event)"
+              (keydown)="onKeydown($event)"
+              autocomplete="off" />
             <button type="button" [disabled]="!inputValue().trim()" (click)="guess()">Guess</button>
           </div>
-          <p class="hint-note">{{ clubsRevealed() }} of {{ ch.data.clubs.length }} clubs revealed. Wrong guesses unlock more.</p>
         }
       }
     }
@@ -82,7 +85,7 @@
         <ol class="leaderboard">
           @for (r of results; track r.id; let i = $index) {
             <li class="lb-row">
-              <span class="rank">@if (i===0){🥇}@else if(i===1){🥈}@else if(i===2){🥉}@else{{{i+1}}}</span>
+              <span class="rank">@if(i===0){🥇}@else if(i===1){🥈}@else if(i===2){🥉}@else{{{i+1}}}</span>
               <span class="name">{{ r.displayName }}</span>
               <span class="meta">{{ r.attempts }} att. · {{ r.solvedInSeconds }}s</span>
             </li>

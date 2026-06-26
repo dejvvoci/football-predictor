@@ -6,35 +6,15 @@
 .tab { padding: 10px 16px; border: none; background: transparent; color: var(--color-ink-muted); font-family: var(--font-display); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .tab.active { color: var(--color-pitch-dark); border-bottom-color: var(--color-pitch); }
 
-.game-card { margin-top: 16px; padding: 18px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-line); background: var(--color-surface); }
-.game-instruction { font-size: 14px; color: var(--color-ink-muted); margin: 0 0 14px; }
+.question-card { margin-top: 16px; padding: 24px 20px; border-radius: var(--radius-md); border: 1px solid var(--color-line); background: var(--color-surface); text-align: center; }
+.question-label { font-size: 14px; color: var(--color-ink-muted); margin: 0 0 12px; }
+.competition-display { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.comp-name { font-family: var(--font-display); font-size: 24px; font-weight: 800; }
+.comp-season { font-size: 16px; color: var(--color-ink-muted); font-family: var(--font-mono); }
 
-.career-path {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-.career-step { display: flex; align-items: center; gap: 6px; }
-.club-name {
-  background: var(--color-pitch-tint);
-  color: var(--color-pitch-dark);
-  border: 1px solid var(--color-pitch);
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-}
-.club-hidden {
-  background: var(--color-line);
-  color: transparent;
-  user-select: none;
-  padding: 5px 20px;
-  border-radius: 999px;
-  font-size: 13px;
-}
-.arrow { font-size: 14px; color: var(--color-ink-muted); }
-.nationality-reveal { margin-top: 12px; font-size: 13px; color: var(--color-ink-muted); }
+.hints { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; justify-content: center; }
+.hint { font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: var(--color-pitch-tint); color: var(--color-pitch-dark); border: 1px solid var(--color-pitch); }
+.hint.answer { background: var(--color-pitch); color: #fff; }
 
 .result-banner { margin-top: 14px; padding: 12px 16px; border-radius: var(--radius-md); font-weight: 600; text-align: center; }
 .result-banner.won { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
@@ -56,7 +36,6 @@
 .input-area input:focus { outline: none; border-color: var(--color-pitch); }
 .input-area button { padding: 11px 20px; border-radius: var(--radius-sm); border: none; background: var(--color-pitch); color: #fff; font-weight: 700; cursor: pointer; }
 .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
-.hint-note { font-size: 12px; color: var(--color-ink-muted); margin-top: 8px; }
 
 .leaderboard { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; }
 .lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-line); }

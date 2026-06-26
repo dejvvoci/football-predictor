@@ -30,19 +30,19 @@ export class DailyHubComponent implements OnInit {
   today = this.challengeService.today();
 
   cards = signal<HubCard[]>([
-    { type: 'player', route: '/daily/player', icon: '⚽', title: 'Player of the Day',
-      description: 'Guess the mystery footballer from clues', available: false },
-    { type: 'badge',  route: '/daily/badge',  icon: '🛡️', title: 'Club Badge',
+    { type: 'player',    route: '/daily/player',    icon: '⚽', title: 'Player of the Day',
+      description: 'Guess the mystery footballer from progressive clues', available: false },
+    { type: 'badge',     route: '/daily/badge',     icon: '🛡️', title: 'Club Badge',
       description: 'Identify the club from its blurred badge', available: false },
-    { type: 'career', route: '/daily/career', icon: '🗺️', title: 'Career Path',
-      description: 'Name the player from their club history', available: false },
-    { type: 'transfer', route: '/daily/transfer', icon: '💸', title: 'Transfer Quiz',
-      description: 'Which player made this transfer?', available: false },
+    { type: 'flashback', route: '/daily/flashback', icon: '⚡', title: 'Score Flashback',
+      description: 'Remember the score from a historic match', available: false },
+    { type: 'topscorer', route: '/daily/topscorer', icon: '🥇', title: 'Top Scorer',
+      description: 'Who topped the scoring charts that season?', available: false },
   ]);
 
   ngOnInit(): void {
     // Check availability and results for each challenge
-    ['badge', 'career', 'transfer'].forEach((type) => {
+    ['badge', 'flashback', 'topscorer'].forEach((type) => {
       this.challengeService.getChallenge(type as any).subscribe((ch) => {
         this.updateCard(type, { available: !!ch });
       });

@@ -1,4 +1,4 @@
-export type ChallengeType = 'player' | 'badge' | 'career' | 'transfer';
+export type ChallengeType = 'player' | 'badge' | 'flashback' | 'topscorer';
 
 // ── Badge ──
 export interface BadgeChallengeData {
@@ -11,24 +11,33 @@ export interface BadgeChallengeData {
   venue?: string;
 }
 
-// ── Career Path ──
-export interface CareerPathData {
+// ── Score Flashback ──
+export interface FlashbackData {
+  homeTeam: string;
+  awayTeam: string;
+  homeGoals: number;
+  awayGoals: number;
+  htHomeGoals?: number;
+  htAwayGoals?: number;
+  competition: string;
+  season: string;
+  stage: string;
+  matchDate: string;
+}
+
+// ── Top Scorer ──
+export interface TopScorerData {
   playerName: string;
-  clubs: string[];
-  nationality: string;
+  team: string;
+  nationality?: string;
+  goals: number;
+  competition: string;
+  competitionCode: string;
+  season: number;
 }
 
-// ── Transfer Quiz ──
-export interface TransferQuizData {
-  player: string;
-  from: string;
-  to: string;
-  year: number;
-  fee: number;
-}
-
-export interface DailyChallengeV2<T = BadgeChallengeData | CareerPathData | TransferQuizData> {
-  id: string;       // `{date}_{type}`
+export interface DailyChallengeV2<T = BadgeChallengeData | FlashbackData | TopScorerData> {
+  id: string;
   type: ChallengeType;
   date: string;
   data: T;
@@ -36,7 +45,7 @@ export interface DailyChallengeV2<T = BadgeChallengeData | CareerPathData | Tran
 }
 
 export interface ChallengeResult {
-  id: string;       // `{date}_{type}_{userId}`
+  id: string;
   type: ChallengeType;
   date: string;
   userId: string;

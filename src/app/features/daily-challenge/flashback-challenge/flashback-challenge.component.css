@@ -6,27 +6,60 @@
 .tab { padding: 10px 16px; border: none; background: transparent; color: var(--color-ink-muted); font-family: var(--font-display); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .tab.active { color: var(--color-pitch-dark); border-bottom-color: var(--color-pitch); }
 
-.transfer-card { margin-top: 16px; padding: 20px 18px; border-radius: var(--radius-md); border: 1px solid var(--color-line); background: var(--color-surface); }
-.game-instruction { font-size: 14px; color: var(--color-ink-muted); margin: 0 0 16px; }
-
-.transfer-info { display: flex; flex-direction: column; gap: 10px; }
-.transfer-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.main-row { gap: 16px; }
-
-.club {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  padding: 6px 16px;
-  border-radius: var(--radius-sm);
+.match-card {
+  margin-top: 16px;
+  padding: 20px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
 }
-.club.from { background: var(--color-bg); border: 1.5px solid var(--color-line); }
-.club.to { background: var(--color-pitch-tint); border: 1.5px solid var(--color-pitch); color: var(--color-pitch-dark); }
-.transfer-arrow { font-size: 22px; color: var(--color-ink-muted); }
+.match-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  margin-bottom: 14px;
+}
+.competition { font-weight: 700; }
 
-.year, .fee { font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 999px; background: var(--color-bg); border: 1px solid var(--color-line); }
-.fee-hidden { font-size: 13px; color: var(--color-ink-muted); font-style: italic; }
-.answer-reveal { font-size: 16px; font-weight: 700; color: var(--color-pitch-dark); }
+.teams-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.team {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  flex: 1;
+}
+.team.home { text-align: right; }
+.team.away { text-align: left; }
+
+.vs-box {
+  flex-shrink: 0;
+  width: 80px;
+  text-align: center;
+}
+.vs { font-size: 18px; color: var(--color-ink-muted); }
+.final-score { font-size: 26px; font-weight: 800; font-family: var(--font-mono); color: var(--color-pitch-dark); }
+
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.hint {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-pitch-tint);
+  color: var(--color-pitch-dark);
+  border: 1px solid var(--color-pitch);
+}
 
 .result-banner { margin-top: 14px; padding: 12px 16px; border-radius: var(--radius-md); font-weight: 600; text-align: center; }
 .result-banner.won { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
@@ -43,11 +76,29 @@
 .guess-row.correct { background: var(--color-pitch-tint); color: var(--color-pitch-dark); }
 .guess-row.wrong { background: #FBE7E5; color: var(--color-danger); }
 
-.input-area { display: flex; gap: 8px; margin-top: 14px; }
-.input-area input { flex: 1; padding: 11px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--color-line); background: var(--color-bg); color: var(--color-ink); font-size: 14px; }
-.input-area input:focus { outline: none; border-color: var(--color-pitch); }
-.input-area button { padding: 11px 20px; border-radius: var(--radius-sm); border: none; background: var(--color-pitch); color: #fff; font-weight: 700; cursor: pointer; }
-.input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+.input-label { font-size: 13px; color: var(--color-ink-muted); margin: 14px 0 8px; }
+.score-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.input-team { font-size: 13px; font-weight: 600; }
+.score-input input {
+  width: 52px;
+  padding: 10px 6px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 700;
+}
+.score-input input:focus { outline: none; border-color: var(--color-pitch); }
+.input-dash { font-size: 20px; color: var(--color-ink-muted); }
+.score-input button { padding: 10px 20px; border-radius: var(--radius-sm); border: none; background: var(--color-pitch); color: #fff; font-weight: 700; cursor: pointer; }
+.score-input button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .leaderboard { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; }
 .lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-line); }

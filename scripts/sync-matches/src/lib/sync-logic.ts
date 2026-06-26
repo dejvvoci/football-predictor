@@ -117,9 +117,9 @@ export async function syncMatchesAndGrade(): Promise<void> {
 
   await autoCreateChallenges(matches);
   await setDailyChallenge();
-  await setCareerPathChallenge();
-  await setTransferQuizChallenge();
   if (footballDataToken) await setClubBadgeChallenge(footballDataToken);
+  if (footballDataToken) await setFlashbackChallenge(footballDataToken);
+  if (footballDataToken) await setTopScorerChallenge(footballDataToken);
 }
 
 const PERFECT_DAY_BONUS = 10;
@@ -500,9 +500,6 @@ async function setDailyChallenge(): Promise<void> {
   console.log(`⭐ Daily challenge set: ${player['name']} (${player['source']})`);
 }
 
-import { CAREER_PATH_PLAYERS, pickCareerPlayerForDate } from './career-path-data';
-import { TRANSFER_RECORDS, pickTransferForDate } from './transfer-quiz-data';
-
 const BADGE_COMPETITIONS = ['PL', 'PD', 'BL1', 'SA', 'FL1'];
 
 async function setClubBadgeChallenge(footballDataToken: string): Promise<void> {
@@ -548,36 +545,116 @@ async function setClubBadgeChallenge(footballDataToken: string): Promise<void> {
   }
 }
 
-async function setCareerPathChallenge(): Promise<void> {
+
+
+// ── SCORE FLASHBACK ──────────────────────────────────────────────────────────
+const FLASHBACK_COMPETITIONS = ['PL', 'PD', 'BL1', 'SA', 'FL1', 'CL'];
+const FLASHBACK_SEASONS = [2018, 2019, 2020, 2021, 2022];
+
+async function setFlashbackChallenge(token: string): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
-  const docRef = db.collection('challenges').doc(`${today}_career`);
+  const docRef = db.collection('challenges').doc(`${today}_flashback`);
   if ((await docRef.get()).exists) return;
 
-  const player = pickCareerPlayerForDate(today);
-  await docRef.set({
-    type: 'career',
-    date: today,
-    data: {
-      playerName: player.name,
-      clubs: player.clubs,
-      nationality: player.nationality
-    },
-    createdAt: Date.now()
-  });
-  console.log(`🗺️ Career challenge set: ${player.name}`);
+  const seed = parseInt(today.replace(/-/g, ''), 10);
+  const comp   = FLASHBACK_COMPETITIONS[seed % FLASHBACK_COMPETITIONS.length];
+  const season = FLASHBACK_SEASONS[Math.floor(seed / FLASHBACK_COMPETITIONS.length) % FLASHBACK_SEASONS.length];
+
+  try {
+    await new Promise(r => setTimeout(r, 6500));
+    const res = await fetch(
+      `https://api.football-data.org/v4/competitions/${comp}/matches?season=${season}&status=FINISHED`,
+      { headers: { 'X-Auth-Token': token } }
+    );
+    if (!res.ok) { console.warn(`Flashback: could not fetch matches for ${comp} ${season}`); return; }
+
+    const data = await res.json() as { matches?: Record<string, unknown>[] };
+    const matches = (data.matches ?? []).filter((m) => {
+      // Only matches with goals (interesting scorelines)
+      const score = m['score'] as Record<string, Record<string, number>>;
+      const full = score?.['fullTime'];
+      return full && typeof full['home'] === 'number' && typeof full['away'] === 'number';
+    });
+    if (matches.length === 0) return;
+
+    const match = matches[seed % matches.length] as Record<string, unknown>;
+    const score  = match['score'] as Record<string, Record<string, number>>;
+    const full   = score['fullTime'];
+    const ht     = score['halfTime'];
+    const home   = (match['homeTeam'] as Record<string, string>);
+    const away   = (match['awayTeam'] as Record<string, string>);
+
+    await docRef.set({
+      type: 'flashback',
+      date: today,
+      data: {
+        homeTeam: home['shortName'] ?? home['name'],
+        awayTeam: away['shortName'] ?? away['name'],
+        homeGoals: full['home'],
+        awayGoals: full['away'],
+        htHomeGoals: ht?.['home'] ?? null,
+        htAwayGoals: ht?.['away'] ?? null,
+        competition: comp,
+        season: `${season}/${String(season + 1).slice(2)}`,
+        stage: (match['stage'] as string) ?? (match['matchday'] ? `Matchday ${match['matchday']}` : ''),
+        matchDate: (match['utcDate'] as string)?.slice(0, 10) ?? '',
+      },
+      createdAt: Date.now()
+    });
+    console.log(`⚡ Flashback set: ${home['shortName']} vs ${away['shortName']} ${season} (${comp})`);
+  } catch (e) {
+    console.warn('Flashback challenge failed:', e);
+  }
 }
 
-async function setTransferQuizChallenge(): Promise<void> {
+// ── TOP SCORER ───────────────────────────────────────────────────────────────
+const SCORER_COMPETITIONS = ['PL', 'PD', 'BL1', 'SA', 'FL1'];
+const SCORER_SEASONS = [2018, 2019, 2020, 2021, 2022, 2023];
+
+async function setTopScorerChallenge(token: string): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
-  const docRef = db.collection('challenges').doc(`${today}_transfer`);
+  const docRef = db.collection('challenges').doc(`${today}_topscorer`);
   if ((await docRef.get()).exists) return;
 
-  const transfer = pickTransferForDate(today);
-  await docRef.set({
-    type: 'transfer',
-    date: today,
-    data: transfer,
-    createdAt: Date.now()
-  });
-  console.log(`💸 Transfer challenge set: ${transfer.player} (${transfer.from} → ${transfer.to})`);
+  const seed   = parseInt(today.replace(/-/g, ''), 10) + 3; // offset from flashback
+  const comp   = SCORER_COMPETITIONS[seed % SCORER_COMPETITIONS.length];
+  const season = SCORER_SEASONS[Math.floor(seed / SCORER_COMPETITIONS.length) % SCORER_SEASONS.length];
+
+  const compNames: Record<string, string> = {
+    PL: 'Premier League', PD: 'La Liga', BL1: 'Bundesliga', SA: 'Serie A', FL1: 'Ligue 1'
+  };
+
+  try {
+    await new Promise(r => setTimeout(r, 6500));
+    const res = await fetch(
+      `https://api.football-data.org/v4/competitions/${comp}/scorers?season=${season}`,
+      { headers: { 'X-Auth-Token': token } }
+    );
+    if (!res.ok) { console.warn(`Top scorer: could not fetch for ${comp} ${season}`); return; }
+
+    const data = await res.json() as { scorers?: Record<string, unknown>[] };
+    const top = data.scorers?.[0];
+    if (!top) return;
+
+    const player = top['player'] as Record<string, string>;
+    const team   = top['team']   as Record<string, string>;
+
+    await docRef.set({
+      type: 'topscorer',
+      date: today,
+      data: {
+        playerName: player['name'],
+        team: team['shortName'] ?? team['name'],
+        nationality: player['nationality'] ?? null,
+        goals: top['goals'] as number,
+        competition: compNames[comp] ?? comp,
+        competitionCode: comp,
+        season,
+      },
+      createdAt: Date.now()
+    });
+    console.log(`⚽ Top scorer set: ${player['name']} (${comp} ${season}, ${top['goals']} goals)`);
+  } catch (e) {
+    console.warn('Top scorer challenge failed:', e);
+  }
 }

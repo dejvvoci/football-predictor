@@ -64,15 +64,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'daily/career',
+    path: 'daily/flashback',
     loadComponent: () =>
-      import('./features/daily-challenge/career-challenge/career-challenge.component').then(m => m.CareerChallengeComponent),
+      import('./features/daily-challenge/flashback-challenge/flashback-challenge.component').then(m => m.FlashbackChallengeComponent),
     canActivate: [authGuard]
   },
   {
-    path: 'daily/transfer',
+    path: 'daily/topscorer',
     loadComponent: () =>
-      import('./features/daily-challenge/transfer-challenge/transfer-challenge.component').then(m => m.TransferChallengeComponent),
+      import('./features/daily-challenge/topscorer-challenge/topscorer-challenge.component').then(m => m.TopScorerChallengeComponent),
     canActivate: [authGuard]
   },
   {
