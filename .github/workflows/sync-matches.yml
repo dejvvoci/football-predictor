@@ -2,7 +2,8 @@ name: Sync Matches
 
 on:
   schedule:
-    - cron: '*/20 * * * *'
+    - cron: '*/5 12-23 * * *'   # every 5 min, 12:00–23:59 UTC (match hours)
+    - cron: '0 * 0-11 * * *'    # every hour, 00:00–11:59 UTC (night)
   workflow_dispatch: {}
 
 jobs:
@@ -19,7 +20,7 @@ jobs:
         working-directory: scripts/sync-matches
         run: npm install
 
-      - name: Run sync
+      - name: Run sync (daily challenges + tournament + odds + achievements)
         working-directory: scripts/sync-matches
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
