@@ -48,7 +48,31 @@ export const routes: Routes = [
   {
     path: 'daily',
     loadComponent: () =>
-      import('./features/daily-challenge/daily-challenge.component').then((m) => m.DailyChallengeComponent),
+      import('./features/daily-challenge/daily-hub.component').then(m => m.DailyHubComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'daily/player',
+    loadComponent: () =>
+      import('./features/daily-challenge/daily-challenge.component').then(m => m.DailyChallengeComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'daily/badge',
+    loadComponent: () =>
+      import('./features/daily-challenge/badge-challenge/badge-challenge.component').then(m => m.BadgeChallengeComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'daily/career',
+    loadComponent: () =>
+      import('./features/daily-challenge/career-challenge/career-challenge.component').then(m => m.CareerChallengeComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'daily/transfer',
+    loadComponent: () =>
+      import('./features/daily-challenge/transfer-challenge/transfer-challenge.component').then(m => m.TransferChallengeComponent),
     canActivate: [authGuard]
   },
   {

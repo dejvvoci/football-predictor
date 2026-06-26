@@ -117,6 +117,9 @@ export async function syncMatchesAndGrade(): Promise<void> {
 
   await autoCreateChallenges(matches);
   await setDailyChallenge();
+  await setCareerPathChallenge();
+  await setTransferQuizChallenge();
+  if (footballDataToken) await setClubBadgeChallenge(footballDataToken);
 }
 
 const PERFECT_DAY_BONUS = 10;
@@ -467,7 +470,7 @@ async function setDailyChallenge(): Promise<void> {
   if (!player['thumbnail']) {
     try {
       const wikiTitle = fallback.wikiTitle;
-      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle?? '')}&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json`;
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle)}&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json`;
       console.log(`  🔍 Fetching Wikipedia: ${wikiUrl}`);
       const wikiRes = await fetch(wikiUrl, {
         headers: { 'User-Agent': 'FootballPredictor/1.0 (sync-script)' }
@@ -495,4 +498,86 @@ async function setDailyChallenge(): Promise<void> {
 
   await docRef.set({ date: today, player, createdAt: Date.now() });
   console.log(`⭐ Daily challenge set: ${player['name']} (${player['source']})`);
+}
+
+import { CAREER_PATH_PLAYERS, pickCareerPlayerForDate } from './career-path-data';
+import { TRANSFER_RECORDS, pickTransferForDate } from './transfer-quiz-data';
+
+const BADGE_COMPETITIONS = ['PL', 'PD', 'BL1', 'SA', 'FL1'];
+
+async function setClubBadgeChallenge(footballDataToken: string): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const docRef = db.collection('challenges').doc(`${today}_badge`);
+  if ((await docRef.get()).exists) return;
+
+  const seed = parseInt(today.replace(/-/g, ''), 10);
+  const comp = BADGE_COMPETITIONS[seed % BADGE_COMPETITIONS.length];
+
+  try {
+    await new Promise(r => setTimeout(r, 7000)); // rate limit buffer
+    const res = await fetch(`https://api.football-data.org/v4/competitions/${comp}/teams`, {
+      headers: { 'X-Auth-Token': footballDataToken }
+    });
+    if (!res.ok) { console.warn(`Badge challenge: could not fetch teams for ${comp}`); return; }
+    const data = await res.json() as { teams?: Record<string, unknown>[] };
+    const teams = data.teams ?? [];
+    if (teams.length === 0) return;
+
+    const team = teams[seed % teams.length] as Record<string, unknown>;
+    const countryMap: Record<string, string> = {
+      PL: 'England', PD: 'Spain', BL1: 'Germany', SA: 'Italy', FL1: 'France'
+    };
+
+    await docRef.set({
+      type: 'badge',
+      date: today,
+      data: {
+        teamId: team['id'],
+        teamName: (team['shortName'] as string) ?? (team['name'] as string),
+        crest: team['crest'],
+        competition: comp,
+        country: countryMap[comp] ?? comp,
+        founded: (team['founded'] as number) ?? null,
+        venue: (team['venue'] as string) ?? null,
+      },
+      createdAt: Date.now()
+    });
+    console.log(`🛡️ Badge challenge set: ${team['shortName'] ?? team['name']} (${comp})`);
+  } catch (e) {
+    console.warn('Badge challenge failed:', e);
+  }
+}
+
+async function setCareerPathChallenge(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const docRef = db.collection('challenges').doc(`${today}_career`);
+  if ((await docRef.get()).exists) return;
+
+  const player = pickCareerPlayerForDate(today);
+  await docRef.set({
+    type: 'career',
+    date: today,
+    data: {
+      playerName: player.name,
+      clubs: player.clubs,
+      nationality: player.nationality
+    },
+    createdAt: Date.now()
+  });
+  console.log(`🗺️ Career challenge set: ${player.name}`);
+}
+
+async function setTransferQuizChallenge(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const docRef = db.collection('challenges').doc(`${today}_transfer`);
+  if ((await docRef.get()).exists) return;
+
+  const transfer = pickTransferForDate(today);
+  await docRef.set({
+    type: 'transfer',
+    date: today,
+    data: transfer,
+    createdAt: Date.now()
+  });
+  console.log(`💸 Transfer challenge set: ${transfer.player} (${transfer.from} → ${transfer.to})`);
 }
