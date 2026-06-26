@@ -1,8 +1,9 @@
-name: Sync Matches
+name: Sync Matches (fallback + daily setup)
 
 on:
   schedule:
-    - cron: '*/20 * * * *'
+    # Fallback: every 30 min (Vercel handles real-time updates)
+    - cron: '*/30 * * * *'
   workflow_dispatch: {}
 
 jobs:
@@ -19,7 +20,7 @@ jobs:
         working-directory: scripts/sync-matches
         run: npm install
 
-      - name: Run sync
+      - name: Run sync (daily challenges + tournament + odds + achievements)
         working-directory: scripts/sync-matches
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
