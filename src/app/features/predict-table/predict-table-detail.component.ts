@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
 import { combineLatest } from 'rxjs';
@@ -11,7 +10,7 @@ import { TablePrediction, TableSeason, TableTeam, COMP_FLAGS } from '../../core/
 @Component({
   selector: 'app-predict-table-detail',
   standalone: true,
-  imports: [RouterLink, AsyncPipe, DatePipe, DragDropModule],
+  imports: [RouterLink, AsyncPipe, DatePipe],
   templateUrl: './predict-table-detail.component.html',
   styleUrl: './predict-table-detail.component.css'
 })
@@ -86,12 +85,6 @@ export class PredictTableDetailComponent implements OnInit {
     });
   }
 
-  onDrop(event: CdkDragDrop<TableTeam[]>): void {
-    const arr = [...this.orderedTeams()];
-    moveItemInArray(arr, event.previousIndex, event.currentIndex);
-    this.orderedTeams.set(arr);
-  }
-
   moveUp(index: number): void {
     if (index === 0) return;
     const arr = [...this.orderedTeams()];
@@ -104,6 +97,20 @@ export class PredictTableDetailComponent implements OnInit {
     if (index === arr.length - 1) return;
     const copy = [...arr];
     [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
+    this.orderedTeams.set(copy);
+  }
+
+  moveToPosition(currentIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const target = parseInt(input.value, 10);
+    const arr = this.orderedTeams();
+    if (isNaN(target) || target < 1 || target > arr.length || target === currentIndex + 1) {
+      input.value = String(currentIndex + 1); // reset if invalid
+      return;
+    }
+    const copy = [...arr];
+    const [team] = copy.splice(currentIndex, 1);
+    copy.splice(target - 1, 0, team);
     this.orderedTeams.set(copy);
   }
 
@@ -128,5 +135,9 @@ export class PredictTableDetailComponent implements OnInit {
   diffClass(diff: number): string {
     if (diff === 0) return 'same';
     return diff > 0 ? 'below' : 'above';
+  }
+
+  rowScore(predictedPos: number, actualPos: number): number {
+    return Math.max(0, 10 - Math.abs(predictedPos - actualPos));
   }
 }

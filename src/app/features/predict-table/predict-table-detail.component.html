@@ -39,14 +39,18 @@
       <!-- ── PREDICT TAB ── -->
       @if (activeTab() === 'predict') {
         @if (isOpen()) {
-          <p class="drag-hint">
-            <strong>Drag</strong> to reorder · use <strong>↑ ↓</strong> on mobile
-          </p>
-          <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+          <p class="drag-hint">Use <strong>↑ ↓</strong> to reorder teams</p>
+          <div class="teams-list">
             @for (team of orderedTeams(); track team.id; let i = $index) {
-              <div class="team-row" cdkDrag>
-                <div class="drag-handle" cdkDragHandle>⋮⋮</div>
-                <span class="position">{{ i + 1 }}</span>
+              <div class="team-row">
+                <input
+                  type="number"
+                  class="pos-input"
+                  [value]="i + 1"
+                  [min]="1"
+                  [max]="orderedTeams().length"
+                  (change)="moveToPosition(i, $event)"
+                />
                 <img class="crest" [src]="team.crest" [alt]="team.shortName" />
                 <span class="team-name">{{ team.name }}</span>
                 <div class="move-btns">
@@ -93,7 +97,7 @@
                       {{ row.predictedPos }}
                       <small>{{ diffLabel(row.diff) }}</small>
                     </span>
-                    <span class="row-pts">{{ [10 - (row.predictedPos - row.position | abs), 0] | max }}</span>
+                    <span class="row-pts">{{ rowScore(row.predictedPos, row.position) }}</span>
                   </div>
                 }
               </div>

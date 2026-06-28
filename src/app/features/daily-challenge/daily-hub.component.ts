@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { combineLatest } from 'rxjs';
 import { ChallengeService } from '../../core/services/challenge.service';
 import { DailyChallengeService } from '../../core/services/daily-challenge.service';
@@ -19,7 +19,7 @@ interface HubCard {
 @Component({
   selector: 'app-daily-hub',
   standalone: true,
-  imports: [RouterLink, DatePipe, AsyncPipe],
+  imports: [RouterLink, DatePipe],
   templateUrl: './daily-hub.component.html',
   styleUrl: './daily-hub.component.css'
 })
