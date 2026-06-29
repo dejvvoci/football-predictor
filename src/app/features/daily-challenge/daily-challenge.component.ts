@@ -30,6 +30,7 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
   inputValue = signal('');
   suggestions = signal<string[]>([]);
   gameState = signal<'playing' | 'won' | 'lost'>('playing');
+  restoredAttempts = signal(0);
   startTime = Date.now();
   submitting = signal(false);
   activeTab = signal<'game' | 'leaderboard'>('game');
@@ -38,6 +39,19 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
     const player = this.challenge()?.player;
     return !player || g.toLowerCase() !== player.name.toLowerCase();
   }));
+
+  displayAttempts = computed(() =>
+    this.guesses().length > 0 ? this.guesses().length : this.restoredAttempts()
+  );
+
+  displayWrong = computed(() => {
+    if (this.guesses().length > 0) return this.wrongGuesses().length;
+    const state = this.gameState();
+    const n = this.restoredAttempts();
+    if (state === 'lost') return n;
+    if (state === 'won') return Math.max(0, n - 1);
+    return 0;
+  });
 
   cluesRevealed = computed(() => Math.min(this.wrongGuesses().length, CLUE_ORDER.length));
   photoRevealed = computed(() => this.wrongGuesses().length >= 5);
@@ -55,6 +69,7 @@ export class DailyChallengeComponent implements OnInit, OnDestroy {
     this.service.getMyResult().subscribe(async (result) => {
       if (result) {
         this.gameState.set(result.solved ? 'won' : 'lost');
+        this.restoredAttempts.set(result.attempts ?? 0);
         const player = this.challenge()?.player;
         if (player) await this.tryLoadThumbnail(player);
       }

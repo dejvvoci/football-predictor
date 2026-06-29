@@ -54,10 +54,10 @@
         <!-- Attempts -->
         <div class="attempts-row">
           @for (a of attemptsArray; track $index) {
-            <div class="dot" [class.wrong]="$index < wrongGuesses().length"
-              [class.correct]="gameState() === 'won' && $index === guesses().length - 1"></div>
+            <div class="dot" [class.wrong]="$index < displayWrong()"
+              [class.correct]="gameState() === 'won' && $index === displayAttempts() - 1"></div>
           }
-          <span class="attempts-label">{{ guesses().length }}/{{ attemptsArray.length }}</span>
+          <span class="attempts-label">{{ displayAttempts() }}/{{ attemptsArray.length }}</span>
         </div>
 
         <!-- Previous guesses -->

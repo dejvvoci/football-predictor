@@ -25,6 +25,7 @@ export class FlashbackChallengeComponent implements OnInit, OnDestroy {
   awayInput = signal<number | null>(null);
   guesses = signal<{ home: number; away: number }[]>([]);
   gameState = signal<'playing' | 'won' | 'lost'>('playing');
+  restoredAttempts = signal(0);
   activeTab = signal<'game' | 'leaderboard'>('game');
   startTime = Date.now();
   attemptsArray = Array.from({ length: MAX_ATTEMPTS });
@@ -48,12 +49,25 @@ export class FlashbackChallengeComponent implements OnInit, OnDestroy {
     return 'Draw';
   }
 
+  displayAttempts = computed(() =>
+    this.guesses().length > 0 ? this.guesses().length : this.restoredAttempts()
+  );
+
+  displayWrong = computed(() => {
+    if (this.guesses().length > 0) return this.wrongGuesses().length;
+    const state = this.gameState();
+    const n = this.restoredAttempts();
+    if (state === 'lost') return n;
+    if (state === 'won') return Math.max(0, n - 1);
+    return 0;
+  });
+
   ngOnInit(): void {
     this.sub = this.service.getChallenge<FlashbackData>('flashback').subscribe(ch => {
       this.challenge.set(ch ?? null);
     });
     this.service.getMyResult('flashback').subscribe(r => {
-      if (r) this.gameState.set(r.solved ? 'won' : 'lost');
+      if (r) { this.gameState.set(r.solved ? 'won' : 'lost'); this.restoredAttempts.set(r.attempts ?? 0); }
     });
   }
 

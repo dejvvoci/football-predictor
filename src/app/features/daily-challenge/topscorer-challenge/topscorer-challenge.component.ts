@@ -23,6 +23,7 @@ export class TopScorerChallengeComponent implements OnInit, OnDestroy {
   guesses = signal<string[]>([]);
   inputValue = signal('');
   gameState = signal<'playing' | 'won' | 'lost'>('playing');
+  restoredAttempts = signal(0);
   activeTab = signal<'game' | 'leaderboard'>('game');
   startTime = Date.now();
   attemptsArray = Array.from({ length: MAX_ATTEMPTS });
@@ -36,12 +37,25 @@ export class TopScorerChallengeComponent implements OnInit, OnDestroy {
   showTeam        = computed(() => this.wrongGuesses().length >= 2 || this.gameState() !== 'playing');
   showGoals       = computed(() => this.wrongGuesses().length >= 3 || this.gameState() !== 'playing');
 
+  displayAttempts = computed(() =>
+    this.guesses().length > 0 ? this.guesses().length : this.restoredAttempts()
+  );
+
+  displayWrong = computed(() => {
+    if (this.guesses().length > 0) return this.wrongGuesses().length;
+    const state = this.gameState();
+    const n = this.restoredAttempts();
+    if (state === 'lost') return n;
+    if (state === 'won') return Math.max(0, n - 1);
+    return 0;
+  });
+
   ngOnInit(): void {
     this.sub = this.service.getChallenge<TopScorerData>('topscorer').subscribe(ch => {
       this.challenge.set(ch ?? null);
     });
     this.service.getMyResult('topscorer').subscribe(r => {
-      if (r) this.gameState.set(r.solved ? 'won' : 'lost');
+      if (r) { this.gameState.set(r.solved ? 'won' : 'lost'); this.restoredAttempts.set(r.attempts ?? 0); }
     });
   }
 
