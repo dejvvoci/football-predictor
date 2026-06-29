@@ -95,6 +95,34 @@ export class GroupDetailComponent {
   removingMemberId = signal<string | null>(null);
   deletingGroup = signal(false);
 
+  // Custom confirm modal
+  modalVisible = signal(false);
+  modalTitle = signal('');
+  modalMessage = signal('');
+  modalConfirmLabel = signal('Confirm');
+  modalDanger = signal(false);
+  private modalCallback: (() => void) | null = null;
+
+  private openModal(title: string, message: string, confirmLabel: string, danger: boolean, cb: () => void): void {
+    this.modalTitle.set(title);
+    this.modalMessage.set(message);
+    this.modalConfirmLabel.set(confirmLabel);
+    this.modalDanger.set(danger);
+    this.modalCallback = cb;
+    this.modalVisible.set(true);
+  }
+
+  confirmModal(): void {
+    this.modalVisible.set(false);
+    this.modalCallback?.();
+    this.modalCallback = null;
+  }
+
+  cancelModal(): void {
+    this.modalVisible.set(false);
+    this.modalCallback = null;
+  }
+
   onNewNameChange(event: Event): void {
     this.newGroupName.set((event.target as HTMLInputElement).value);
   }
@@ -110,65 +138,78 @@ export class GroupDetailComponent {
       await this.groupService.renameGroup(groupId, name);
       this.newGroupName.set('');
     } catch {
-      this.renameError.set("S'u ruajt dot emri i ri.");
+      this.renameError.set("Couldn't save the new name.");
     } finally {
       this.renaming.set(false);
     }
   }
 
-  async removeMember(groupId: string, memberUserId: string, memberName: string): Promise<void> {
-    const confirmed = confirm(`Të hiqet "${memberName}" nga grupi?`);
-    if (!confirmed) return;
-
-    this.removingMemberId.set(memberUserId);
-    try {
-      await this.groupService.removeMember(groupId, memberUserId);
-    } catch {
-      alert("S'u hoq dot anëtari. Provo përsëri.");
-    } finally {
-      this.removingMemberId.set(null);
-    }
+  removeMember(groupId: string, memberUserId: string, memberName: string): void {
+    this.openModal(
+      'Remove member',
+      `Remove "${memberName}" from the group?`,
+      'Remove',
+      true,
+      async () => {
+        this.removingMemberId.set(memberUserId);
+        try {
+          await this.groupService.removeMember(groupId, memberUserId);
+        } catch {
+          alert("Couldn't remove member. Please try again.");
+        } finally {
+          this.removingMemberId.set(null);
+        }
+      }
+    );
   }
 
-  async deleteGroup(groupId: string): Promise<void> {
-    const confirmed = confirm("Je i sigurt që do fshish krejt grupin? Veprimi s'kthehet mbrapsht.");
-    if (!confirmed) return;
-
-    this.deletingGroup.set(true);
-    try {
-      await this.groupService.deleteGroup(groupId);
-      this.router.navigateByUrl('/groups');
-    } catch {
-      alert("S'u fshi dot grupi. Provo përsëri.");
-      this.deletingGroup.set(false);
-    }
+  deleteGroup(groupId: string): void {
+    this.openModal(
+      'Delete group',
+      "Are you sure you want to delete this group? This action cannot be undone.",
+      'Delete',
+      true,
+      async () => {
+        this.deletingGroup.set(true);
+        try {
+          await this.groupService.deleteGroup(groupId);
+          this.router.navigateByUrl('/groups');
+        } catch {
+          alert("Couldn't delete the group. Please try again.");
+          this.deletingGroup.set(false);
+        }
+      }
+    );
   }
 
   async copyInviteLink(inviteCode: string): Promise<void> {
     const url = `${window.location.origin}/groups/join?code=${inviteCode}`;
-
     try {
       await navigator.clipboard.writeText(url);
       this.linkCopied.set(true);
       setTimeout(() => this.linkCopied.set(false), 2000);
     } catch {
-      // Fallback nëse Clipboard API s'lejohet (p.sh. shfletues i vjetër) — shfaq linkun direkt
-      alert(`Kopjo këtë link manualisht:\n${url}`);
+      alert(`Copy this link manually:\n${url}`);
     }
   }
 
-  async leave(groupId: string): Promise<void> {
-    const confirmed = confirm('Je i sigurt që do largohesh nga ky grup?');
-    if (!confirmed) return;
-
-    this.leaving.set(true);
-    try {
-      await this.groupService.leaveGroup(groupId);
-      this.router.navigateByUrl('/groups');
-    } catch {
-      alert("S'u largua dot nga grupi. Provo përsëri.");
-    } finally {
-      this.leaving.set(false);
-    }
+  leave(groupId: string): void {
+    this.openModal(
+      'Leave group',
+      'Are you sure you want to leave this group?',
+      'Leave',
+      true,
+      async () => {
+        this.leaving.set(true);
+        try {
+          await this.groupService.leaveGroup(groupId);
+          this.router.navigateByUrl('/groups');
+        } catch {
+          alert("Couldn't leave the group. Please try again.");
+        } finally {
+          this.leaving.set(false);
+        }
+      }
+    );
   }
 }

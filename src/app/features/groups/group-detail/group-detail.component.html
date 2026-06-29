@@ -173,3 +173,19 @@
     <p class="loading">Duke ngarkuar grupin...</p>
   }
 </section>
+
+
+@if (modalVisible()) {
+  <div class="modal-overlay" (click)="cancelModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">{{ modalTitle() }}</h3>
+      <p class="modal-message">{{ modalMessage() }}</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel" (click)="cancelModal()">Cancel</button>
+        <button type="button" class="modal-confirm" [class.danger]="modalDanger()" (click)="confirmModal()">
+          {{ modalConfirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
