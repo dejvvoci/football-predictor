@@ -67,6 +67,22 @@ export function calculateOverUnderPoints(
 export const HT_FT_BONUS = 5;
 export const RED_CARD_BONUS = 3;
 export const BTTS_BONUS = 1;
+export const FIRST_GOALSCORER_BONUS = 4;
+
+/** First goalscorer — fuzzy match (last name is enough) */
+export function calculateFirstGoalscorerPoints(prediction: string, actual: string): number {
+  const norm = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const np = norm(prediction);
+  const na = norm(actual);
+  if (!np || !na) return 0;
+  const lastName = na.split(' ').at(-1) ?? na;
+  const predLast = np.split(' ').at(-1) ?? np;
+  if (np === na || predLast === lastName || na.includes(np) || np.includes(lastName)) {
+    return FIRST_GOALSCORER_BONUS;
+  }
+  return 0;
+}
 
 export function calculateHtFtPoints(
   choice: string,

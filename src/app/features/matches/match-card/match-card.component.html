@@ -84,13 +84,32 @@
           </div>
         </div>
 
-        <!-- First goalscorer (coming soon) -->
-        <div class="bonus-row disabled">
+        <!-- First goalscorer -->
+        <div class="bonus-row">
           <div class="bonus-meta">
             <span class="bonus-name">First goalscorer</span>
             <span class="bonus-pts">+4 pts</span>
           </div>
-          <span class="coming-soon-tag">Coming soon</span>
+          <div class="goalscorer-input-wrap">
+            <input
+              type="text"
+              class="goalscorer-input"
+              placeholder="Player name..."
+              [value]="firstGoalscorer()"
+              (input)="onFirstGoalscorerInput($event)"
+              autocomplete="off"
+            />
+            @if (firstGoalscorerLoading()) {
+              <span class="goalscorer-loading">⋯</span>
+            }
+            @if (firstGoalscorerSuggestions().length > 0) {
+              <div class="goalscorer-suggestions">
+                @for (s of firstGoalscorerSuggestions(); track s) {
+                  <button type="button" class="suggestion-item" (click)="selectGoalscorer(s)">{{ s }}</button>
+                }
+              </div>
+            }
+          </div>
         </div>
 
         <!-- Red card -->

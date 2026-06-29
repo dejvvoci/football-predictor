@@ -38,6 +38,9 @@ export class MatchCardComponent implements OnInit {
   htFt = signal<string | null>(null);
   btts = signal<boolean | null>(null);
   redCard = signal<boolean | null>(null);
+  firstGoalscorer = signal<string>('');
+  firstGoalscorerSuggestions = signal<string[]>([]);
+  firstGoalscorerLoading = signal(false);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
   savedMessage = signal(false);
@@ -62,6 +65,7 @@ export class MatchCardComponent implements OnInit {
         this.htFt.set(existing.htFt ?? null);
         this.btts.set(existing.btts ?? null);
         this.redCard.set(existing.redCard ?? null);
+        this.firstGoalscorer.set((existing as any).firstGoalscorer ?? '');
         this.showBonusPanel.set(true);
       }
     });
@@ -176,7 +180,10 @@ export class MatchCardComponent implements OnInit {
       if (this.groupId) {
         await this.predictionService.submitGroupPrediction(this.groupId, this.match.id, choice, exactScore);
       } else {
-        await this.predictionService.submitPrediction(this.match.id, choice, exactScore, overUnder, htFt, btts, redCard);
+        await this.predictionService.submitPrediction(
+          this.match.id, choice, exactScore, overUnder, htFt, btts, redCard,
+          this.firstGoalscorer().trim() || undefined
+        );
       }
       this.editMode.set(false);
       this.showBonusPanel.set(false);
@@ -191,6 +198,30 @@ export class MatchCardComponent implements OnInit {
   getOverUnder(p: PredictionLike): 'over' | 'under' | undefined { return (p as any).overUnder; }
   getBtts(p: PredictionLike): boolean | undefined { return (p as any).btts; }
   getRedCard(p: PredictionLike): boolean | undefined { return (p as any).redCard; }
+
+  async onFirstGoalscorerInput(event: Event): Promise<void> {
+    const val = (event.target as HTMLInputElement).value;
+    this.firstGoalscorer.set(val);
+    this.firstGoalscorerSuggestions.set([]);
+    if (val.length < 2) return;
+    this.firstGoalscorerLoading.set(true);
+    try {
+      const res = await fetch(
+        `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(val)}`
+      );
+      const data = await res.json() as { players?: { strPlayer: string }[] };
+      this.firstGoalscorerSuggestions.set(
+        (data.players ?? []).map(p => p.strPlayer).slice(0, 5)
+      );
+    } catch { /* silent */ } finally {
+      this.firstGoalscorerLoading.set(false);
+    }
+  }
+
+  selectGoalscorer(name: string): void {
+    this.firstGoalscorer.set(name);
+    this.firstGoalscorerSuggestions.set([]);
+  }
 
   closeWarning(): void {
     this.showIncompleteScoreWarning.set(false);

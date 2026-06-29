@@ -28,7 +28,8 @@ export class PredictionService {
     overUnder?: 'over' | 'under',
     htFt?: string,
     btts?: boolean,
-    redCard?: boolean
+    redCard?: boolean,
+    firstGoalscorer?: string
   ): Promise<void> {
     const userId = this.auth.currentUser?.uid;
     if (!userId) throw new Error('Must be logged in to submit a prediction.');
@@ -44,6 +45,7 @@ export class PredictionService {
       ...(htFt ? { htFt } : {}),
       ...(btts !== undefined ? { btts } : {}),
       ...(redCard !== undefined ? { redCard } : {}),
+      ...(firstGoalscorer?.trim() ? { firstGoalscorer: firstGoalscorer.trim() } : {}),
       createdAt: Date.now()
     };
 

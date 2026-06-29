@@ -1,8 +1,8 @@
 import { db, FieldValue } from './admin';
-import { fetchUpcomingMatches, fetchMatchRedCardStatus } from './football-data-client';
+import { fetchUpcomingMatches, fetchMatchDetails } from './football-data-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
-import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, calculateBttsPoints, calculateRedCardPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
+import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, calculateBttsPoints, calculateRedCardPoints, calculateFirstGoalscorerPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
 import { computeNewAchievements, UserProgress } from './achievement';
 import { pickPlayerForDate, FAMOUS_PLAYERS } from './player-list';
 
@@ -253,12 +253,18 @@ async function gradeMatch(matchId: string, footballDataToken?: string): Promise<
   const match = matchSnap.data();
   if (!match || !match['result']) return;
 
-  // Fetch red card status from football-data.org match detail (1 extra API call)
+  // Fetch match details: red card + first goalscorer (1 extra API call)
   let hasRedCard: boolean | null = null;
+  let firstGoalscorer: string | null = null;
   if (footballDataToken) {
-    hasRedCard = await fetchMatchRedCardStatus(parseInt(matchId), footballDataToken);
-    if (hasRedCard !== null) {
-      await db.collection('matches').doc(matchId).update({ hasRedCard });
+    const details = await fetchMatchDetails(parseInt(matchId), footballDataToken);
+    hasRedCard = details.hasRedCard;
+    firstGoalscorer = details.firstGoalscorer;
+    const updates: Record<string, unknown> = {};
+    if (hasRedCard !== null) updates['hasRedCard'] = hasRedCard;
+    if (firstGoalscorer) updates['firstGoalscorer'] = firstGoalscorer;
+    if (Object.keys(updates).length > 0) {
+      await db.collection('matches').doc(matchId).update(updates);
     }
   }
 
@@ -277,6 +283,7 @@ async function gradeMatch(matchId: string, footballDataToken?: string): Promise<
       htFt?: string;
       btts?: boolean;
       redCard?: boolean;
+      firstGoalscorer?: string;
     };
 
     const points = calculatePoints(
@@ -304,7 +311,11 @@ async function gradeMatch(matchId: string, footballDataToken?: string): Promise<
       ? calculateRedCardPoints(prediction.redCard, hasRedCard)
       : 0;
 
-    const totalMatchPoints = points + ouPoints + htFtPoints + bttsPoints + redCardPoints;
+    const firstGoalscorerPoints = (prediction.firstGoalscorer && firstGoalscorer)
+      ? calculateFirstGoalscorerPoints(prediction.firstGoalscorer, firstGoalscorer)
+      : 0;
+
+    const totalMatchPoints = points + ouPoints + htFtPoints + bttsPoints + redCardPoints + firstGoalscorerPoints;
 
     const outcomeCorrect = points > 0;
     const exactScoreCorrect = !!(
@@ -319,6 +330,7 @@ async function gradeMatch(matchId: string, footballDataToken?: string): Promise<
       ...(prediction.htFt !== undefined ? { htFtPoints } : {}),
       ...(prediction.btts !== undefined ? { bttsPoints } : {}),
       ...(prediction.redCard !== undefined && hasRedCard !== null ? { redCardPoints } : {}),
+      ...(prediction.firstGoalscorer && firstGoalscorer ? { firstGoalscorerPoints } : {}),
       seen: false,
       competition,
       exactScoreCorrect

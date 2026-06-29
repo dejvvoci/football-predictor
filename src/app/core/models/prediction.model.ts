@@ -20,6 +20,8 @@ export interface Prediction {
   bttsPoints?: number;
   redCard?: boolean;           // true = yes there will be a red card
   redCardPoints?: number;
+  firstGoalscorer?: string;    // player name prediction
+  firstGoalscorerPoints?: number;
   seen?: boolean;
   competition?: string;
   exactScoreCorrect?: boolean;

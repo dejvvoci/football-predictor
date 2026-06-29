@@ -25,18 +25,40 @@ function formatDate(date: Date): string {
  * Kërkon 1 thirrje shtesë API per ndeshje të graduara — brenda limitit 10 req/min.
  * Kthen true/false/null (null = data nuk ishte e disponueshme).
  */
-export async function fetchMatchRedCardStatus(matchId: number, token: string): Promise<boolean | null> {
+export interface MatchDetails {
+  hasRedCard: boolean | null;
+  firstGoalscorer: string | null;
+}
+
+export async function fetchMatchDetails(matchId: number, token: string): Promise<MatchDetails> {
   try {
     const res = await fetch(`https://api.football-data.org/v4/matches/${matchId}`, {
       headers: { 'X-Auth-Token': token }
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { hasRedCard: null, firstGoalscorer: null };
     const data = await res.json();
+
+    // Red card
     const bookings: Array<{ card: string }> = data.bookings ?? [];
-    return bookings.some((b) => b.card === 'RED' || b.card === 'YELLOW_RED');
+    const hasRedCard = bookings.some((b) => b.card === 'RED' || b.card === 'YELLOW_RED');
+
+    // First goalscorer — sort goals by minute, pick first
+    const goals: Array<{ minute: number; scorer?: { name: string }; type?: string }> = data.goals ?? [];
+    const regularGoals = goals
+      .filter(g => g.type !== 'OWN_GOAL') // exclude own goals
+      .sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999));
+    const firstGoalscorer = regularGoals[0]?.scorer?.name ?? null;
+
+    return { hasRedCard, firstGoalscorer };
   } catch {
-    return null;
+    return { hasRedCard: null, firstGoalscorer: null };
   }
+}
+
+// Keep old export for backward compat
+export async function fetchMatchRedCardStatus(matchId: number, token: string): Promise<boolean | null> {
+  const details = await fetchMatchDetails(matchId, token);
+  return details.hasRedCard;
 }
 /*
  * E marrim me 1 ditë paraprirje (jo vetëm "sot", default i football-data.org), që ndeshjet
