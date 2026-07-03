@@ -101,7 +101,9 @@ export function calculateBttsPoints(choice: boolean, result: MatchResult): numbe
   return choice === actual ? BTTS_BONUS : 0;
 }
 
-/** Red card. +3 pts if correct. */
+/** Red card. +3 pts if predicted correctly, -1 if predicted Yes but no red card. */
 export function calculateRedCardPoints(choice: boolean, hasRedCard: boolean): number {
-  return choice === hasRedCard ? RED_CARD_BONUS : 0;
+  if (choice === true && hasRedCard === true) return RED_CARD_BONUS;
+  if (choice === true && hasRedCard === false) return -1;
+  return 0;
 }
