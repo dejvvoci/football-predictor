@@ -5,13 +5,14 @@ import { ChallengeService } from '../../../core/services/challenge.service';
 import { BadgeChallengeData, DailyChallengeV2 } from '../../../core/models/challenge.model';
 import { Subscription } from 'rxjs';
 
-const MAX_ATTEMPTS = 6;
 const CLUES: { label: string; key: keyof BadgeChallengeData }[] = [
   { label: '🌍 Country',     key: 'country' },
   { label: '🏆 Competition', key: 'competition' },
   { label: '📅 Founded',     key: 'founded' },
   { label: '🏟 Stadium',     key: 'venue' },
 ];
+
+const MAX_ATTEMPTS = CLUES.length; // 4 clues = 4 attempts
 
 @Component({
   selector: 'app-badge-challenge',
