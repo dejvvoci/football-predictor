@@ -8,9 +8,6 @@
 
   <div class="page-header bracket-section-header">
     <h2>Bracket-et</h2>
-    @if (isAdmin$ | async) {
-      <a routerLink="/tournament/bracket/create" class="create-btn">+ Bracket i ri</a>
-    }
   </div>
 
   @if (brackets$ | async; as brackets) {

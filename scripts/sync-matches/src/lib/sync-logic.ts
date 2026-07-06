@@ -55,6 +55,11 @@ export async function syncMatchesAndGrade(): Promise<void> {
       ? { homeGoals: m.score.halfTime.home as number, awayGoals: m.score.halfTime.away as number }
       : undefined;
 
+    const penaltyWinner: 'home' | 'away' | undefined =
+      m.score?.duration === 'PENALTY_SHOOTOUT' && m.score.winner === 'HOME_TEAM' ? 'home'
+      : m.score?.duration === 'PENALTY_SHOOTOUT' && m.score.winner === 'AWAY_TEAM' ? 'away'
+      : undefined;
+
     if (!existing.exists) {
       if (!oddsCache.has(m.competition.code)) {
         oddsCache.set(m.competition.code, await fetchOddsForCompetition(oddsApiKey, m.competition.code));
@@ -76,7 +81,8 @@ export async function syncMatchesAndGrade(): Promise<void> {
         ...(ouOdds ? { ouOdds } : {}),
         ...(result ? { result } : {}),
         ...(halfTimeResult ? { halfTimeResult } : {}),
-        ...(m.stage ? { stage: m.stage } : {})
+        ...(m.stage ? { stage: m.stage } : {}),
+        ...(penaltyWinner ? { penaltyWinner } : {})
       });
 
       console.log(`+ Ndeshje e re: ${m.homeTeam.name} vs ${m.awayTeam.name}`);
@@ -87,7 +93,8 @@ export async function syncMatchesAndGrade(): Promise<void> {
         status: newStatus,
         ...(result ? { result } : {}),
         ...(halfTimeResult ? { halfTimeResult } : {}),
-        ...(m.stage ? { stage: m.stage } : {})
+        ...(m.stage ? { stage: m.stage } : {}),
+        ...(penaltyWinner ? { penaltyWinner } : {})
       }, { merge: true });
 
       if (prevStatus !== 'finished' && newStatus === 'finished') {
@@ -100,6 +107,8 @@ export async function syncMatchesAndGrade(): Promise<void> {
     console.log(`Grading match ${matchId}...`);
     await gradeMatch(matchId, footballDataToken);
   }
+
+  await autoResolveKnockoutChallenges(justFinished);
 
   // Check perfect day bonus for each unique UTC date that had matches finish
   if (justFinished.length > 0) {
@@ -118,6 +127,8 @@ export async function syncMatchesAndGrade(): Promise<void> {
   }
 
   await autoCreateChallenges(matches);
+  await autoCreateBrackets();
+  await autoGradeBracketRounds();
   await setDailyChallenge();
   if (footballDataToken) await setClubBadgeChallenge(footballDataToken);
   await setFlashbackChallenge();
@@ -182,7 +193,7 @@ async function checkPerfectDayBonus(dateStr: string): Promise<void> {
 }
 
 const KNOCKOUT_STAGES: Record<string, string> = {
-  ROUND_OF_16:    'Round of 16',
+  LAST_16:        'Round of 16',
   QUARTER_FINALS: 'Quarter-finals',
   SEMI_FINALS:    'Semi-finals',
   FINAL:          'Final',
@@ -239,6 +250,7 @@ async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpco
     await ref.set({
       title: `${stageLabel}: ${m.homeTeam.name} vs ${m.awayTeam.name}`,
       competition: m.competition.name,
+      matchId: String(m.id),
       options: [m.homeTeam.name, m.awayTeam.name],
       status: 'open',
       pointsReward: m.stage === 'FINAL' ? 25 : m.stage === 'SEMI_FINALS' ? 15 : 10,
@@ -247,6 +259,285 @@ async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpco
       createdAt: Date.now()
     });
     console.log(`+ Sfidë automatike: ${stageLabel}: ${m.homeTeam.name} vs ${m.awayTeam.name}`);
+  }
+}
+
+// ── BRACKET-ET (fazë me eliminim direkt) ──────────────────────────────────────
+const BRACKET_STARTING_ROUND = 'LAST_16';
+const BRACKET_ROUNDS_FROM_LAST_16 = ['LAST_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'FINAL'];
+const DEFAULT_BRACKET_POINTS: Record<string, number> = {
+  LAST_16: 2,
+  QUARTER_FINALS: 3,
+  SEMI_FINALS: 5,
+  FINAL: 8
+};
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+/**
+ * Krijon automatikisht bracket-in për një kompeticion pasi rrethi i parë (Round of 16)
+ * është plotësisht i njohur në 'matches' (numër ndeshjesh = fuqi e 2-shit). Idempotent —
+ * kontrollon 'brackets/auto_{competition}_LAST_16' para se të krijojë.
+ */
+async function autoCreateBrackets(): Promise<void> {
+  const snap = await db.collection('matches')
+    .where('stage', '==', BRACKET_STARTING_ROUND)
+    .get();
+
+  if (snap.empty) return;
+
+  const byCompetition = new Map<string, FirebaseFirestore.QueryDocumentSnapshot[]>();
+  for (const d of snap.docs) {
+    const competition = d.data()['competition'] as string | undefined;
+    if (!competition) continue;
+    const list = byCompetition.get(competition) ?? [];
+    list.push(d);
+    byCompetition.set(competition, list);
+  }
+
+  for (const [competition, docs] of byCompetition.entries()) {
+    const count = docs.length;
+    const isPowerOfTwo = count >= 2 && (count & (count - 1)) === 0;
+    if (!isPowerOfTwo) continue; // pritet ende ndonjë ndeshje ose numri s'përshtatet me bracket
+
+    const key = `auto_${slugify(competition)}_${BRACKET_STARTING_ROUND}`;
+    const ref = db.collection('brackets').doc(key);
+    if ((await ref.get()).exists) continue;
+
+    const sorted: Record<string, unknown>[] = docs
+      .map((d): Record<string, unknown> => ({ id: d.id, ...(d.data() as Record<string, unknown>) }))
+      .sort((a, b) => (a['kickoff'] as number) - (b['kickoff'] as number));
+
+    const roundsCount = Math.log2(count) + 1; // p.sh. 8 ndeshje → 4 rrethe (LAST_16..FINAL)
+    const rounds = BRACKET_ROUNDS_FROM_LAST_16.slice(0, roundsCount);
+
+    const matchups = sorted.map((d, i) => ({
+      id: `${BRACKET_STARTING_ROUND}_${i}`,
+      round: BRACKET_STARTING_ROUND,
+      slotIndex: i,
+      home: { name: d['homeTeam'], ...(d['homeCrest'] ? { crest: d['homeCrest'] } : {}) },
+      away: { name: d['awayTeam'], ...(d['awayCrest'] ? { crest: d['awayCrest'] } : {}) }
+    }));
+
+    const deadline = Math.min(...sorted.map((d) => d['kickoff'] as number));
+
+    await ref.set({
+      title: `${competition} — Bracket`,
+      competition,
+      rounds,
+      pointsPerRound: Object.fromEntries(rounds.map((r) => [r, DEFAULT_BRACKET_POINTS[r]])),
+      matchups,
+      deadline,
+      status: 'open',
+      resolvedRounds: [],
+      createdBy: 'auto',
+      createdAt: Date.now()
+    });
+    console.log(`+ Bracket automatik: ${competition} — Bracket (${count} ndeshje te ${BRACKET_STARTING_ROUND})`);
+  }
+}
+
+/**
+ * Fituesi vendimtar i një ndeshjeje eliminatore — rezultati i rregullt, ose nëse ka barazim,
+ * fituesi i penallive (fusha 'penaltyWinner' e ruajtur nga sync-i). Kthen undefined nëse
+ * ende s'ka rezultat, ose barazoi por s'ka të dhëna penallish (rast i paprekshëm automatikisht).
+ */
+function decisiveWinner(match: Record<string, unknown> | undefined): string | undefined {
+  const result = match?.['result'] as { homeGoals: number; awayGoals: number } | undefined;
+  if (!result) return undefined;
+
+  if (result.homeGoals !== result.awayGoals) {
+    return result.homeGoals > result.awayGoals ? (match?.['homeTeam'] as string) : (match?.['awayTeam'] as string);
+  }
+
+  const penaltyWinner = match?.['penaltyWinner'] as 'home' | 'away' | undefined;
+  if (!penaltyWinner) return undefined; // barazim pa të dhëna penallish — s'gradohet automatikisht
+
+  return penaltyWinner === 'home' ? (match?.['homeTeam'] as string) : (match?.['awayTeam'] as string);
+}
+
+/** ADMIN → AUTOMATIK: zgjidh sfidat knockout "Who advances: X vs Y?" sapo ndeshja reale mbaron */
+async function autoResolveKnockoutChallenges(justFinished: string[]): Promise<void> {
+  for (const matchId of justFinished) {
+    const challengesSnap = await db.collection('tournamentChallenges')
+      .where('matchId', '==', matchId)
+      .where('status', '==', 'open')
+      .get();
+    if (challengesSnap.empty) continue;
+
+    const matchSnap = await db.collection('matches').doc(matchId).get();
+    const match = matchSnap.data();
+    const winner = decisiveWinner(match);
+    if (!winner) continue;
+
+    for (const challengeDoc of challengesSnap.docs) {
+      const challenge = challengeDoc.data() as { pointsReward: number };
+      await challengeDoc.ref.update({ status: 'resolved', result: winner });
+
+      const predictionsSnap = await db.collection('tournamentPredictions')
+        .where('challengeId', '==', challengeDoc.id)
+        .get();
+      const batch = db.batch();
+      for (const predDoc of predictionsSnap.docs) {
+        const pred = predDoc.data() as { choice: string };
+        batch.update(predDoc.ref, { tournamentPoints: pred.choice === winner ? challenge.pointsReward : 0 });
+      }
+      await batch.commit();
+      console.log(`+ Sfidë e zgjidhur automatikisht: ${challengeDoc.id} → ${winner}`);
+    }
+  }
+}
+
+interface ServerBracketTeam {
+  name: string;
+  crest?: string;
+}
+
+interface ServerBracketMatchup {
+  id: string;
+  round: string;
+  slotIndex: number;
+  home: ServerBracketTeam;
+  away: ServerBracketTeam;
+}
+
+function bracketPairKey(a: string, b: string): string {
+  return [a, b].sort().join('|');
+}
+
+/** Mirror i bracket-utils.ts (Angular) — propagon fituesit rreth pas rrethi, pastron picks "fantazmë" */
+function buildServerBracketRounds(
+  bracket: { matchups: ServerBracketMatchup[]; rounds: string[] },
+  rawPicks: Record<string, string>
+): ServerBracketMatchup[][] {
+  const teamsByName = new Map<string, ServerBracketTeam>();
+  for (const m of bracket.matchups) {
+    teamsByName.set(m.home.name, m.home);
+    teamsByName.set(m.away.name, m.away);
+  }
+
+  const cleanedPicks: Record<string, string> = {};
+  const rounds: ServerBracketMatchup[][] = [];
+  let current = [...bracket.matchups].sort((a, b) => a.slotIndex - b.slotIndex);
+  rounds.push(current);
+
+  for (const m of current) {
+    const p = rawPicks[m.id];
+    if (p === m.home.name || p === m.away.name) cleanedPicks[m.id] = p;
+  }
+
+  for (let i = 1; i < bracket.rounds.length; i++) {
+    const round = bracket.rounds[i];
+    const next: ServerBracketMatchup[] = [];
+
+    for (let j = 0; j < current.length; j += 2) {
+      const left = current[j];
+      const right = current[j + 1];
+      const homeName = left ? cleanedPicks[left.id] : undefined;
+      const awayName = right ? cleanedPicks[right.id] : undefined;
+
+      const matchup: ServerBracketMatchup = {
+        id: `${round}_${j / 2}`,
+        round,
+        slotIndex: j / 2,
+        home: homeName ? (teamsByName.get(homeName) ?? { name: homeName }) : { name: '' },
+        away: awayName ? (teamsByName.get(awayName) ?? { name: awayName }) : { name: '' }
+      };
+      next.push(matchup);
+
+      const p = rawPicks[matchup.id];
+      if (p && (p === matchup.home.name || p === matchup.away.name)) cleanedPicks[matchup.id] = p;
+    }
+
+    rounds.push(next);
+    current = next;
+  }
+
+  return rounds;
+}
+
+/**
+ * ADMIN → AUTOMATIK: llogarit pikët e një rrethi bracket-i sapo të gjitha ndeshjet reale
+ * të atij rrethi (kompeticion + stage) kanë mbaruar — pa asnjë veprim admini.
+ */
+async function autoGradeBracketRounds(): Promise<void> {
+  const bracketsSnap = await db.collection('brackets').where('status', '==', 'open').get();
+
+  for (const bracketDoc of bracketsSnap.docs) {
+    const bracketId = bracketDoc.id;
+    const bracket = bracketDoc.data() as {
+      competition: string;
+      rounds: string[];
+      matchups: ServerBracketMatchup[];
+      pointsPerRound: Record<string, number>;
+      resolvedRounds?: string[];
+      deadline: number;
+    };
+
+    if (bracket.deadline > Date.now()) continue; // bracket-i ende s'ka filluar
+
+    const resolvedRounds = bracket.resolvedRounds ?? [];
+
+    for (let roundIndex = 0; roundIndex < bracket.rounds.length; roundIndex++) {
+      const round = bracket.rounds[roundIndex];
+      if (resolvedRounds.includes(round)) continue;
+
+      const expectedCount = bracket.matchups.length / (2 ** roundIndex);
+
+      const realMatchesSnap = await db.collection('matches')
+        .where('competition', '==', bracket.competition)
+        .where('stage', '==', round)
+        .get();
+
+      const finished = realMatchesSnap.docs.filter((d) => d.data()['status'] === 'finished');
+      if (finished.length < expectedCount) continue; // rrethi real ende s'ka mbaruar plotësisht
+
+      const actualWinnerByPair = new Map<string, string>();
+      for (const d of finished) {
+        const m = d.data();
+        const home = m['homeTeam'] as string;
+        const away = m['awayTeam'] as string;
+        const winner = decisiveWinner(m);
+        if (!winner) continue;
+        actualWinnerByPair.set(bracketPairKey(home, away), winner);
+      }
+
+      const predictionsSnap = await db.collection('bracketPredictions').where('bracketId', '==', bracketId).get();
+      const pointsForRound = bracket.pointsPerRound[round] ?? 0;
+      const batch = db.batch();
+
+      for (const predDoc of predictionsSnap.docs) {
+        const prediction = predDoc.data() as { picks: Record<string, string>; roundPoints?: Record<string, number> };
+        const rounds = buildServerBracketRounds(bracket, prediction.picks);
+        const roundMatchups = rounds[roundIndex] ?? [];
+
+        let earned = 0;
+        for (const matchup of roundMatchups) {
+          if (!matchup.home.name || !matchup.away.name) continue;
+          const actualWinner = actualWinnerByPair.get(bracketPairKey(matchup.home.name, matchup.away.name));
+          if (actualWinner && prediction.picks[matchup.id] === actualWinner) {
+            earned += pointsForRound;
+          }
+        }
+
+        const roundPoints = { ...(prediction.roundPoints ?? {}), [round]: earned };
+        const totalPoints = Object.values(roundPoints).reduce((sum, v) => sum + (v ?? 0), 0);
+        batch.update(predDoc.ref, { roundPoints, totalPoints });
+      }
+
+      const newResolvedRounds = Array.from(new Set([...resolvedRounds, round]));
+      const isLastRound = roundIndex === bracket.rounds.length - 1;
+      batch.update(bracketDoc.ref, {
+        resolvedRounds: newResolvedRounds,
+        ...(isLastRound ? { status: 'resolved' } : {})
+      });
+
+      await batch.commit();
+      resolvedRounds.push(round);
+      console.log(`+ Bracket ${bracketId}: rrethi ${round} u llogarit automatikisht (${predictionsSnap.size} parashikime).`);
+    }
   }
 }
 

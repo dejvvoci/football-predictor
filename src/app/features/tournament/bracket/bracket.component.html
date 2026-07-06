@@ -27,13 +27,6 @@
           <div class="round-block">
             <div class="round-header">
               <h2>{{ roundLabels[roundName] }}</h2>
-              @if ((isAdmin$ | async) && !isResolved(roundName)) {
-                <button type="button" class="grade-btn"
-                  [disabled]="grading() === roundName"
-                  (click)="gradeRound(roundName)">
-                  {{ grading() === roundName ? 'Duke llogaritur...' : '⚙ Llogarit pikët' }}
-                </button>
-              }
               @if (isResolved(roundName)) {
                 <span class="resolved-tag">✓ Llogaritur</span>
               }

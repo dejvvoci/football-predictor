@@ -33,4 +33,5 @@ export interface Match {
   halfTimeResult?: MatchResult;
   hasRedCard?: boolean;        // set by sync script from match detail API call
   stage?: string;              // football-data.org stage: GROUP_STAGE | LAST_16 | QUARTER_FINALS | SEMI_FINALS | FINAL | ...
+  penaltyWinner?: 'home' | 'away'; // vetëm për ndeshje eliminatore që barazuan në kohën e rregullt dhe u vendosën me penallti
 }

@@ -2,9 +2,6 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { of, switchMap, map } from 'rxjs';
-import { AuthService } from '../../../core/services/auth.service';
-import { StatisticsService } from '../../../core/services/statistics.service';
 import { BracketService } from '../../../core/services/bracket.service';
 import { Bracket, BracketMatchup, BracketRoundName, BRACKET_ROUND_LABELS } from '../../../core/models/bracket.model';
 import { buildBracketRounds, cleanBracketPicks, isBracketComplete } from '../../../core/utils/bracket-utils';
@@ -18,17 +15,10 @@ import { buildBracketRounds, cleanBracketPicks, isBracketComplete } from '../../
 })
 export class BracketComponent {
   private route = inject(ActivatedRoute);
-  private authService = inject(AuthService);
-  private statisticsService = inject(StatisticsService);
   private bracketService = inject(BracketService);
   private destroyRef = inject(DestroyRef);
 
   bracketId = this.route.snapshot.paramMap.get('id')!;
-
-  isAdmin$ = this.authService.user$.pipe(
-    switchMap((user) => (user ? this.statisticsService.getProfile(user.uid) : of(null))),
-    map((profile) => profile?.isAdmin === true)
-  );
 
   bracket = toSignal(this.bracketService.getBracket(this.bracketId), { initialValue: undefined });
   myPrediction = toSignal(this.bracketService.getMyPrediction(this.bracketId), { initialValue: undefined });
@@ -38,7 +28,6 @@ export class BracketComponent {
   picks = signal<Record<string, string>>({});
   saving = signal(false);
   claiming = signal(false);
-  grading = signal<BracketRoundName | null>(null);
   errorMessage = signal<string | null>(null);
   savedMessage = signal(false);
   private initialisedFor: string | null = null;
@@ -104,16 +93,6 @@ export class BracketComponent {
       await this.bracketService.claimPoints(pred.id, pred.totalPoints);
     } finally {
       this.claiming.set(false);
-    }
-  }
-
-  async gradeRound(round: BracketRoundName): Promise<void> {
-    if (this.grading()) return;
-    this.grading.set(round);
-    try {
-      await this.bracketService.gradeRound(this.bracketId, round);
-    } finally {
-      this.grading.set(null);
     }
   }
 

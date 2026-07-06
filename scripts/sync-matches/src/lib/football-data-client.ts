@@ -4,15 +4,18 @@ export interface FootballDataMatch {
   id: number;
   utcDate: string;
   status: string;
-  stage: string;      // GROUP_STAGE | ROUND_OF_16 | QUARTER_FINALS | SEMI_FINALS | FINAL | etc.
+  stage: string;      // GROUP_STAGE | LAST_16 | QUARTER_FINALS | SEMI_FINALS | FINAL | etc.
   group?: string;     // "Group A" | "Group B" | ... (vetëm për GROUP_STAGE)
   venue?: string | null;
   competition: { code: string; name: string };
   homeTeam: { name: string; crest?: string | null };
   awayTeam: { name: string; crest?: string | null };
   score: {
+    winner: string | null;       // HOME_TEAM | AWAY_TEAM | DRAW | null
+    duration: string;            // REGULAR | EXTRA_TIME | PENALTY_SHOOTOUT
     fullTime: { home: number | null; away: number | null };
     halfTime: { home: number | null; away: number | null };
+    penalties?: { home: number | null; away: number | null };
   };
 }
 
