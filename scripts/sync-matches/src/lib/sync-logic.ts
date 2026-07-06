@@ -568,18 +568,20 @@ async function setFlashbackChallenge(): Promise<void> {
   if ((await docRef.get()).exists) return;
 
   const seed = parseInt(today.replace(/-/g, ''), 10);
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  // TODO: rikthe në 7 ditë ("sevenDaysAgo") pasi DB të ketë mjaftueshëm histori ndeshjesh të mbyllura.
+  const minAgeDays = 1;
+  const cutoff = Date.now() - minAgeDays * 24 * 60 * 60 * 1000;
 
   try {
     // Use our own Firestore matches — no API call needed, no rate limit
     const matchesSnap = await db.collection('matches')
       .where('status', '==', 'finished')
-      .where('kickoff', '<', sevenDaysAgo)
+      .where('kickoff', '<', cutoff)
       .limit(200)
       .get();
 
     if (matchesSnap.empty) {
-      console.warn('Flashback: no finished matches older than 7 days found in Firestore');
+      console.warn(`Flashback: no finished matches older than ${minAgeDays} day(s) found in Firestore`);
       return;
     }
 

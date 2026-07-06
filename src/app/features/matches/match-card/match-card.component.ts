@@ -13,6 +13,7 @@ interface PredictionLike {
   htFt?: string;
   btts?: boolean;
   redCard?: boolean;
+  firstGoalscorer?: string;
   points?: number;
 }
 
@@ -198,6 +199,7 @@ export class MatchCardComponent implements OnInit {
   getOverUnder(p: PredictionLike): 'over' | 'under' | undefined { return (p as any).overUnder; }
   getBtts(p: PredictionLike): boolean | undefined { return (p as any).btts; }
   getRedCard(p: PredictionLike): boolean | undefined { return (p as any).redCard; }
+  getFirstGoalscorer(p: PredictionLike): string | undefined { return (p as any).firstGoalscorer; }
 
   async onFirstGoalscorerInput(event: Event): Promise<void> {
     const val = (event.target as HTMLInputElement).value;

@@ -7,7 +7,6 @@ import { Subscription } from 'rxjs';
 
 const CLUES: { label: string; key: keyof BadgeChallengeData }[] = [
   { label: '🌍 Country',     key: 'country' },
-  { label: '🏆 Competition', key: 'competition' },
   { label: '📅 Founded',     key: 'founded' },
   { label: '🏟 Stadium',     key: 'venue' },
 ];

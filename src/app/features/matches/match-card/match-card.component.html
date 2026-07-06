@@ -29,6 +29,7 @@
         @if (getOverUnder(existing)) { · {{ getOverUnder(existing) === 'over' ? 'Over' : 'Under' }} {{ match.ouOdds?.line }} }
         @if (getBtts(existing) !== undefined) { · BTTS {{ getBtts(existing) ? 'Yes' : 'No' }} }
         @if (getRedCard(existing)) { · 🟥 }
+        @if (getFirstGoalscorer(existing)) { · ⚽ {{ getFirstGoalscorer(existing) }} }
       </div>
       @if (!locked()) {
         <button type="button" class="edit-btn" (click)="editMode.set(!editMode())">
