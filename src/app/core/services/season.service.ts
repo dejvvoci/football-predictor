@@ -6,6 +6,7 @@ import {
 import { Observable, of } from 'rxjs';
 import { Season, HallOfFameEntry } from '../models/season.model';
 import { UserProfile } from '../models/user.model';
+import { Prediction } from '../models/prediction.model';
 
 @Injectable({ providedIn: 'root' })
 export class SeasonService {
@@ -85,6 +86,20 @@ export class SeasonService {
     });
 
     await batch.commit();
+    await this.deleteUnsavedPredictions();
+
     return rank - 1; // numri i lojtarëve të regjistruar
+  }
+
+  /** Fshin të gjitha parashikimet e pa-ruajtura nga useri (yjet mbeten) */
+  private async deleteUnsavedPredictions(): Promise<void> {
+    const predictionsSnap = await getDocs(collection(this.firestore, 'predictions'));
+    const toDelete = predictionsSnap.docs.filter((d) => !(d.data() as Prediction).saved);
+
+    for (let i = 0; i < toDelete.length; i += 500) {
+      const batch = writeBatch(this.firestore);
+      toDelete.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
   }
 }

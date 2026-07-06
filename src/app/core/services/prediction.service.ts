@@ -9,7 +9,8 @@ import {
   collectionData,
   query,
   where,
-  orderBy
+  orderBy,
+  limit
 } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
@@ -60,11 +61,28 @@ export class PredictionService {
     return docData(ref, { idField: 'id' }) as Observable<Prediction | undefined>;
   }
 
-  /** Gjithë historiku i parashikimeve të një useri, më të rejat së pari */
-  getUserPredictions(userId: string): Observable<Prediction[]> {
+  /** 20 parashikimet më të fundit të userit (për tabin e Historikut) */
+  getUserPredictions(userId: string, count = 20): Observable<Prediction[]> {
+    const predictionsRef = collection(this.firestore, 'predictions');
+    const q = query(
+      predictionsRef,
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      limit(count)
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<Prediction[]>;
+  }
+
+  /** Gjithë historiku i parashikimeve të userit, pa limit — përdoret për kërkim */
+  getAllUserPredictions(userId: string): Observable<Prediction[]> {
     const predictionsRef = collection(this.firestore, 'predictions');
     const q = query(predictionsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     return collectionData(q, { idField: 'id' }) as Observable<Prediction[]>;
+  }
+
+  /** Ruaj/hiq nga të ruajturat — parashikimet e ruajtura mbijetojnë resetimin e fund-sezonit */
+  async setPredictionSaved(predictionId: string, saved: boolean): Promise<void> {
+    await updateDoc(doc(this.firestore, 'predictions', predictionId), { saved });
   }
 
   /** Parashikime globale të graduara që s'i janë shfaqur ende userit si njoftim */

@@ -1,17 +1,30 @@
 <section class="page">
   <h1>Historiku im</h1>
 
-  @if (predictions$ | async; as predictions) {
-    @if (predictions.length === 0) {
-      <p class="empty">S'ke dhënë ende asnjë parashikim.</p>
+  <input
+    type="search"
+    class="search-input"
+    placeholder="Kërko sipas skuadrës ose kompeticionit..."
+    [value]="searchTerm()"
+    (input)="onSearchInput($any($event.target).value)"
+  />
+
+  @if (loading()) {
+    <p class="loading">Duke ngarkuar historikun...</p>
+  } @else {
+    @let items = results();
+    @if (items.length === 0) {
+      @if (searchTerm().trim()) {
+        <p class="empty">S'u gjet asnjë parashikim për "{{ searchTerm() }}".</p>
+      } @else {
+        <p class="empty">S'ke dhënë ende asnjë parashikim.</p>
+      }
     } @else {
       <div class="history-list">
-        @for (prediction of predictions; track prediction.id) {
-          <app-history-item [prediction]="prediction" />
+        @for (item of items; track item.prediction.id) {
+          <app-history-item [prediction]="item.prediction" [match]="item.match" [showSave]="true" />
         }
       </div>
     }
-  } @else {
-    <p class="loading">Duke ngarkuar historikun...</p>
   }
 </section>

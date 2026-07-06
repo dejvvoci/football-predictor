@@ -1,5 +1,16 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, doc, docData, query, where, orderBy } from '@angular/fire/firestore';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  documentId
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Match } from '../models/match.model';
 
@@ -26,5 +37,23 @@ export class MatchService {
   getMatchById(matchId: string): Observable<Match | undefined> {
     const matchRef = doc(this.firestore, 'matches', matchId);
     return docData(matchRef, { idField: 'id' }) as Observable<Match | undefined>;
+  }
+
+  /** Merr disa ndeshje njëherësh (lexim i vetëm, jo real-time) — përdoret për kërkimin te Historiku */
+  async getMatchesByIdsOnce(matchIds: string[]): Promise<Match[]> {
+    const uniqueIds = Array.from(new Set(matchIds));
+    if (uniqueIds.length === 0) return [];
+
+    const chunks: string[][] = [];
+    for (let i = 0; i < uniqueIds.length; i += 30) {
+      chunks.push(uniqueIds.slice(i, i + 30));
+    }
+
+    const matchesRef = collection(this.firestore, 'matches');
+    const snapshots = await Promise.all(
+      chunks.map((ids) => getDocs(query(matchesRef, where(documentId(), 'in', ids))))
+    );
+
+    return snapshots.flatMap((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Match));
   }
 }

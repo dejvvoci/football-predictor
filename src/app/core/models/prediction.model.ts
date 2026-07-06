@@ -26,4 +26,5 @@ export interface Prediction {
   competition?: string;
   exactScoreCorrect?: boolean;
   createdAt: number;
+  saved?: boolean;              // i ruajtur nga useri, mbijeton resetimin e fund-sezonit
 }

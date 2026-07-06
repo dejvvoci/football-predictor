@@ -11,9 +11,33 @@
 
 header {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   color: var(--color-ink-muted);
+}
+
+.competition {
+  margin-right: auto;
+}
+
+.save-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-ink-muted);
+  padding: 2px 4px;
+}
+
+.save-btn.saved {
+  color: #E0A100;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .date {
