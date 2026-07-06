@@ -1,0 +1,111 @@
+<section class="page">
+  <div class="page-header">
+    <a routerLink="/tournament" class="back-link">← Turne</a>
+  </div>
+
+  @if (bracket(); as b) {
+    <h1>{{ b.title }}</h1>
+    <div class="bracket-meta">
+      <span class="competition-tag">{{ b.competition }}</span>
+      <span class="status-tag" [class]="b.status">{{ b.status }}</span>
+      <span>⏰ Deadline: {{ b.deadline | date: 'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab() === 'bracket'" (click)="activeTab.set('bracket')">Bracket-i</button>
+      <button class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">Renditja</button>
+    </div>
+
+    @if (activeTab() === 'bracket') {
+      @if (locked() && !myPrediction()) {
+        <p class="locked-note">Parashikimet janë mbyllur dhe s'ke dërguar bracket për këtë turne.</p>
+      }
+
+      <div class="rounds-list">
+        @for (round of displayRounds(); track $index) {
+          @let roundName = roundOf(round);
+          <div class="round-block">
+            <div class="round-header">
+              <h2>{{ roundLabels[roundName] }}</h2>
+              @if ((isAdmin$ | async) && !isResolved(roundName)) {
+                <button type="button" class="grade-btn"
+                  [disabled]="grading() === roundName"
+                  (click)="gradeRound(roundName)">
+                  {{ grading() === roundName ? 'Duke llogaritur...' : '⚙ Llogarit pikët' }}
+                </button>
+              }
+              @if (isResolved(roundName)) {
+                <span class="resolved-tag">✓ Llogaritur</span>
+              }
+            </div>
+
+            <div class="matchups-grid">
+              @for (matchup of round; track matchup.id) {
+                <div class="matchup-card" [class.incomplete]="!matchup.home.name || !matchup.away.name">
+                  @if (matchup.home.name && matchup.away.name) {
+                    <button type="button" class="team-pick"
+                      [class.selected]="(locked() ? myPrediction()?.picks?.[matchup.id] : picks()[matchup.id]) === matchup.home.name"
+                      [disabled]="locked()"
+                      (click)="selectWinner(matchup, matchup.home.name)">
+                      @if (matchup.home.crest) { <img [src]="matchup.home.crest" class="crest" /> }
+                      {{ matchup.home.name }}
+                    </button>
+                    <span class="vs">vs</span>
+                    <button type="button" class="team-pick"
+                      [class.selected]="(locked() ? myPrediction()?.picks?.[matchup.id] : picks()[matchup.id]) === matchup.away.name"
+                      [disabled]="locked()"
+                      (click)="selectWinner(matchup, matchup.away.name)">
+                      @if (matchup.away.crest) { <img [src]="matchup.away.crest" class="crest" /> }
+                      {{ matchup.away.name }}
+                    </button>
+                  } @else {
+                    <span class="pending-slot">Prit rrethin paraardhës...</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (!locked()) {
+        @if (errorMessage()) { <p class="error-msg">{{ errorMessage() }}</p> }
+        @if (savedMessage()) { <p class="success-msg">✓ Bracket-i u ruajt!</p> }
+        <button type="button" class="submit-pick-btn" [disabled]="!complete() || saving()" (click)="submit()">
+          {{ saving() ? 'Duke ruajtur...' : 'Ruaj bracket-in' }}
+        </button>
+      } @else if (myPrediction(); as pred) {
+        <div class="my-prediction-summary">
+          <span>Pikët e tua: <strong>{{ pred.totalPoints ?? 0 }}</strong></span>
+          @if (b.status === 'resolved' && (pred.totalPoints ?? 0) > 0 && !pred.claimed) {
+            <button type="button" class="claim-btn" [disabled]="claiming()" (click)="claim()">
+              {{ claiming() ? 'Duke marrë...' : 'Kërko pikët' }}
+            </button>
+          } @else if (pred.claimed) {
+            <span class="claimed-tag">✓ Marrë</span>
+          }
+        </div>
+      }
+    }
+
+    @if (activeTab() === 'leaderboard') {
+      @if (leaderboard$ | async; as results) {
+        @if (results.length === 0) {
+          <p class="empty">Ende s'ka bracket-e të dërguara.</p>
+        } @else {
+          <ol class="leaderboard">
+            @for (r of results; track r.id; let i = $index) {
+              <li class="lb-row">
+                <span class="rank">@if (i === 0) {🥇} @else if (i === 1) {🥈} @else if (i === 2) {🥉} @else {{{ i + 1 }}}</span>
+                <span class="name">{{ r.displayName }}</span>
+                <span class="meta">{{ r.totalPoints ?? 0 }} pts</span>
+              </li>
+            }
+          </ol>
+        }
+      }
+    }
+  } @else {
+    <p class="loading">Duke ngarkuar bracket-in...</p>
+  }
+</section>

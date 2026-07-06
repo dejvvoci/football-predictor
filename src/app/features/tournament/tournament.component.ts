@@ -6,6 +6,7 @@ import { combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { StatisticsService } from '../../core/services/statistics.service';
+import { BracketService } from '../../core/services/bracket.service';
 import { TournamentChallenge, TournamentPrediction } from '../../core/models/tournament-challenge.model';
 
 interface ChallengeRow {
@@ -24,7 +25,10 @@ export class TournamentComponent {
   private authService = inject(AuthService);
   private tournamentService = inject(TournamentService);
   private statisticsService = inject(StatisticsService);
+  private bracketService = inject(BracketService);
   private destroyRef = inject(DestroyRef);
+
+  brackets$ = this.bracketService.getBrackets();
 
   isAdmin$ = this.authService.user$.pipe(
     switchMap((user) => user ? this.statisticsService.getProfile(user.uid) : of(null)),

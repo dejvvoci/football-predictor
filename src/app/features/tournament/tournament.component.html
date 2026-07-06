@@ -6,6 +6,32 @@
     }
   </div>
 
+  <div class="page-header bracket-section-header">
+    <h2>Bracket-et</h2>
+    @if (isAdmin$ | async) {
+      <a routerLink="/tournament/bracket/create" class="create-btn">+ Bracket i ri</a>
+    }
+  </div>
+
+  @if (brackets$ | async; as brackets) {
+    @if (brackets.length === 0) {
+      <p class="empty">Ende s'ka bracket-e të hapura.</p>
+    } @else {
+      <div class="challenges-list">
+        @for (b of brackets; track b.id) {
+          <a class="bracket-card" [routerLink]="['/tournament/bracket', b.id]">
+            <div class="challenge-header">
+              <span class="competition-tag">{{ b.competition }}</span>
+              <span class="status-tag" [class]="b.status">{{ b.status }}</span>
+            </div>
+            <h3 class="challenge-title">{{ b.title }}</h3>
+            <span class="challenge-meta">⏰ {{ b.deadline | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </a>
+        }
+      </div>
+    }
+  }
+
   @if (rows$ | async; as rows) {
     @if (rows.length === 0) {
       <p class="empty">Ende s'ka sfida të hapura.</p>

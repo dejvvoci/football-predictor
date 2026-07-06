@@ -100,6 +100,18 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'tournament/bracket/create',
+    loadComponent: () =>
+      import('./features/tournament/create-bracket/create-bracket.component').then((m) => m.CreateBracketComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'tournament/bracket/:id',
+    loadComponent: () =>
+      import('./features/tournament/bracket/bracket.component').then((m) => m.BracketComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'statistics',
     loadComponent: () =>
       import('./features/statistics/statistics.component').then((m) => m.StatisticsComponent),

@@ -1,0 +1,61 @@
+<section class="auth-page">
+  <h1>Bracket i ri</h1>
+  <p class="hint">
+    Rrethi i parë ndërtohet automatikisht nga ndeshjet ekzistuese në 'matches' (kompeticion + rreth).
+    Duhen saktësisht aq ndeshje sa fuqi e 2-shit (p.sh. 8 ndeshje për Round of 16 → deri te finalja).
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+    <label>
+      Titulli
+      <input type="text" formControlName="title" placeholder="p.sh. World Cup 2026 — Bracket" />
+    </label>
+
+    <label>
+      Kompeticioni
+      <input type="text" formControlName="competition" placeholder="p.sh. FIFA World Cup" />
+    </label>
+
+    <label>
+      Rrethi fillestar
+      <select formControlName="startRound">
+        @for (r of roundOptions; track r) {
+          <option [value]="r">{{ roundLabels[r] }}</option>
+        }
+      </select>
+    </label>
+
+    <p class="rounds-preview">
+      Rrethet: {{ roundsFrom(form.value.startRound!) | json }}
+    </p>
+
+    <div class="points-grid">
+      <label>
+        Pikë Round of 16
+        <input type="number" formControlName="pointsLast16" min="1" />
+      </label>
+      <label>
+        Pikë Çerekfinale
+        <input type="number" formControlName="pointsQuarter" min="1" />
+      </label>
+      <label>
+        Pikë Gjysmëfinale
+        <input type="number" formControlName="pointsSemi" min="1" />
+      </label>
+      <label>
+        Pikë Finale
+        <input type="number" formControlName="pointsFinal" min="1" />
+      </label>
+    </div>
+
+    @if (error()) {
+      <p class="form-error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Duke krijuar...' : 'Krijo bracket-in' }}
+    </button>
+  </form>
+
+  <a routerLink="/tournament" class="back-link">← Kthehu te turnet</a>
+</section>

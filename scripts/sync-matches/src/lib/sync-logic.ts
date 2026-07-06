@@ -75,7 +75,8 @@ export async function syncMatchesAndGrade(): Promise<void> {
         odds,
         ...(ouOdds ? { ouOdds } : {}),
         ...(result ? { result } : {}),
-        ...(halfTimeResult ? { halfTimeResult } : {})
+        ...(halfTimeResult ? { halfTimeResult } : {}),
+        ...(m.stage ? { stage: m.stage } : {})
       });
 
       console.log(`+ Ndeshje e re: ${m.homeTeam.name} vs ${m.awayTeam.name}`);
@@ -85,7 +86,8 @@ export async function syncMatchesAndGrade(): Promise<void> {
       await matchRef.set({
         status: newStatus,
         ...(result ? { result } : {}),
-        ...(halfTimeResult ? { halfTimeResult } : {})
+        ...(halfTimeResult ? { halfTimeResult } : {}),
+        ...(m.stage ? { stage: m.stage } : {})
       }, { merge: true });
 
       if (prevStatus !== 'finished' && newStatus === 'finished') {
