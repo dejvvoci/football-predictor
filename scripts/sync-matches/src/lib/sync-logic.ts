@@ -1,5 +1,5 @@
 import { db, FieldValue } from './admin';
-import { fetchUpcomingMatches, fetchMatchDetails } from './football-data-client';
+import { fetchUpcomingMatches, fetchMatchDetails, FootballDataMatch } from './football-data-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
 import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, calculateBttsPoints, calculateRedCardPoints, calculateFirstGoalscorerPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
@@ -7,6 +7,14 @@ import { computeNewAchievements, UserProgress } from './achievement';
 import { pickPlayerForDate, FAMOUS_PLAYERS } from './player-list';
 
 type MatchStatus = 'scheduled' | 'live' | 'finished';
+
+/** Fituesi i penallive — vetëm kur ndeshja u vendos në 'PENALTY_SHOOTOUT' pas barazimit në kohën e rregullt */
+export function computePenaltyWinner(m: Pick<FootballDataMatch, 'score'>): 'home' | 'away' | undefined {
+  if (m.score?.duration !== 'PENALTY_SHOOTOUT') return undefined;
+  if (m.score.winner === 'HOME_TEAM') return 'home';
+  if (m.score.winner === 'AWAY_TEAM') return 'away';
+  return undefined;
+}
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -55,10 +63,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
       ? { homeGoals: m.score.halfTime.home as number, awayGoals: m.score.halfTime.away as number }
       : undefined;
 
-    const penaltyWinner: 'home' | 'away' | undefined =
-      m.score?.duration === 'PENALTY_SHOOTOUT' && m.score.winner === 'HOME_TEAM' ? 'home'
-      : m.score?.duration === 'PENALTY_SHOOTOUT' && m.score.winner === 'AWAY_TEAM' ? 'away'
-      : undefined;
+    const penaltyWinner = computePenaltyWinner(m);
 
     if (!existing.exists) {
       if (!oddsCache.has(m.competition.code)) {
@@ -344,7 +349,7 @@ async function autoCreateBrackets(): Promise<void> {
  * fituesi i penallive (fusha 'penaltyWinner' e ruajtur nga sync-i). Kthen undefined nëse
  * ende s'ka rezultat, ose barazoi por s'ka të dhëna penallish (rast i paprekshëm automatikisht).
  */
-function decisiveWinner(match: Record<string, unknown> | undefined): string | undefined {
+export function decisiveWinner(match: Record<string, unknown> | undefined): string | undefined {
   const result = match?.['result'] as { homeGoals: number; awayGoals: number } | undefined;
   if (!result) return undefined;
 
