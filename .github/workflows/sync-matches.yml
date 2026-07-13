@@ -2,8 +2,7 @@ name: Sync Matches
 
 on:
   schedule:
-    - cron: '*/5 12-23 * * *'   # every 5 min, 12:00–23:59 UTC (match hours)
-    - cron: '0 0-11 * * *'      # every hour, 00:00–11:59 UTC (night)
+    - cron: '*/5 * * * *'   # every 5 min, gjithë ditën — repo publik, minutat GitHub Actions janë falas/pa limit
   workflow_dispatch: {}
 
 jobs:
