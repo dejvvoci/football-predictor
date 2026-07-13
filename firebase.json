@@ -12,6 +12,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "target": "predvictor",
     "public": "dist/football-predictor/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [

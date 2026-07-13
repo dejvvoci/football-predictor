@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "lloto-website"
-  }
+  },
+  "targets": {
+    "lloto-website": {
+      "hosting": {
+        "predvictor": [
+          "predvictor"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
