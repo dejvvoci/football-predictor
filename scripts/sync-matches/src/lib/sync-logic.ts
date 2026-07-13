@@ -113,7 +113,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
     await gradeMatch(matchId, footballDataToken);
   }
 
-  await autoResolveKnockoutChallenges(justFinished);
+  await runSafely('autoResolveKnockoutChallenges', () => autoResolveKnockoutChallenges(justFinished));
 
   // Check perfect day bonus for each unique UTC date that had matches finish
   if (justFinished.length > 0) {
@@ -127,18 +127,28 @@ export async function syncMatchesAndGrade(): Promise<void> {
       }
     }
     for (const dateStr of finishedDates) {
-      await checkPerfectDayBonus(dateStr);
+      await runSafely('checkPerfectDayBonus', () => checkPerfectDayBonus(dateStr));
     }
   }
 
-  await autoCreateChallenges(matches);
-  await autoCreateBrackets();
-  await autoGradeBracketRounds();
-  await setDailyChallenge();
-  if (footballDataToken) await setClubBadgeChallenge(footballDataToken);
-  await setFlashbackChallenge();
-  if (footballDataToken) await setTopScorerChallenge(footballDataToken);
-  if (footballDataToken) await syncTablePredictions(footballDataToken);
+  // Çdo hap më poshtë është i pavarur — një dështim (p.sh. index i munguar) nuk duhet
+  // të bllokojë hapat e mëtejshëm (badge/flashback/topscorer/etj janë veçmas nga njëra-tjetra).
+  await runSafely('autoCreateChallenges', () => autoCreateChallenges(matches));
+  await runSafely('autoCreateBrackets', () => autoCreateBrackets());
+  await runSafely('autoGradeBracketRounds', () => autoGradeBracketRounds());
+  await runSafely('setDailyChallenge', () => setDailyChallenge());
+  if (footballDataToken) await runSafely('setClubBadgeChallenge', () => setClubBadgeChallenge(footballDataToken));
+  await runSafely('setFlashbackChallenge', () => setFlashbackChallenge());
+  if (footballDataToken) await runSafely('setTopScorerChallenge', () => setTopScorerChallenge(footballDataToken));
+  if (footballDataToken) await runSafely('syncTablePredictions', () => syncTablePredictions(footballDataToken));
+}
+
+async function runSafely(label: string, fn: () => Promise<void>): Promise<void> {
+  try {
+    await fn();
+  } catch (e) {
+    console.warn(`${label} dështoi (u anashkalua, sync-i vazhdon):`, e);
+  }
 }
 
 const PERFECT_DAY_BONUS = 10;
