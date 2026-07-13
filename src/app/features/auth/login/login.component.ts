@@ -18,7 +18,7 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
 
   form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
+    identifier: ['', [Validators.required, Validators.minLength(3)]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
@@ -34,10 +34,10 @@ export class LoginComponent {
 
     this.loading.set(true);
     this.errorMessage.set(null);
-    const { email, password } = this.form.getRawValue();
+    const { identifier, password } = this.form.getRawValue();
 
     try {
-      await this.authService.login(email, password);
+      await this.authService.login(identifier, password);
       this.router.navigateByUrl(this.returnUrl ?? '/matches');
     } catch (err) {
       const code = (err as { code?: string })?.code;

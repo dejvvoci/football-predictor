@@ -63,6 +63,29 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.method-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.method-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-line);
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.method-btn.active {
+  border-color: var(--color-pitch);
+  background: var(--color-pitch);
+  color: #fff;
+}
+
 .field-error,
 .form-error {
   margin: -6px 0 0;

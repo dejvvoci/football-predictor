@@ -3,12 +3,13 @@ const MESSAGES: Record<string, string> = {
   'auth/invalid-email': 'Email i pavlefshëm.',
   'auth/weak-password': 'Fjalëkalimi është shumë i dobët (minimumi 6 karaktere).',
   'auth/invalid-credential': 'Email ose fjalëkalim i pasaktë.',
-  'auth/user-not-found': 'Nuk gjendet llogari me këtë email.',
+  'auth/user-not-found': 'Nuk gjendet llogari me këtë email/username.',
   'auth/wrong-password': 'Fjalëkalim i pasaktë.',
   'auth/too-many-requests': 'Shumë përpjekje të dështuara. Provo përsëri pas pak minutash.',
   'auth/network-request-failed': 'Problem me lidhjen e internetit.',
   'auth/operation-not-allowed': 'Email/Password s\'është aktivizuar te Firebase Console (Authentication → Sign-in method).',
-  'permission-denied': 'Firestore refuzoi shkrimin (kontrollo Security Rules te Firebase Console).'
+  'permission-denied': 'Firestore refuzoi shkrimin (kontrollo Security Rules te Firebase Console).',
+  'username/taken': 'Ky username është zënë tashmë. Provo një tjetër.'
 };
 
 export function mapFirebaseAuthError(code: string | undefined): string {
