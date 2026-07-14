@@ -138,6 +138,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
   await runSafely('autoGradeBracketRounds', () => autoGradeBracketRounds());
   await runSafely('setDailyChallenge', () => setDailyChallenge());
   if (footballDataToken) await runSafely('setClubBadgeChallenge', () => setClubBadgeChallenge(footballDataToken));
+  if (footballDataToken) await runSafely('seedHistoricMatches', () => seedHistoricMatches(footballDataToken));
   await runSafely('setFlashbackChallenge', () => setFlashbackChallenge());
   if (footballDataToken) await runSafely('setTopScorerChallenge', () => setTopScorerChallenge(footballDataToken));
   if (footballDataToken) await runSafely('syncTablePredictions', () => syncTablePredictions(footballDataToken));
@@ -868,6 +869,94 @@ async function setClubBadgeChallenge(footballDataToken: string): Promise<void> {
 
 
 
+// ── HISTORIC MATCHES (pool shtesë për Score Flashback) ───────────────────────
+// Sezone të kaluara madhore — sillen NJË HERË (jo çdo sync) dhe ruhen në koleksion
+// të veçantë 'historicMatches', të ndarë nga 'matches' (që përdoret nga bracket-et/
+// sfidat aktive) për të mos rrezikuar përzierje me logjikën e tyre (të njëjtin
+// competition+stage por nga vite të ndryshme).
+const HISTORIC_SOURCES: { code: string; season: number; competitionName: string }[] = [
+  { code: 'WC', season: 2022, competitionName: 'FIFA World Cup' },
+  { code: 'WC', season: 2018, competitionName: 'FIFA World Cup' },
+  { code: 'EC', season: 2024, competitionName: 'UEFA European Championship' },
+  { code: 'EC', season: 2020, competitionName: 'UEFA European Championship' },
+];
+
+const STAGE_LABELS: Record<string, string> = {
+  GROUP_STAGE: 'Group Stage',
+  LAST_16: 'Round of 16',
+  QUARTER_FINALS: 'Quarterfinal',
+  SEMI_FINALS: 'Semifinal',
+  FINAL: 'Final',
+  THIRD_PLACE: 'Third Place Playoff'
+};
+
+function prettyStage(stage: string | undefined): string {
+  if (!stage) return 'Matchday';
+  return STAGE_LABELS[stage] ?? 'Matchday';
+}
+
+async function seedHistoricMatches(token: string): Promise<void> {
+  const markerRef = db.collection('meta').doc('historicMatchesSeed');
+  if ((await markerRef.get()).exists) return; // vetëm një herë — jo çdo cikël sync-i
+
+  let totalSeeded = 0;
+
+  for (const source of HISTORIC_SOURCES) {
+    try {
+      await new Promise(r => setTimeout(r, 7000)); // rate limit i bujshëm, si te top scorer
+      const res = await fetch(
+        `https://api.football-data.org/v4/competitions/${source.code}/matches?season=${source.season}&status=FINISHED`,
+        { headers: { 'X-Auth-Token': token } }
+      );
+
+      if (!res.ok) {
+        console.warn(`Historic matches: ${source.code} ${source.season} ktheu ${res.status}, po anashkalohet`);
+        continue;
+      }
+
+      const data = await res.json() as { matches?: Record<string, unknown>[] };
+      const batch = db.batch();
+      let count = 0;
+
+      for (const m of data.matches ?? []) {
+        const score = m['score'] as Record<string, unknown> | undefined;
+        const fullTime = score?.['fullTime'] as { home: number | null; away: number | null } | undefined;
+        if (!fullTime || fullTime.home === null || fullTime.away === null) continue;
+
+        const halfTime = score?.['halfTime'] as { home: number | null; away: number | null } | undefined;
+        const homeTeam = (m['homeTeam'] as Record<string, string> | undefined)?.['name'];
+        const awayTeam = (m['awayTeam'] as Record<string, string> | undefined)?.['name'];
+        if (!homeTeam || !awayTeam) continue;
+
+        const ref = db.collection('historicMatches').doc(`${source.code}_${source.season}_${m['id']}`);
+        batch.set(ref, {
+          homeTeam,
+          awayTeam,
+          result: { homeGoals: fullTime.home, awayGoals: fullTime.away },
+          ...(halfTime && halfTime.home !== null && halfTime.away !== null
+            ? { halfTimeResult: { homeGoals: halfTime.home, awayGoals: halfTime.away } }
+            : {}),
+          competition: source.competitionName,
+          season: source.season,
+          stage: m['stage'] ?? 'Matchday',
+          kickoff: new Date(m['utcDate'] as string).getTime()
+        });
+        count++;
+      }
+
+      if (count > 0) {
+        await batch.commit();
+        totalSeeded += count;
+        console.log(`📚 Historic matches seeded: ${source.competitionName} ${source.season} (${count} ndeshje)`);
+      }
+    } catch (e) {
+      console.warn(`Historic matches seeding failed for ${source.code} ${source.season}:`, e);
+    }
+  }
+
+  await markerRef.set({ seededAt: Date.now(), totalSeeded });
+}
+
 // ── SCORE FLASHBACK ──────────────────────────────────────────────────────────
 
 async function setFlashbackChallenge(): Promise<void> {
@@ -876,30 +965,35 @@ async function setFlashbackChallenge(): Promise<void> {
   if ((await docRef.get()).exists) return;
 
   const seed = parseInt(today.replace(/-/g, ''), 10);
-  // TODO: rikthe në 7 ditë ("sevenDaysAgo") pasi DB të ketë mjaftueshëm histori ndeshjesh të mbyllura.
   const minAgeDays = 1;
   const cutoff = Date.now() - minAgeDays * 24 * 60 * 60 * 1000;
 
   try {
-    // Use our own Firestore matches — no API call needed, no rate limit
-    const matchesSnap = await db.collection('matches')
-      .where('status', '==', 'finished')
-      .where('kickoff', '<', cutoff)
-      .limit(200)
-      .get();
+    // Pool 1: ndeshjet tona të fundit (Firestore 'matches') + Pool 2: pool historik i seed-uar
+    const [matchesSnap, historicSnap] = await Promise.all([
+      db.collection('matches')
+        .where('status', '==', 'finished')
+        .where('kickoff', '<', cutoff)
+        .limit(200)
+        .get(),
+      db.collection('historicMatches').limit(300).get()
+    ]);
 
-    if (matchesSnap.empty) {
-      console.warn(`Flashback: no finished matches older than ${minAgeDays} day(s) found in Firestore`);
+    const historicCandidates = historicSnap.docs.map(d => d.data() as Record<string, unknown>);
+
+    if (matchesSnap.empty && historicCandidates.length === 0) {
+      console.warn(`Flashback: no finished matches older than ${minAgeDays} day(s), and no historic pool found`);
       return;
     }
 
-    const candidates = matchesSnap.docs
+    const recentCandidates = matchesSnap.docs
       .map(d => d.data() as Record<string, unknown>)
       .filter(m => {
         const result = m['result'] as { homeGoals: number; awayGoals: number } | undefined;
         return result && typeof result.homeGoals === 'number';
       });
 
+    const candidates = [...recentCandidates, ...historicCandidates];
     if (candidates.length === 0) return;
 
     const match = candidates[seed % candidates.length];
@@ -917,8 +1011,10 @@ async function setFlashbackChallenge(): Promise<void> {
         htHomeGoals: htResult?.homeGoals ?? null,
         htAwayGoals: htResult?.awayGoals ?? null,
         competition: match['competition'] ?? '',
-        season: today.slice(0, 4),
-        stage: `Matchday`,
+        season: match['season']
+          ? String(match['season'])
+          : new Date(match['kickoff'] as number).toISOString().slice(0, 4),
+        stage: prettyStage(match['stage'] as string | undefined),
         matchDate: new Date(match['kickoff'] as number).toISOString().slice(0, 10),
       },
       createdAt: Date.now()
