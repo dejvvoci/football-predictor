@@ -100,9 +100,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'tournament/bracket/:id',
+    path: 'predict-bracket',
     loadComponent: () =>
-      import('./features/tournament/bracket/bracket.component').then((m) => m.BracketComponent),
+      import('./features/predict-bracket/predict-bracket-list.component').then((m) => m.PredictBracketListComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'predict-bracket/:id',
+    loadComponent: () =>
+      import('./features/predict-bracket/bracket-detail/bracket-detail.component').then((m) => m.BracketDetailComponent),
     canActivate: [authGuard]
   },
   {

@@ -1,0 +1,29 @@
+<section class="page">
+  <h1>🗂️ Predict the Bracket</h1>
+  <p class="subtitle">Fill out the whole knockout bracket before the first match kicks off. Points increase the deeper the round.</p>
+
+  @if (brackets$ | async; as brackets) {
+    @if (brackets.length === 0) {
+      <div class="empty-state">
+        <p class="empty-icon">🏆</p>
+        <p class="empty-title">No brackets yet</p>
+        <p class="empty-sub">A bracket appears automatically as soon as a cup competition's knockout stage is fully known (e.g. Champions League or World Cup Round of 16).</p>
+      </div>
+    } @else {
+      <div class="brackets-grid">
+        @for (b of brackets; track b.id) {
+          <a class="bracket-card" [routerLink]="['/predict-bracket', b.id]">
+            <div class="card-top">
+              <span class="competition-tag">{{ b.competition }}</span>
+              <span class="status-tag" [class]="b.status">{{ b.status }}</span>
+            </div>
+            <h3>{{ b.title }}</h3>
+            <span class="deadline">⏰ {{ b.deadline | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </a>
+        }
+      </div>
+    }
+  } @else {
+    <p class="loading">Loading brackets...</p>
+  }
+</section>

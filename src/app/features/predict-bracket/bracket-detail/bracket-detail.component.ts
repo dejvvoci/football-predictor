@@ -7,13 +7,13 @@ import { Bracket, BracketMatchup, BracketRoundName, BRACKET_ROUND_LABELS } from 
 import { buildBracketRounds, cleanBracketPicks, isBracketComplete } from '../../../core/utils/bracket-utils';
 
 @Component({
-  selector: 'app-bracket',
+  selector: 'app-bracket-detail',
   standalone: true,
   imports: [AsyncPipe, DatePipe, RouterLink],
-  templateUrl: './bracket.component.html',
-  styleUrl: './bracket.component.css'
+  templateUrl: './bracket-detail.component.html',
+  styleUrl: './bracket-detail.component.css'
 })
-export class BracketComponent {
+export class BracketDetailComponent {
   private route = inject(ActivatedRoute);
   private bracketService = inject(BracketService);
   private destroyRef = inject(DestroyRef);
@@ -79,7 +79,7 @@ export class BracketComponent {
       await this.bracketService.submitBracket(this.bracketId, this.picks());
       this.savedMessage.set(true);
     } catch (e) {
-      this.errorMessage.set(e instanceof Error ? e.message : "S'u ruajt dot bracket-i.");
+      this.errorMessage.set(e instanceof Error ? e.message : "Couldn't save the bracket.");
     } finally {
       this.saving.set(false);
     }
