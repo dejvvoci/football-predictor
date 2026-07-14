@@ -1,6 +1,12 @@
 /**
- * Lidhja mes kodeve të kompeticioneve te football-data.org (plani falas, 12 kompeticione)
- * dhe "sport_key"-ve përkatëse te the-odds-api.com.
+ * Lidhja mes kodeve të kompeticioneve te football-data.org dhe "sport_key"-ve
+ * përkatëse te the-odds-api.com.
+ *
+ * Qëllimisht vetëm klube EVROPIANE + kombëtare (World Cup, Euro) — BSA (Brasileirão,
+ * klub jo-evropian) u hoq. Copa América / Club World Cup mund të shtohen më vonë, por
+ * kërkojnë të verifikohet kodi i saktë i football-data.org dhe disponueshmëria te
+ * plani falas PARA se të shtohen — një kod i pavlefshëm te query-ja me shumë
+ * kompeticione (dateFrom/dateTo) rrezikon ta dështojë të gjithë kërkesën, jo vetëm atë.
  *
  * Shënim: nëse the-odds-api ndryshon ndonjë sport_key, thjesht s'gjendet përputhje
  * dhe sistemi bie automatikisht mbrapa te koeficentët "fallback" (shih fallback-odds.ts) —
@@ -17,10 +23,9 @@ export const COMPETITION_TO_SPORT_KEY: Record<string, string> = {
   ELC: 'soccer_efl_champ',
   DED: 'soccer_netherlands_eredivisie',
   PPL: 'soccer_portugal_primeira_liga',
-  BSA: 'soccer_brazil_campeonato',
   WC: 'soccer_fifa_world_cup',
   EC: 'soccer_uefa_european_championship'
 };
 
-/** 12 kompeticionet e mbuluara nga plani falas i football-data.org */
+/** Kompeticionet e mbuluara nga plani falas i football-data.org */
 export const FREE_COMPETITIONS = Object.keys(COMPETITION_TO_SPORT_KEY);
