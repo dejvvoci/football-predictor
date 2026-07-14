@@ -1017,7 +1017,10 @@ export async function syncTablePredictions(token: string): Promise<void> {
           { headers: { 'X-Auth-Token': token } }
         );
         if (!teamsRes.ok) continue;
-        const teamsData = await teamsRes.json() as { teams?: Record<string, unknown>[] };
+        const teamsData = await teamsRes.json() as {
+          teams?: Record<string, unknown>[];
+          season?: { startDate?: string };
+        };
         const teams = (teamsData.teams ?? []).map((t) => ({
           id: t['id'],
           name: t['name'],
@@ -1026,8 +1029,10 @@ export async function syncTablePredictions(token: string): Promise<void> {
         }));
         if (teams.length === 0) continue;
 
-        // Deadline: 1 week from now (admin can adjust)
-        const deadline = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        // Deadline: dita e fillimit real të sezonit (kur nis ndeshja e parë) — jo një afat arbitrar
+        const deadline = teamsData.season?.startDate
+          ? new Date(`${teamsData.season.startDate}T00:00:00Z`).getTime()
+          : Date.now() + 7 * 24 * 60 * 60 * 1000; // fallback nëse API s'e kthen startDate
         await seasonDocRef.set({
           competition: TABLE_COMP_NAMES[code] ?? code,
           code, season: currentSeason, teams,
@@ -1039,6 +1044,32 @@ export async function syncTablePredictions(token: string): Promise<void> {
         console.warn(`Table init failed for ${code}:`, e);
       }
       continue;
+    }
+
+    // ── 1b. Korrigjo afatin nëse dokumenti ekzistues e ka të vjetëruar (bug i mëparshëm
+    // që vendoste "7 ditë nga krijimi" në vend të fillimit real të sezonit) — rimerr
+    // startDate-in real dhe rifresko, vetëm kur duket i gabuar (evitohet thirrje shtesë API).
+    const existingDeadline = seasonSnap.data()?.['deadline'] as number | undefined;
+    if (existingDeadline !== undefined && existingDeadline <= Date.now()) {
+      try {
+        await new Promise(r => setTimeout(r, 6500));
+        const teamsRes = await fetch(
+          `https://api.football-data.org/v4/competitions/${code}/teams?season=${currentSeason}`,
+          { headers: { 'X-Auth-Token': token } }
+        );
+        if (teamsRes.ok) {
+          const teamsData = await teamsRes.json() as { season?: { startDate?: string } };
+          if (teamsData.season?.startDate) {
+            const correctedDeadline = new Date(`${teamsData.season.startDate}T00:00:00Z`).getTime();
+            if (correctedDeadline !== existingDeadline) {
+              await seasonDocRef.update({ deadline: correctedDeadline });
+              console.log(`📊 Table deadline corrected: ${code} ${currentSeason} → ${teamsData.season.startDate}`);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Table deadline correction failed for ${code}:`, e);
+      }
     }
 
     // ── 2. Update standings ────────────────────────────────────────────────
