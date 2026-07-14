@@ -48,6 +48,13 @@ export async function syncMatchesAndGrade(): Promise<void> {
   console.log(`Gjetën ${matches.length} ndeshje (sot + nesër).`);
 
   for (const m of matches) {
+    if (!m.homeTeam?.name || !m.awayTeam?.name) {
+      // football-data.org ndonjëherë kthen ndeshje me ekip placeholder/TBD (emër null) —
+      // s'ka kuptim ta ruajmë (as ta shfaqim, as t'i llogarisim koeficentë), thjesht anashkalo.
+      console.warn(`Sync: match ${m.id} has a missing team name, skipping (home=${m.homeTeam?.name}, away=${m.awayTeam?.name})`);
+      continue;
+    }
+
     const docId = String(m.id);
     const matchRef = db.collection('matches').doc(docId);
     const existing = await matchRef.get();

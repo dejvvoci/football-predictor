@@ -34,8 +34,8 @@ interface OddsApiEvent {
   bookmakers: OddsApiBookmaker[];
 }
 
-function normalize(name: string): string {
-  return name.trim().toLowerCase();
+function normalize(name: string | null | undefined): string {
+  return (name ?? '').trim().toLowerCase();
 }
 
 export function matchKey(homeTeam: string, awayTeam: string): string {
