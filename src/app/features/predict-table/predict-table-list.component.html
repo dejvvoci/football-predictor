@@ -2,16 +2,23 @@
   <h1>🏆 Predict the Table</h1>
   <p class="subtitle">Predict the final standings before the season kicks off. Score up to <strong>10 pts per team</strong> based on accuracy.</p>
 
-  @if (seasons$ | async; as seasons) {
-    @if (seasons.length === 0) {
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'open'" (click)="activeTab.set('open')">Open</button>
+    <button class="tab" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">History</button>
+  </div>
+
+  @if (loading()) {
+    <p class="loading">Loading competitions...</p>
+  } @else if (activeTab() === 'open') {
+    @if (openSeasons().length === 0) {
       <div class="empty-state">
         <p class="empty-icon">📅</p>
-        <p class="empty-title">No active seasons</p>
+        <p class="empty-title">No open competitions</p>
         <p class="empty-sub">Predict the Table opens before each season. Check back closer to the season start.</p>
       </div>
     } @else {
       <div class="seasons-grid">
-        @for (s of seasons; track s.id) {
+        @for (s of openSeasons(); track s.id) {
           <a class="season-card" [routerLink]="['/predict-table', s.code, s.season]">
             <div class="card-top">
               <span class="flag">{{ flags[s.code] }}</span>
@@ -22,17 +29,41 @@
             </div>
             <div class="card-bottom">
               <span class="teams-count">{{ s.teams.length }} teams</span>
-              @if (isOpen(s.deadline)) {
-                <span class="status open">Open · closes {{ s.deadline | date: 'dd MMM' }}</span>
-              } @else {
-                <span class="status closed">Closed · in progress</span>
-              }
+              <span class="status open">Open · closes {{ s.deadline | date: 'dd MMM' }}</span>
             </div>
           </a>
         }
       </div>
     }
   } @else {
-    <p class="loading">Loading competitions...</p>
+    @if (historySeasons().length === 0) {
+      <div class="empty-state">
+        <p class="empty-icon">📜</p>
+        <p class="empty-title">No past competitions yet</p>
+        <p class="empty-sub">Once a season starts, it'll move here so you can track your prediction.</p>
+      </div>
+    } @else {
+      <div class="seasons-grid">
+        @for (s of historySeasons(); track s.id) {
+          <a class="season-card" [routerLink]="['/predict-table', s.code, s.season]">
+            <div class="card-top">
+              <span class="flag">{{ flags[s.code] }}</span>
+              <div class="card-info">
+                <h3>{{ s.competition }}</h3>
+                <span class="season-label">{{ s.season }}/{{ (s.season + 1).toString().slice(2) }}</span>
+              </div>
+            </div>
+            <div class="card-bottom">
+              <span class="teams-count">{{ s.teams.length }} teams</span>
+              @if (isFinished(s)) {
+                <span class="status finished">Finished</span>
+              } @else {
+                <span class="status closed">In progress</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
   }
 </section>
