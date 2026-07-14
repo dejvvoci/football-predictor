@@ -1,23 +1,23 @@
 <section class="page">
-  <h1>Historiku im</h1>
+  <h1>My History</h1>
 
   <input
     type="search"
     class="search-input"
-    placeholder="Kërko sipas skuadrës ose kompeticionit..."
+    placeholder="Search by team or competition..."
     [value]="searchTerm()"
     (input)="onSearchInput($any($event.target).value)"
   />
 
   @if (loading()) {
-    <p class="loading">Duke ngarkuar historikun...</p>
+    <p class="loading">Loading history...</p>
   } @else {
     @let items = results();
     @if (items.length === 0) {
       @if (searchTerm().trim()) {
-        <p class="empty">S'u gjet asnjë parashikim për "{{ searchTerm() }}".</p>
+        <p class="empty">No predictions found for "{{ searchTerm() }}".</p>
       } @else {
-        <p class="empty">S'ke dhënë ende asnjë parashikim.</p>
+        <p class="empty">You haven't made any predictions yet.</p>
       }
     } @else {
       <div class="history-list">

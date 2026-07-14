@@ -19,7 +19,7 @@ export class CommentService {
 
   async addComment(groupId: string, text: string): Promise<void> {
     const user = this.auth.currentUser;
-    if (!user) throw new Error('Duhet të jesh i loguar.');
+    if (!user) throw new Error('You must be logged in.');
     if (!text.trim()) return;
 
     await addDoc(collection(this.firestore, 'groupComments'), {

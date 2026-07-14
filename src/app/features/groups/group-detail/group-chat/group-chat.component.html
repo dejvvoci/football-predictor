@@ -2,7 +2,7 @@
   <div class="messages">
     @if (comments$ | async; as comments) {
       @if (comments.length === 0) {
-        <p class="empty-chat">Ende s'ka mesazhe. Fillo bisedën! 💬</p>
+        <p class="empty-chat">No messages yet. Start the conversation! 💬</p>
       } @else {
         @for (c of comments; track c.id) {
           <div class="message" [class.mine]="c.userId === myUid">
@@ -29,7 +29,7 @@
     <textarea
       class="chat-input"
       rows="1"
-      placeholder="Shkruaj mesazh... (Enter për dërgim)"
+      placeholder="Type a message... (Enter to send)"
       [value]="text()"
       (input)="onInput($event)"
       (keydown)="onKeydown($event)"

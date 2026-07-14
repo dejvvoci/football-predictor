@@ -1,21 +1,21 @@
 <section class="auth-page">
-  <h1>Hyr</h1>
+  <h1>Log in</h1>
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
     <label>
-      Email ose Username
+      Email or Username
       <input type="text" formControlName="identifier" autocomplete="username" />
     </label>
     @if (form.controls.identifier.invalid && form.controls.identifier.touched) {
-      <p class="field-error">Vendos email-in ose username-in tënd.</p>
+      <p class="field-error">Enter your email or username.</p>
     }
 
     <label>
-      Fjalëkalimi
+      Password
       <input type="password" formControlName="password" autocomplete="current-password" />
     </label>
     @if (form.controls.password.invalid && form.controls.password.touched) {
-      <p class="field-error">Fjalëkalimi duhet të ketë të paktën 6 karaktere.</p>
+      <p class="field-error">Password must be at least 6 characters.</p>
     }
 
     @if (errorMessage()) {
@@ -23,9 +23,9 @@
     }
 
     <button type="submit" [disabled]="loading()">
-      {{ loading() ? 'Duke hyrë...' : 'Hyr' }}
+      {{ loading() ? 'Logging in...' : 'Log in' }}
     </button>
   </form>
 
-  <p class="switch-link">S'ke llogari? <a routerLink="/register" [queryParams]="returnUrl ? { returnUrl } : {}">Regjistrohu</a></p>
+  <p class="switch-link">Don't have an account? <a routerLink="/register" [queryParams]="returnUrl ? { returnUrl } : {}">Sign up</a></p>
 </section>

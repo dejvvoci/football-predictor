@@ -1,13 +1,13 @@
 <section class="auth-page">
-  <h1>Bashkohu me kod</h1>
+  <h1>Join with code</h1>
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
     <label>
-      Kodi i ftesës
+      Invite code
       <input type="text" formControlName="inviteCode" placeholder="invite Code" maxlength="6" style="text-transform: uppercase;" />
     </label>
     @if (form.controls.inviteCode.invalid && form.controls.inviteCode.touched) {
-      <p class="field-error">Kodi duhet të ketë saktësisht 6 karaktere.</p>
+      <p class="field-error">Code must be exactly 6 characters.</p>
     }
 
     @if (errorMessage()) {
@@ -15,9 +15,9 @@
     }
 
     <button type="submit" [disabled]="loading()">
-      {{ loading() ? 'Duke u bashkuar...' : 'Bashkohu' }}
+      {{ loading() ? 'Joining...' : 'Join' }}
     </button>
   </form>
 
-  <a routerLink="/groups" class="back-link">← Kthehu te grupet</a>
+  <a routerLink="/groups" class="back-link">← Back to groups</a>
 </section>

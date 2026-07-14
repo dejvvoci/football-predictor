@@ -50,12 +50,12 @@ export class BracketService {
   async submitBracket(bracketId: string, picks: Record<string, string>): Promise<void> {
     const userId = this.auth.currentUser?.uid;
     const user = this.auth.currentUser;
-    if (!userId || !user) throw new Error('Duhet të jesh i loguar.');
+    if (!userId || !user) throw new Error('You must be logged in.');
 
     const bracketSnap = await getDoc(doc(this.firestore, 'brackets', bracketId));
-    if (!bracketSnap.exists()) throw new Error('Bracket-i nuk u gjet.');
+    if (!bracketSnap.exists()) throw new Error('Bracket not found.');
     const bracket = bracketSnap.data() as Bracket;
-    if (bracket.deadline <= Date.now()) throw new Error('Parashikimet janë mbyllur për këtë bracket.');
+    if (bracket.deadline <= Date.now()) throw new Error('Predictions are closed for this bracket.');
 
     const predId = `${userId}_${bracketId}`;
     const existing = await getDoc(doc(this.firestore, 'bracketPredictions', predId));
@@ -76,7 +76,7 @@ export class BracketService {
   /** USER: kërko pikët e fituara — vetë-shërbim, i shton totalPoints globale të profilit */
   async claimPoints(predictionId: string, points: number): Promise<void> {
     const userId = this.auth.currentUser?.uid;
-    if (!userId) throw new Error('Duhet të jesh i loguar.');
+    if (!userId) throw new Error('You must be logged in.');
 
     const predRef = doc(this.firestore, 'bracketPredictions', predictionId);
     const userRef = doc(this.firestore, 'users', userId);

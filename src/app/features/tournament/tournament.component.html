@@ -1,18 +1,18 @@
 <section class="page">
   <div class="page-header">
-    <h1>Fazë / Turne</h1>
+    <h1>Tournament</h1>
     @if (isAdmin$ | async) {
-      <a routerLink="/tournament/create" class="create-btn">+ Sfidë e re</a>
+      <a routerLink="/tournament/create" class="create-btn">+ New challenge</a>
     }
   </div>
 
   <div class="page-header bracket-section-header">
-    <h2>Bracket-et</h2>
+    <h2>Brackets</h2>
   </div>
 
   @if (brackets$ | async; as brackets) {
     @if (brackets.length === 0) {
-      <p class="empty">Ende s'ka bracket-e të hapura.</p>
+      <p class="empty">No open brackets yet.</p>
     } @else {
       <div class="challenges-list">
         @for (b of brackets; track b.id) {
@@ -31,7 +31,7 @@
 
   @if (rows$ | async; as rows) {
     @if (rows.length === 0) {
-      <p class="empty">Ende s'ka sfida të hapura.</p>
+      <p class="empty">No open challenges yet.</p>
     } @else {
       <div class="challenges-list">
         @for (row of rows; track row.challenge.id) {

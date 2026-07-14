@@ -1,6 +1,6 @@
 @if (activity$ | async; as activities) {
   @if (activities.length === 0) {
-    <p class="empty">Ende s'ka parashikime të graduara në këtë grup.</p>
+    <p class="empty">No graded predictions in this group yet.</p>
   } @else {
     <div class="activity-list">
       @for (item of activities; track item.match.id) {
@@ -40,5 +40,5 @@
     </div>
   }
 } @else {
-  <p class="loading">Duke ngarkuar aktivitetin...</p>
+  <p class="loading">Loading activity...</p>
 }

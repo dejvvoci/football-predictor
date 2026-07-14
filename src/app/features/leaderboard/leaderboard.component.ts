@@ -70,18 +70,18 @@ export class LeaderboardComponent {
     try {
       await this.seasonService.startNewSeason(name);
       this.newSeasonName.set('');
-      this.seasonMsg.set(`✓ Sezoni "${name}" filloi.`);
+      this.seasonMsg.set(`✓ Season "${name}" started.`);
     } finally {
       this.startingSeason.set(false);
     }
   }
 
   async endSeason(season: Season): Promise<void> {
-    if (!confirm(`Mbyll "${season.name}"? Kjo resetar totalPoints për të gjithë!`)) return;
+    if (!confirm(`End "${season.name}"? This resets totalPoints for everyone!`)) return;
     this.endingSeasonId.set(season.id);
     try {
       const count = await this.seasonService.endSeason(season.id);
-      this.seasonMsg.set(`✓ Sezoni u mbyll. ${count} lojtarë u regjistruan te Hall of Fame.`);
+      this.seasonMsg.set(`✓ Season ended. ${count} player(s) recorded to the Hall of Fame.`);
     } finally {
       this.endingSeasonId.set(null);
     }

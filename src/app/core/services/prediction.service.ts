@@ -107,7 +107,7 @@ export class PredictionService {
   ): Promise<void> {
     const userId = this.auth.currentUser?.uid;
     if (!userId) {
-      throw new Error('Duhet të jesh i loguar për të dhënë parashikim.');
+      throw new Error('You must be logged in to submit a prediction.');
     }
 
     const predictionId = `${groupId}_${userId}_${matchId}`;

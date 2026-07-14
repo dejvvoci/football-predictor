@@ -33,7 +33,7 @@ export class CreateChallengeComponent {
     const options = optionsRaw.split(',').map((o) => o.trim()).filter(Boolean);
 
     if (options.length < 2) {
-      this.error.set('Vendos të paktën 2 opsione, të ndara me presje.');
+      this.error.set('Enter at least 2 options, separated by commas.');
       return;
     }
 
@@ -50,7 +50,7 @@ export class CreateChallengeComponent {
       });
       this.router.navigateByUrl('/tournament');
     } catch {
-      this.error.set("S'u krijua dot sfida. Provo përsëri.");
+      this.error.set("Couldn't create the challenge. Please try again.");
     } finally {
       this.loading.set(false);
     }

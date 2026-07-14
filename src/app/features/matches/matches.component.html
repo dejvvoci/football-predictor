@@ -1,5 +1,5 @@
 <section class="page">
-  <h1>Ndeshjet e ardhshme</h1>
+  <h1>Upcoming Matches</h1>
 
   @if (filteredMatches(); as matches) {
     @if (competitions().length > 1) {
@@ -10,7 +10,7 @@
           [class.active]="selectedCompetition() === 'all'"
           (click)="selectCompetition('all')"
         >
-          Të gjitha
+          All
         </button>
         @for (comp of competitions(); track comp) {
           <button
@@ -26,7 +26,7 @@
     }
 
     @if (matches.length === 0) {
-      <p class="empty">S'ka ndeshje të regjistruara në 24 orët e ardhshme.</p>
+      <p class="empty">No matches scheduled in the next 24 hours.</p>
     } @else {
       <div class="matches-list">
         @for (match of matches; track match.id) {
@@ -35,6 +35,6 @@
       </div>
     }
   } @else {
-    <p class="loading">Duke ngarkuar ndeshjet...</p>
+    <p class="loading">Loading matches...</p>
   }
 </section>

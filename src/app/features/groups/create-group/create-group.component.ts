@@ -35,7 +35,7 @@ export class CreateGroupComponent {
       const groupId = await this.groupService.createGroup(this.form.getRawValue().name);
       this.router.navigate(['/groups', groupId]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Diçka shkoi keq.');
+      this.errorMessage.set(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       this.loading.set(false);
     }

@@ -113,7 +113,7 @@ export class AuthService {
   async updateDisplayName(displayName: string): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) {
-      throw new Error('Duhet të jesh i loguar.');
+      throw new Error('You must be logged in.');
     }
 
     await updateProfile(user, { displayName });

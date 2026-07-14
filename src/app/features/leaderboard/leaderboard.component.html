@@ -1,9 +1,9 @@
 <section class="page">
-  <h1>Renditja</h1>
+  <h1>Leaderboard</h1>
 
   <div class="tabs">
     <button class="tab" [class.active]="activeTab() === 'current'" (click)="activeTab.set('current')">
-      Sezoni aktual
+      Current Season
     </button>
     <button class="tab" [class.active]="activeTab() === 'hof'" (click)="activeTab.set('hof')">
       🏛 Hall of Fame
@@ -14,7 +14,7 @@
     @if (user$ | async; as currentUser) {
       @if (leaderboard$ | async; as leaderboard) {
         @if (leaderboard.length === 0) {
-          <p class="empty">Ende s'ka të dhëna në renditje.</p>
+          <p class="empty">No leaderboard data yet.</p>
         } @else {
           <ol class="leaderboard-list">
             @for (entry of leaderboard; track entry.uid; let i = $index) {
@@ -23,28 +23,28 @@
                   @if (i === 0) { 🥇 } @else if (i === 1) { 🥈 } @else if (i === 2) { 🥉 } @else { {{ i + 1 }} }
                 </span>
                 <span class="name">{{ entry.displayName }}</span>
-                <span class="points">{{ entry.totalPoints }} pikë</span>
+                <span class="points">{{ entry.totalPoints }} pts</span>
               </li>
             }
           </ol>
         }
       } @else {
-        <p class="loading">Duke ngarkuar renditjen...</p>
+        <p class="loading">Loading leaderboard...</p>
       }
     }
 
     @if (isAdmin$ | async) {
       <div class="admin-box">
-        <h3>⚙ Menaxhimi i sezonit</h3>
+        <h3>⚙ Season Management</h3>
 
         @if (seasonMsg()) {
           <p class="season-msg">{{ seasonMsg() }}</p>
         }
 
         <div class="season-row">
-          <input type="text" [value]="newSeasonName()" (input)="onNameInput($event)" placeholder="Emri i sezonit të ri" />
+          <input type="text" [value]="newSeasonName()" (input)="onNameInput($event)" placeholder="New season name" />
           <button [disabled]="!newSeasonName().trim() || startingSeason()" (click)="startSeason()">
-            {{ startingSeason() ? 'Duke filluar...' : 'Fillo sezon' }}
+            {{ startingSeason() ? 'Starting...' : 'Start season' }}
           </button>
         </div>
 
@@ -52,9 +52,9 @@
           @for (s of seasons; track s.id) {
             @if (s.isActive) {
               <div class="season-end-row">
-                <span>Aktiv: <strong>{{ s.name }}</strong></span>
+                <span>Active: <strong>{{ s.name }}</strong></span>
                 <button class="end-btn" [disabled]="endingSeasonId() === s.id" (click)="endSeason(s)">
-                  {{ endingSeasonId() === s.id ? 'Duke mbyllur...' : 'Mbyll sezonin' }}
+                  {{ endingSeasonId() === s.id ? 'Ending...' : 'End season' }}
                 </button>
               </div>
             }
@@ -67,7 +67,7 @@
   @if (activeTab() === 'hof') {
     @if (seasons$ | async; as seasons) {
       @if (pastSeasons(seasons).length === 0) {
-        <p class="empty">Ende s'ka sezone të mbyllura.</p>
+        <p class="empty">No closed seasons yet.</p>
       } @else {
         <div class="season-selector">
           @for (s of pastSeasons(seasons); track s.id) {
@@ -83,7 +83,7 @@
 
         @if (hallOfFame$ | async; as hof) {
           @if (hof.length === 0) {
-            <p class="empty">S'ka të dhëna për këtë sezon.</p>
+            <p class="empty">No data for this season.</p>
           } @else {
             <ol class="leaderboard-list">
               @for (entry of hof; track entry.userId) {
@@ -92,7 +92,7 @@
                     @if (entry.rank === 1) { 🥇 } @else if (entry.rank === 2) { 🥈 } @else if (entry.rank === 3) { 🥉 } @else { {{ entry.rank }} }
                   </span>
                   <span class="name">{{ entry.displayName }}</span>
-                  <span class="points">{{ entry.totalPoints }} pikë</span>
+                  <span class="points">{{ entry.totalPoints }} pts</span>
                 </li>
               }
             </ol>

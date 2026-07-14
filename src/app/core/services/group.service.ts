@@ -68,7 +68,7 @@ export class GroupService {
     const matchingGroups = await getDocs(q);
 
     if (matchingGroups.empty) {
-      throw new Error('Kod i pavlefshëm — kontrollo nëse e ke shkruar saktë.');
+      throw new Error('Invalid code — check that you typed it correctly.');
     }
 
     const groupId = matchingGroups.docs[0].id;
@@ -81,12 +81,12 @@ export class GroupService {
       const groupSnap = await tx.get(groupRef);
 
       if (!groupSnap.exists()) {
-        throw new Error('Grupi nuk ekziston më.');
+        throw new Error('This group no longer exists.');
       }
 
       const groupIds: string[] = (userSnap.data()?.['groupIds'] as string[]) ?? [];
       if (groupIds.includes(groupId)) {
-        throw new Error('Je tashmë anëtar i këtij grupi.');
+        throw new Error("You're already a member of this group.");
       }
 
       tx.update(groupRef, { memberIds: arrayUnion(userId) });
@@ -175,7 +175,7 @@ export class GroupService {
 
   private requireUserId(): string {
     const userId = this.auth.currentUser?.uid;
-    if (!userId) throw new Error('Duhet të jesh i loguar.');
+    if (!userId) throw new Error('You must be logged in.');
     return userId;
   }
 }

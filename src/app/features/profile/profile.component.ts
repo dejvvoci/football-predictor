@@ -46,9 +46,9 @@ export class ProfileComponent implements OnInit {
 
     try {
       await this.authService.updateDisplayName(this.form.getRawValue().displayName);
-      this.successMessage.set('Profili u përditësua.');
+      this.successMessage.set('Profile updated.');
     } catch {
-      this.errorMessage.set('Diçka shkoi keq. Provo përsëri.');
+      this.errorMessage.set('Something went wrong. Please try again.');
     } finally {
       this.loading.set(false);
     }

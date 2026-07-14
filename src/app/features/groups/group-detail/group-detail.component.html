@@ -3,28 +3,28 @@
     <h1>{{ group.name }}</h1>
     <div class="invite-row">
       <p class="invite-info">
-        Kodi i ftesës: <strong>{{ group.inviteCode }}</strong>
+        Invite code: <strong>{{ group.inviteCode }}</strong>
       </p>
       <button type="button" class="copy-btn" (click)="copyInviteLink(group.inviteCode)">
-        {{ linkCopied() ? 'U kopjua ✓' : 'Kopjo linkun e ftesës' }}
+        {{ linkCopied() ? 'Copied ✓' : 'Copy invite link' }}
       </button>
     </div>
 
     <div class="tabs">
       <button type="button" class="tab" [class.active]="activeTab() === 'predict'" (click)="activeTab.set('predict')">
-        Parashiko
+        Predict
       </button>
       <button type="button" class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">
-        Renditja
+        Leaderboard
       </button>
       <button type="button" class="tab" [class.active]="activeTab() === 'activity'" (click)="activeTab.set('activity')">
-        Aktiviteti
+        Activity
       </button>
       <button type="button" class="tab" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
-        Historiku
+        History
       </button>
       <button type="button" class="tab" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')">
-        Diskutim 💬
+        Chat 💬
       </button>
       @if (group.ownerId === currentUserId()) {
         <button type="button" class="tab" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
@@ -34,7 +34,7 @@
     </div>
 
     @if (activeTab() === 'predict') {
-      <p class="section-hint">Ndeshjet brenda 24 orëve të ardhshme. Pikët nga këto parashikime shkojnë vetëm te renditja e këtij grupi.</p>
+      <p class="section-hint">Matches within the next 24 hours. Points from these predictions only count toward this group's leaderboard.</p>
 
       @if (filteredMatches(); as matches) {
         @if (competitions().length > 1) {
@@ -45,7 +45,7 @@
               [class.active]="selectedCompetition() === 'all'"
               (click)="selectCompetition('all')"
             >
-              Të gjitha
+              All
             </button>
             @for (comp of competitions(); track comp) {
               <button
@@ -61,7 +61,7 @@
         }
 
         @if (matches.length === 0) {
-          <p class="empty">S'ka ndeshje të regjistruara në 24 orët e ardhshme.</p>
+          <p class="empty">No matches scheduled in the next 24 hours.</p>
         } @else {
           <div class="matches-list">
             @for (match of matches; track match.id) {
@@ -70,7 +70,7 @@
           </div>
         }
       } @else {
-        <p class="loading">Duke ngarkuar ndeshjet...</p>
+        <p class="loading">Loading matches...</p>
       }
     }
 
@@ -91,7 +91,7 @@
                 }
               </span>
               <span class="name">{{ row.displayName }}</span>
-              <span class="points">{{ row.points }} pikë</span>
+              <span class="points">{{ row.points }} pts</span>
             </li>
           }
         </ol>
@@ -109,7 +109,7 @@
     @if (activeTab() === 'history') {
       @if (groupHistory$ | async; as history) {
         @if (history.length === 0) {
-          <p class="empty">S'ke dhënë ende asnjë parashikim në këtë grup.</p>
+          <p class="empty">You haven't made any predictions in this group yet.</p>
         } @else {
           <div class="matches-list">
             @for (prediction of history; track prediction.id) {
@@ -118,24 +118,24 @@
           </div>
         }
       } @else {
-        <p class="loading">Duke ngarkuar historikun...</p>
+        <p class="loading">Loading history...</p>
       }
     }
 
     @if (activeTab() === 'admin' && group.ownerId === currentUserId()) {
       <div class="admin-section">
-        <h3 class="admin-subtitle">Ndrysho emrin e grupit</h3>
+        <h3 class="admin-subtitle">Rename group</h3>
         <div class="rename-row">
           <input type="text" [value]="newGroupName()" (input)="onNewNameChange($event)" [placeholder]="group.name" />
           <button type="button" (click)="saveRename(group.id, group.name)" [disabled]="renaming() || !newGroupName().trim()">
-            {{ renaming() ? 'Duke ruajtur...' : 'Ruaj' }}
+            {{ renaming() ? 'Saving...' : 'Save' }}
           </button>
         </div>
         @if (renameError()) {
           <p class="form-error">{{ renameError() }}</p>
         }
 
-        <h3 class="admin-subtitle">Anëtarët</h3>
+        <h3 class="admin-subtitle">Members</h3>
         <div class="member-list">
           @for (member of (members$ | async); track member.uid) {
             <div class="member-row">
@@ -149,28 +149,28 @@
                   [disabled]="removingMemberId() === member.uid"
                   (click)="removeMember(group.id, member.uid, member.displayName)"
                 >
-                  {{ removingMemberId() === member.uid ? 'Duke hequr...' : 'Hiq' }}
+                  {{ removingMemberId() === member.uid ? 'Removing...' : 'Remove' }}
                 </button>
               }
             </div>
           }
         </div>
 
-        <h3 class="admin-subtitle danger-title">Zona e rrezikshme</h3>
+        <h3 class="admin-subtitle danger-title">Danger zone</h3>
         <button type="button" class="delete-group-btn" [disabled]="deletingGroup()" (click)="deleteGroup(group.id)">
-          {{ deletingGroup() ? 'Duke fshirë...' : 'Fshi grupin përgjithmonë' }}
+          {{ deletingGroup() ? 'Deleting...' : 'Delete group permanently' }}
         </button>
       </div>
     }
 
-    <a routerLink="/groups" class="back-link">← Të gjitha grupet</a>
+    <a routerLink="/groups" class="back-link">← All groups</a>
     @if (group.ownerId !== currentUserId()) {
       <button type="button" class="leave-btn" [disabled]="leaving()" (click)="leave(group.id)">
-        {{ leaving() ? 'Duke u larguar...' : 'Largohu nga grupi' }}
+        {{ leaving() ? 'Leaving...' : 'Leave group' }}
       </button>
     }
   } @else {
-    <p class="loading">Duke ngarkuar grupin...</p>
+    <p class="loading">Loading group...</p>
   }
 </section>
 

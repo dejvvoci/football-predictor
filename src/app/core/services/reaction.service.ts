@@ -38,7 +38,7 @@ export class ReactionService {
   /** Toggle — shton nëse s'ekziston, fshin nëse ekziston */
   async toggleReaction(predictionId: string, groupId: string, emoji: ReactionEmoji): Promise<void> {
     const user = this.auth.currentUser;
-    if (!user) throw new Error('Duhet të jesh i loguar.');
+    if (!user) throw new Error('You must be logged in.');
 
     const reactionId = `${user.uid}_${predictionId}_${emoji}`;
     const ref = doc(this.firestore, 'reactions', reactionId);

@@ -1,17 +1,17 @@
 <section class="page">
-  <h1>Grupet e mia</h1>
+  <h1>My Groups</h1>
 
   @if (groups$ | async; as groups) {
     @if (groups.length === 0) {
-      <p class="empty">S'je ende në asnjë grup — krijo një ose bashkohu me kod ftese.</p>
+      <p class="empty">You're not in any group yet — create one or join with an invite code.</p>
     } @else {
       <div class="groups-list">
         @for (group of groups; track group.id) {
           <a class="group-card" [routerLink]="['/groups', group.id]">
             <div class="group-name">{{ group.name }}</div>
             <div class="group-meta">
-              <span>{{ group.memberIds.length }} anëtarë</span>
-              <span class="invite-code">Kodi: {{ group.inviteCode }}</span>
+              <span>{{ group.memberIds.length }} members</span>
+              <span class="invite-code">Code: {{ group.inviteCode }}</span>
             </div>
           </a>
         }
@@ -19,10 +19,10 @@
     }
 
     <div class="actions">
-      <a routerLink="/groups/create" class="action-btn">+ Krijo grup</a>
-      <a routerLink="/groups/join" class="action-btn secondary">Bashkohu me kod</a>
+      <a routerLink="/groups/create" class="action-btn">+ Create group</a>
+      <a routerLink="/groups/join" class="action-btn secondary">Join with code</a>
     </div>
   } @else {
-    <p class="loading">Duke ngarkuar grupet...</p>
+    <p class="loading">Loading groups...</p>
   }
 </section>

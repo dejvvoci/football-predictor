@@ -1,13 +1,13 @@
 <section class="auth-page">
-  <h1>Krijo grup</h1>
+  <h1>Create group</h1>
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
     <label>
-      Emri i grupit
-      <input type="text" formControlName="name" placeholder="Emri i grupit" />
+      Group name
+      <input type="text" formControlName="name" placeholder="Group name" />
     </label>
     @if (form.controls.name.invalid && form.controls.name.touched) {
-      <p class="field-error">Emri duhet të ketë 2-40 karaktere.</p>
+      <p class="field-error">Name must be 2-40 characters.</p>
     }
 
     @if (errorMessage()) {
@@ -15,9 +15,9 @@
     }
 
     <button type="submit" [disabled]="loading()">
-      {{ loading() ? 'Duke krijuar...' : 'Krijo grupin' }}
+      {{ loading() ? 'Creating...' : 'Create group' }}
     </button>
   </form>
 
-  <a routerLink="/groups" class="back-link">← Kthehu te grupet</a>
+  <a routerLink="/groups" class="back-link">← Back to groups</a>
 </section>

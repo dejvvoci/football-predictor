@@ -1,13 +1,13 @@
 <section class="auth-page">
-  <h1>Profili im</h1>
+  <h1>My Profile</h1>
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
     <label>
-      Emri
+      Name
       <input type="text" formControlName="displayName" />
     </label>
     @if (form.controls.displayName.invalid && form.controls.displayName.touched) {
-      <p class="field-error">Emri duhet të ketë 2-40 karaktere.</p>
+      <p class="field-error">Name must be 2-40 characters.</p>
     }
 
     @if (successMessage()) {
@@ -18,11 +18,11 @@
     }
 
     <button type="submit" [disabled]="loading()">
-      {{ loading() ? 'Duke ruajtur...' : 'Ruaj ndryshimet' }}
+      {{ loading() ? 'Saving...' : 'Save changes' }}
     </button>
   </form>
 
   <button type="button" class="logout-btn" [disabled]="loggingOut()" (click)="logout()">
-    {{ loggingOut() ? 'Duke dalë...' : 'Dil nga llogaria' }}
+    {{ loggingOut() ? 'Logging out...' : 'Log out' }}
   </button>
 </section>

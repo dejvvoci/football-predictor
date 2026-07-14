@@ -43,7 +43,7 @@ export class JoinGroupComponent implements OnInit {
       const groupId = await this.groupService.joinGroup(this.form.getRawValue().inviteCode);
       this.router.navigate(['/groups', groupId]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Diçka shkoi keq.');
+      this.errorMessage.set(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       this.loading.set(false);
     }

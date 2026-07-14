@@ -1,21 +1,21 @@
 @if (visible()) {
   <div class="overlay" (click)="dismiss()">
     <div class="modal" (click)="$event.stopPropagation()">
-      <h2>📣 Rezultatet e fundit</h2>
+      <h2>📣 Latest Results</h2>
 
       <div class="items">
         @for (item of items(); track item.predictionId) {
           <div class="item">
             <div class="teams">{{ item.homeTeam }} vs {{ item.awayTeam }}</div>
             <div class="detail">
-              <span>Parashikove <strong>{{ item.choice }}</strong></span>
-              <span class="points" [class.zero]="item.points === 0">+{{ item.points }} pikë</span>
+              <span>You predicted <strong>{{ item.choice }}</strong></span>
+              <span class="points" [class.zero]="item.points === 0">+{{ item.points }} pts</span>
             </div>
           </div>
         }
       </div>
 
-      <button type="button" class="close-btn" (click)="dismiss()">Mbylle</button>
+      <button type="button" class="close-btn" (click)="dismiss()">Close</button>
     </div>
   </div>
 }

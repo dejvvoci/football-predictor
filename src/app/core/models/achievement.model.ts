@@ -8,7 +8,7 @@ export interface Achievement {
 export const ALL_ACHIEVEMENTS: Achievement[] = [
   { id: 'first_correct',    icon: '🎯', title: 'Great Start!',   description: 'First correct prediction' },
   { id: 'first_exact',      icon: '💎', title: 'Sniper',           description: 'First time correct score prediction' },
-  { id: 'streak_3',         icon: '🔥', title: 'Streak',      description: '3 parashikime të sakta radhazi' },
+  { id: 'streak_3',         icon: '🔥', title: 'Streak',      description: '3 correct predictions in a row' },
   { id: 'streak_5',         icon: '⚡', title: 'Golden Streak',      description: '5 correct predictions in row' },
   { id: 'streak_10',        icon: '👑', title: 'Undefeated',      description: '10 correct predictions in row' },
   { id: 'predictions_50',   icon: '🏅', title: 'Veteran',           description: '50 total predictions' },

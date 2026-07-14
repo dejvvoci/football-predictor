@@ -9,8 +9,8 @@
           class="save-btn"
           [class.saved]="saved()"
           [disabled]="savingState()"
-          [attr.aria-label]="saved() ? 'Hiq nga të ruajturat' : 'Ruaj parashikimin'"
-          [title]="saved() ? 'Hiq nga të ruajturat' : 'Ruaj parashikimin'"
+          [attr.aria-label]="saved() ? 'Remove from saved' : 'Save prediction'"
+          [title]="saved() ? 'Remove from saved' : 'Save prediction'"
           (click)="toggleSave()"
         >
           {{ saved() ? '★' : '☆' }}

@@ -18,7 +18,7 @@
         {{ user.displayName || user.email }}
       </a>
     } @else {
-      <a routerLink="/login" class="login-link">Hyr</a>
+      <a routerLink="/login" class="login-link">Log in</a>
     }
   </div>
 
@@ -49,7 +49,7 @@
     @if (user$ | async; as user) {
       <a routerLink="/profile" class="mobile-user" (click)="closeMenu()">
         <span class="mobile-user-name">{{ user.displayName || user.email }}</span>
-        <span class="mobile-user-hint">Profili im</span>
+        <span class="mobile-user-hint">My profile</span>
       </a>
       <hr class="menu-divider" />
     }
@@ -63,7 +63,7 @@
     <a routerLink="/groups"        routerLinkActive="active" (click)="closeMenu()">👥 Groups</a>
     @if (!(user$ | async)) {
       <hr class="menu-divider" />
-      <a routerLink="/login" (click)="closeMenu()">Hyr</a>
+      <a routerLink="/login" (click)="closeMenu()">Log in</a>
     }
   </div>
 }

@@ -48,7 +48,7 @@ export class TournamentService {
 
   async submitPrediction(challengeId: string, choice: string): Promise<void> {
     const userId = this.auth.currentUser?.uid;
-    if (!userId) throw new Error('Duhet të jesh i loguar.');
+    if (!userId) throw new Error('You must be logged in.');
 
     const predId = `${userId}_${challengeId}`;
     const prediction: TournamentPrediction = {
@@ -68,7 +68,7 @@ export class TournamentService {
     data: Omit<TournamentChallenge, 'id' | 'createdBy' | 'createdAt' | 'status'>
   ): Promise<string> {
     const userId = this.auth.currentUser?.uid;
-    if (!userId) throw new Error('Duhet të jesh i loguar.');
+    if (!userId) throw new Error('You must be logged in.');
 
     const ref = collection(this.firestore, 'tournamentChallenges');
     const docRef = await addDoc(ref, {
@@ -112,7 +112,7 @@ export class TournamentService {
   /** USER: Kërko pikët e fituara (self-service — shton tournamentPoints te profili i vet) */
   async claimPoints(predictionId: string, points: number): Promise<void> {
     const userId = this.auth.currentUser?.uid;
-    if (!userId) throw new Error('Duhet të jesh i loguar.');
+    if (!userId) throw new Error('You must be logged in.');
 
     const predRef = doc(this.firestore, 'tournamentPredictions', predictionId);
     const userRef = doc(this.firestore, 'users', userId);

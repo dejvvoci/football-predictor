@@ -1,6 +1,6 @@
 <section class="page">
   <div class="page-header">
-    <a routerLink="/tournament" class="back-link">← Turne</a>
+    <a routerLink="/tournament" class="back-link">← Tournament</a>
   </div>
 
   @if (bracket(); as b) {
@@ -12,13 +12,13 @@
     </div>
 
     <div class="tabs">
-      <button class="tab" [class.active]="activeTab() === 'bracket'" (click)="activeTab.set('bracket')">Bracket-i</button>
-      <button class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">Renditja</button>
+      <button class="tab" [class.active]="activeTab() === 'bracket'" (click)="activeTab.set('bracket')">Bracket</button>
+      <button class="tab" [class.active]="activeTab() === 'leaderboard'" (click)="activeTab.set('leaderboard')">Leaderboard</button>
     </div>
 
     @if (activeTab() === 'bracket') {
       @if (locked() && !myPrediction()) {
-        <p class="locked-note">Parashikimet janë mbyllur dhe s'ke dërguar bracket për këtë turne.</p>
+        <p class="locked-note">Predictions are closed and you didn't submit a bracket for this tournament.</p>
       }
 
       <div class="rounds-list">
@@ -28,7 +28,7 @@
             <div class="round-header">
               <h2>{{ roundLabels[roundName] }}</h2>
               @if (isResolved(roundName)) {
-                <span class="resolved-tag">✓ Llogaritur</span>
+                <span class="resolved-tag">✓ Scored</span>
               }
             </div>
 
@@ -52,7 +52,7 @@
                       {{ matchup.away.name }}
                     </button>
                   } @else {
-                    <span class="pending-slot">Prit rrethin paraardhës...</span>
+                    <span class="pending-slot">Waiting for previous round...</span>
                   }
                 </div>
               }
@@ -63,19 +63,19 @@
 
       @if (!locked()) {
         @if (errorMessage()) { <p class="error-msg">{{ errorMessage() }}</p> }
-        @if (savedMessage()) { <p class="success-msg">✓ Bracket-i u ruajt!</p> }
+        @if (savedMessage()) { <p class="success-msg">✓ Bracket saved!</p> }
         <button type="button" class="submit-pick-btn" [disabled]="!complete() || saving()" (click)="submit()">
-          {{ saving() ? 'Duke ruajtur...' : 'Ruaj bracket-in' }}
+          {{ saving() ? 'Saving...' : 'Save bracket' }}
         </button>
       } @else if (myPrediction(); as pred) {
         <div class="my-prediction-summary">
-          <span>Pikët e tua: <strong>{{ pred.totalPoints ?? 0 }}</strong></span>
+          <span>Your points: <strong>{{ pred.totalPoints ?? 0 }}</strong></span>
           @if (b.status === 'resolved' && (pred.totalPoints ?? 0) > 0 && !pred.claimed) {
             <button type="button" class="claim-btn" [disabled]="claiming()" (click)="claim()">
-              {{ claiming() ? 'Duke marrë...' : 'Kërko pikët' }}
+              {{ claiming() ? 'Claiming...' : 'Claim points' }}
             </button>
           } @else if (pred.claimed) {
-            <span class="claimed-tag">✓ Marrë</span>
+            <span class="claimed-tag">✓ Claimed</span>
           }
         </div>
       }
@@ -84,7 +84,7 @@
     @if (activeTab() === 'leaderboard') {
       @if (leaderboard$ | async; as results) {
         @if (results.length === 0) {
-          <p class="empty">Ende s'ka bracket-e të dërguara.</p>
+          <p class="empty">No brackets submitted yet.</p>
         } @else {
           <ol class="leaderboard">
             @for (r of results; track r.id; let i = $index) {
@@ -99,6 +99,6 @@
       }
     }
   } @else {
-    <p class="loading">Duke ngarkuar bracket-in...</p>
+    <p class="loading">Loading bracket...</p>
   }
 </section>
