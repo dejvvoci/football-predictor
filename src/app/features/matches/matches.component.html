@@ -1,7 +1,7 @@
 <section class="page">
   <h1>Upcoming Matches</h1>
 
-  @if (filteredMatches(); as matches) {
+  @if (groupedMatches(); as groups) {
     @if (competitions().length > 1) {
       <div class="filter-row">
         <button
@@ -25,14 +25,19 @@
       </div>
     }
 
-    @if (matches.length === 0) {
-      <p class="empty">No matches scheduled in the next 24 hours.</p>
+    @if (isEmpty()) {
+      <p class="empty">No matches scheduled in the next 7 days.</p>
     } @else {
-      <div class="matches-list">
-        @for (match of matches; track match.id) {
-          <app-match-card [match]="match" />
-        }
-      </div>
+      @for (group of groups; track group.competition) {
+        <div class="competition-group">
+          <h2 class="competition-heading">{{ group.competition }}</h2>
+          <div class="matches-list">
+            @for (match of group.matches; track match.id) {
+              <app-match-card [match]="match" />
+            }
+          </div>
+        </div>
+      }
     }
   } @else {
     <p class="loading">Loading matches...</p>

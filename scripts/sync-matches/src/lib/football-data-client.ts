@@ -64,12 +64,13 @@ export async function fetchMatchRedCardStatus(matchId: number, token: string): P
   return details.hasRedCard;
 }
 /*
- * E marrim me 1 ditë paraprirje (jo vetëm "sot", default i football-data.org), që ndeshjet
- * afër mesnatës të zbulohen me orë paraprijëse, jo vetëm minuta para fillimit.
+ * Marrim një javë përpara (jo vetëm 48h) — me disa kampionate që luajnë njëkohësisht
+ * (liga vendase + Champions League qualifying, etj.), 48h ishin shumë pak për t'i kapur
+ * ndeshjet e mesjavës. football-data.org e lejon deri në ~10 ditë range për /v4/matches.
  */
 export async function fetchUpcomingMatches(token: string): Promise<FootballDataMatch[]> {
   const today = new Date();
-  const rangeEnd = new Date(today.getTime() + 48 * 60 * 60 * 1000); // +48h (jo +24h) — buferr shtesë kundër rasteve kufitare të datave
+  const rangeEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 ditë
 
   const dateFrom = formatDate(today);
   const dateTo = formatDate(rangeEnd);

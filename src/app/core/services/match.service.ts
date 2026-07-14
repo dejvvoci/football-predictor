@@ -18,10 +18,10 @@ import { Match } from '../models/match.model';
 export class MatchService {
   private firestore = inject(Firestore);
 
-  /** Ndeshjet në 24 orët e ardhshme (që nga tani), të renditura sipas orarit */
+  /** Ndeshjet e javës së ardhshme (që nga tani), të renditura sipas orarit */
   getUpcomingMatches(): Observable<Match[]> {
     const now = Date.now();
-    const windowEnd = now + 24 * 60 * 60 * 1000;
+    const windowEnd = now + 7 * 24 * 60 * 60 * 1000;
 
     const matchesRef = collection(this.firestore, 'matches');
     const q = query(
