@@ -141,6 +141,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
   // Çdo hap më poshtë është i pavarur — një dështim (p.sh. index i munguar) nuk duhet
   // të bllokojë hapat e mëtejshëm (badge/flashback/topscorer/etj janë veçmas nga njëra-tjetra).
   await runSafely('autoCreateChallenges', () => autoCreateChallenges(matches));
+  await runSafely('cleanupWorldCupTournamentChallenges', () => cleanupWorldCupTournamentChallenges());
   await runSafely('autoCreateBrackets', () => autoCreateBrackets());
   await runSafely('autoGradeBracketRounds', () => autoGradeBracketRounds());
   await runSafely('setDailyChallenge', () => setDailyChallenge());
@@ -222,11 +223,16 @@ const KNOCKOUT_STAGES: Record<string, string> = {
   FINAL:          'Final',
 };
 
+// Kompeticionet e përjashtuara nga sfidat ad-hoc "Tournament" (tab-i mbahet rezervë
+// për CL/Europa League bracket-e — World Cup s'duhet të krijojë më sfida të reja këtu)
+const TOURNAMENT_CHALLENGE_EXCLUDED_COMPETITIONS = new Set(['WC']);
+
 async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpcomingMatches>>): Promise<void> {
   // ── 1. GROUP_STAGE: "Who tops Group X?" ──
   const groupTeams = new Map<string, { teams: Set<string>; competition: string; latestKickoff: number }>();
 
   for (const m of matches) {
+    if (TOURNAMENT_CHALLENGE_EXCLUDED_COMPETITIONS.has(m.competition.code)) continue;
     if (m.stage !== 'GROUP_STAGE' || !m.group) continue;
     if (!m.homeTeam.name || !m.awayTeam.name) continue;
 
@@ -260,6 +266,7 @@ async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpco
 
   // ── 2. KNOCKOUT: "Who advances: Team A vs Team B?" ──
   for (const m of matches) {
+    if (TOURNAMENT_CHALLENGE_EXCLUDED_COMPETITIONS.has(m.competition.code)) continue;
     if (!KNOCKOUT_STAGES[m.stage]) continue;
     if (!m.homeTeam.name || !m.awayTeam.name) continue;
 
@@ -283,6 +290,30 @@ async function autoCreateChallenges(matches: Awaited<ReturnType<typeof fetchUpco
     });
     console.log(`+ Sfidë automatike: ${stageLabel}: ${m.homeTeam.name} vs ${m.awayTeam.name}`);
   }
+}
+
+/**
+ * Njëherësh: fshin sfidat "Tournament" ekzistuese të World Cup — tab-i mbahet
+ * rezervë për CL/Europa League bracket-e më vonë, jo për World Cup.
+ */
+async function cleanupWorldCupTournamentChallenges(): Promise<void> {
+  const markerRef = db.collection('meta').doc('worldCupTournamentChallengesCleanup');
+  if ((await markerRef.get()).exists) return;
+
+  const snap = await db.collection('tournamentChallenges')
+    .where('competition', '==', 'FIFA World Cup')
+    .get();
+
+  if (!snap.empty) {
+    for (let i = 0; i < snap.docs.length; i += 500) {
+      const batch = db.batch();
+      snap.docs.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+    console.log(`🧹 Removed ${snap.docs.length} World Cup tournament challenge(s).`);
+  }
+
+  await markerRef.set({ cleanedAt: Date.now(), removed: snap.docs.length });
 }
 
 // ── BRACKET-ET (fazë me eliminim direkt) ──────────────────────────────────────
