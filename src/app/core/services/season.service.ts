@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import {
   Firestore, collection, collectionData, doc, addDoc, updateDoc,
-  query, where, orderBy, getDocs, writeBatch, limit
+  query, where, orderBy, getDocs, writeBatch, limit, increment
 } from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
 import { Season, HallOfFameEntry } from '../models/season.model';
@@ -76,7 +76,11 @@ export class SeasonService {
         achievements: user.achievements ?? []
       });
 
-      batch.update(userDoc.ref, { totalPoints: 0, currentStreak: 0 });
+      batch.update(userDoc.ref, {
+        totalPoints: 0,
+        currentStreak: 0,
+        lifetimeTotalPoints: increment(user.totalPoints)
+      });
       rank++;
     }
 

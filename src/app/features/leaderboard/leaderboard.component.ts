@@ -22,6 +22,7 @@ export class LeaderboardComponent {
   private statisticsService = inject(StatisticsService);
 
   leaderboard$ = this.leaderboardService.getGlobalLeaderboard();
+  allTimeLeaderboard$ = this.leaderboardService.getAllTimeLeaderboard();
   user$ = this.authService.user$;
   seasons$ = this.seasonService.getAllSeasons();
 
@@ -30,7 +31,7 @@ export class LeaderboardComponent {
     map((profile) => profile?.isAdmin === true)
   );
 
-  activeTab = signal<'current' | 'hof'>('current');
+  activeTab = signal<'alltime' | 'current' | 'hof'>('alltime');
   selectedSeasonId = signal<string | null>(null);
 
   hallOfFame$ = combineLatest([

@@ -140,6 +140,7 @@ export async function syncMatchesAndGrade(): Promise<void> {
 
   // Çdo hap më poshtë është i pavarur — një dështim (p.sh. index i munguar) nuk duhet
   // të bllokojë hapat e mëtejshëm (badge/flashback/topscorer/etj janë veçmas nga njëra-tjetra).
+  await runSafely('autoRotateSeason', () => autoRotateSeason());
   await runSafely('autoCreateChallenges', () => autoCreateChallenges(matches));
   await runSafely('cleanupWorldCupTournamentChallenges', () => cleanupWorldCupTournamentChallenges());
   await runSafely('autoCreateBrackets', () => autoCreateBrackets());
@@ -157,6 +158,102 @@ async function runSafely(label: string, fn: () => Promise<void>): Promise<void> 
     await fn();
   } catch (e) {
     console.warn(`${label} dështoi (u anashkalua, sync-i vazhdon):`, e);
+  }
+}
+
+// ── SEZONI: mbyllje/rifillim automatik ─────────────────────────────────────────
+// Sezoni mbyllet në 30 qershor për vitet TEK (2025, 2027, ...) dhe në 31 korrik
+// për vitet ÇIFT (2026, 2028, ...). Emri i sezonit të ri: "{vitiIMbylljes}-{vitiTjetër}".
+function isOddYear(year: number): boolean {
+  return year % 2 === 1;
+}
+
+export function seasonCloseDateUTC(year: number): Date {
+  // muajt në Date.UTC janë 0-indeksuar: qershor=5, korrik=6
+  return isOddYear(year) ? new Date(Date.UTC(year, 5, 30, 23, 59, 59)) : new Date(Date.UTC(year, 6, 31, 23, 59, 59));
+}
+
+/** Viti i boundary-t (mbylljes) më të fundit që ka kaluar tashmë */
+export function mostRecentBoundaryYear(now: number): number {
+  const currentYear = new Date(now).getUTCFullYear();
+  for (let y = currentYear; y >= currentYear - 1; y--) {
+    if (seasonCloseDateUTC(y).getTime() <= now) return y;
+  }
+  return currentYear - 2; // s'duhet ndodhur praktikisht — fallback i sigurt
+}
+
+/**
+ * Mbyll sezonin aktual (nëse ka kaluar boundary-i i tij) dhe fillon një të ri —
+ * pa nevojë admini. Arkivon te hallOfFame, akumulon lifetimeTotalPoints, resetoje
+ * totalPoints/currentStreak, dhe fshin parashikimet e pa-ruajtura (yjet mbeten).
+ */
+async function autoRotateSeason(): Promise<void> {
+  const activeSnap = await db.collection('seasons').where('isActive', '==', true).limit(1).get();
+  if (activeSnap.empty) return; // s'ka sezon aktiv — admin duhet ta fillojë të parin manualisht
+
+  const activeDoc = activeSnap.docs[0];
+  const active = activeDoc.data() as { startedAt: number; name: string };
+
+  const boundaryYear = mostRecentBoundaryYear(Date.now());
+  const boundary = seasonCloseDateUTC(boundaryYear);
+
+  if (active.startedAt >= boundary.getTime()) return; // sezoni aktual filloi PAS boundary-t të fundit — ende s'ka pse mbyllet
+
+  console.log(`🔄 Season boundary passed (${boundary.toISOString().slice(0, 10)}) — closing "${active.name}"...`);
+
+  const usersSnap = await db.collection('users').orderBy('totalPoints', 'desc').get();
+  const batch = db.batch();
+  let rank = 1;
+
+  for (const userDoc of usersSnap.docs) {
+    const user = userDoc.data() as Record<string, unknown>;
+    const totalPoints = (user['totalPoints'] as number) ?? 0;
+
+    if (totalPoints > 0) {
+      const entryRef = db.collection('hallOfFame').doc(`${activeDoc.id}_${userDoc.id}`);
+      batch.set(entryRef, {
+        seasonId: activeDoc.id,
+        userId: userDoc.id,
+        displayName: user['displayName'],
+        totalPoints,
+        rank,
+        achievements: user['achievements'] ?? []
+      });
+      rank++;
+    }
+
+    batch.update(userDoc.ref, {
+      totalPoints: 0,
+      currentStreak: 0,
+      lifetimeTotalPoints: FieldValue.increment(totalPoints)
+    });
+  }
+
+  batch.update(activeDoc.ref, { endedAt: Date.now(), isActive: false });
+
+  const newSeasonName = `${boundaryYear}-${boundaryYear + 1}`;
+  const newSeasonRef = db.collection('seasons').doc();
+  batch.set(newSeasonRef, {
+    name: newSeasonName,
+    startedAt: Date.now(),
+    isActive: true
+  });
+
+  await batch.commit();
+  await deleteUnsavedPredictionsForSeasonRotation();
+
+  console.log(`✓ Season "${active.name}" closed (${rank - 1} player(s) archived). New season "${newSeasonName}" started.`);
+}
+
+/** Fshin të gjitha parashikimet e pa-ruajtura (yjet mbeten) — mirror i season.service.ts */
+async function deleteUnsavedPredictionsForSeasonRotation(): Promise<void> {
+  const predictionsSnap = await db.collection('predictions').get();
+  const toDelete = predictionsSnap.docs.filter((d) => !(d.data()['saved'] as boolean | undefined));
+
+  for (let i = 0; i < toDelete.length; i += 500) {
+    const batch = db.batch();
+    toDelete.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+    await batch.commit();
   }
 }
 
