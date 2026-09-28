@@ -1,5 +1,6 @@
 import { db, FieldValue } from './admin';
 import { fetchUpcomingMatches, fetchMatchDetails, FootballDataMatch } from './football-data-client';
+import { fetchAllTheSportsDbMatches, THESPORTSDB_LEAGUES } from './thesportsdb-client';
 import { fetchOddsForCompetition, matchKey, OddsEntry } from './odds-client';
 import { generateFallbackOdds } from './fallback-odds';
 import { calculatePoints, calculateOverUnderPoints, calculateHtFtPoints, calculateBttsPoints, calculateRedCardPoints, calculateFirstGoalscorerPoints, MatchOdds, OverUnderOdds, MatchResult, PredictionChoice, ExactScoreGuess } from './scoring';
@@ -41,11 +42,18 @@ export async function syncMatchesAndGrade(): Promise<void> {
   const footballDataToken = requireEnv('FOOTBALL_DATA_TOKEN');
   const oddsApiKey = requireEnv('ODDS_API_KEY');
 
-  const matches = await fetchUpcomingMatches(footballDataToken);
+  const [footballDataMatches, theSportsDbMatches] = await Promise.all([
+    fetchUpcomingMatches(footballDataToken),
+    fetchAllTheSportsDbMatches().catch((e) => {
+      console.warn('TheSportsDB: fetch failed entirely, skipping this cycle:', e);
+      return [] as FootballDataMatch[];
+    })
+  ]);
+  const matches = [...footballDataMatches, ...theSportsDbMatches];
   const oddsCache = new Map<string, Map<string, OddsEntry>>();
   const justFinished: string[] = [];
 
-  console.log(`Gjetën ${matches.length} ndeshje (sot + nesër).`);
+  console.log(`Gjetën ${footballDataMatches.length} ndeshje (sot + nesër) + ${theSportsDbMatches.length} ndeshje kombëtaresh (TheSportsDB).`);
 
   for (const m of matches) {
     if (!m.homeTeam?.name || !m.awayTeam?.name) {
@@ -697,10 +705,13 @@ async function gradeMatch(matchId: string, footballDataToken?: string): Promise<
   const match = matchSnap.data();
   if (!match || !match['result']) return;
 
-  // Fetch match details: red card + first goalscorer (1 extra API call)
+  // Fetch match details: red card + first goalscorer (1 extra API call) — vetëm për
+  // ndeshje të football-data.org; ndeshjet e TheSportsDB (Nations League etj.) s'ekzistojnë
+  // atje, do të ishte thjesht një thirrje API e humbur (404) çdo herë.
+  const isTheSportsDbLeague = THESPORTSDB_LEAGUES.some((l) => l.name === match['competition']);
   let hasRedCard: boolean | null = null;
   let firstGoalscorer: string | null = null;
-  if (footballDataToken) {
+  if (footballDataToken && !isTheSportsDbLeague) {
     const details = await fetchMatchDetails(parseInt(matchId), footballDataToken);
     hasRedCard = details.hasRedCard;
     firstGoalscorer = details.firstGoalscorer;
